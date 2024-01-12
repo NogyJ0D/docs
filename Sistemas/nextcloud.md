@@ -1,6 +1,8 @@
 # Nextcloud
 
-## [Instalar Nextcloud en Debian 12](https://docs.nextcloud.com/server/latest/admin_manual/installation/example_ubuntu.html)
+## Instalación
+
+### [Instalar Nextcloud en Debian 12](https://docs.nextcloud.com/server/latest/admin_manual/installation/example_ubuntu.html)
 1. Instalar requisitos:
 ```sh
 apt update && apt upgrade -y
@@ -14,9 +16,9 @@ mysql
 ```
 
 ```sql
-CREATE USER 'username'@'localhost' IDENTIFIED BY 'password';
+CREATE USER 'nextcloud'@'localhost' IDENTIFIED BY 'password';
 CREATE DATABASE IF NOT EXISTS nextcloud CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-GRANT ALL PRIVILEGES ON nextcloud.* TO 'username'@'localhost';
+GRANT ALL PRIVILEGES ON nextcloud.* TO 'nextcloud'@'localhost';
 FLUSH PRIVILEGES;
 QUIT;
 ```
@@ -26,6 +28,8 @@ QUIT;
 wget https://download.nextcloud.com/server/releases/latest.zip && unzip latest.zip
 
 cp -r nextcloud /var/www
+
+sudo chown -R www-data:www-data /var/www/nextcloud
 ```
 
 4. [Configurar Apache](https://docs.nextcloud.com/server/latest/admin_manual/installation/source_installation.html#apache-configuration-label):
@@ -54,10 +58,10 @@ cp -r nextcloud /var/www
 
     2. Habilitar módulos:
     ```sh
-    a2enmod rewrite
-    a2enmod headers
-    a2enmod env
-    a2enmod dir
+    a2enmod rewrite && \
+    a2enmod headers && \
+    a2enmod env && \
+    a2enmod dir && \
     a2enmod mime
     ```
 
@@ -91,4 +95,53 @@ crontab -u www-data -e
 
 ```text
 */5 * * * * php -f /var/www/nextcloud/cron.php
+```
+
+### [Instalar Nextcloud con docker](https://github.com/nextcloud/docker)
+
+- Docker Compose
+```yml
+version: '2'
+
+volumes:
+  nextcloud:
+  db:
+
+services:
+  db:
+    image: mariadb:10.6
+    restart: always
+    command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
+    volumes:
+      - db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=<SETEAR>
+      - MYSQL_PASSWORD=<SETEAR>
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+
+  app:
+    image: nextcloud:fpm
+    restart: always
+    links:
+      - db
+    volumes:
+      - nextcloud:/var/www/html
+    environment:
+      - MYSQL_PASSWORD=<SETEAR>
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_HOST=db
+
+  web:
+    image: nginx
+    restart: always
+    ports:
+      - 8080:80
+    links:
+      - app
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    volumes_from:
+      - app
 ```
