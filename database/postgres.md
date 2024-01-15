@@ -1,13 +1,46 @@
 # Postgres
 
-## Contenido:
+## Contenido
 - [Postgres](#postgres)
-  - [Contenido:](#contenido)
+  - [Contenido](#contenido)
+  - [Documentación](#documentación)
+  - [Comandos](#comandos)
+  - [Instalación](#instalación)
+    - [Instalar Postgresql en Debian 12](#instalar-postgresql-en-debian-12)
   - [PGAdmin](#pgadmin)
-    - [Instalación](#instalación)
+    - [Instalación](#instalación-1)
       - [Como contenedor](#como-contenedor)
     - [Crear proxy reverso nginx](#crear-proxy-reverso-nginx)
 
+## Documentación
+
+- https://wiki.debian.org/PostgreSql
+
+## Comandos
+
+- Entrar a psql:
+```sh
+su -c /usr/bin/psql postgres
+
+sudo -u postgres psql
+```
+
+- Crear usuario:
+```sh
+createuser --pwprompt {usuario}
+```
+
+- Crear DB:
+```sh
+createdb -O {owner} db
+```
+
+## Instalación
+
+### Instalar Postgresql en Debian 12
+```sh
+sudo apt -y install postgresql-15
+```
 
 ## PGAdmin
 
