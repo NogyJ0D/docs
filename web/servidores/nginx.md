@@ -11,4 +11,6 @@
 ### Instalar Nginx en Debian
 ```sh
 apt install nginx
+
+systemctl enable --now nginx
 ```
