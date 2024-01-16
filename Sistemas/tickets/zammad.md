@@ -39,7 +39,7 @@ apt install libimlib2 curl apt-transport-https gnupg
 
 5. [Instalar Redis](../database/redis.md#instalar-redis-en-debian-12).
 
-6. [Instalar ElasticSearch](../a_clasificar/elasticsearch.md#instalar-elasticsearch-8-en-debian-12).
+6. [Instalar ElasticSearch](../../database/nosql/elasticsearch.md#instalar-elasticsearch-8-en-debian-12).
 
     1. Configurar */etc/elasticsearch/elasticsearch.yml*:
     ```text
