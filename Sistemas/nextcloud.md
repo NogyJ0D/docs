@@ -145,3 +145,5 @@ services:
     volumes_from:
       - app
 ```
+
+### [Instalar Nextcloud en Mageia](https://wiki.mageia.org/en/Nextcloud_server_installation_with_NGINX)
