@@ -1,8 +1,23 @@
 # Nextcloud
 
+## Contenido
+- [Nextcloud](#nextcloud)
+  - [Contenido](#contenido)
+  - [Documentación](#documentación)
+  - [Instalación](#instalación)
+    - [Instalar Nextcloud en Debian 12](#instalar-nextcloud-en-debian-12)
+      - [Instalar con Apache](#instalar-con-apache)
+      - [Instalar con Nginx](#instalar-con-nginx)
+    - [Instalar Nextcloud con docker](#instalar-nextcloud-con-docker)
+    - [Instalar Nextcloud en Mageia](#instalar-nextcloud-en-mageia)
+
+## Documentación
+
 ## Instalación
 
-### [Instalar Nextcloud en Debian 12](https://docs.nextcloud.com/server/latest/admin_manual/installation/example_ubuntu.html)
+### [Instalar Nextcloud en Debian 12]()
+
+#### [Instalar con Apache](https://docs.nextcloud.com/server/latest/admin_manual/installation/example_ubuntu.html)
 1. Instalar requisitos:
 ```sh
 apt update && apt upgrade -y
@@ -96,6 +111,80 @@ crontab -u www-data -e
 ```text
 */5 * * * * php -f /var/www/nextcloud/cron.php
 ```
+
+#### [Instalar con Nginx](https://www.linuxtuto.com/how-to-install-nextcloud-on-debian-12/)
+
+1. [Instalar Nginx](../web/servidores/nginx.md#instalar-nginx-en-debian).
+
+2. Instalar php y extensiones:
+   1. Instalar php
+   ```sh
+   apt install -y php php-cli php-fpm php-json php-common php-mysql php-zip php-gd php-intl php-curl php-xml php-mbstring php-bcmath php-gmp wget
+   ```
+
+   2. Editar en ***/etc/php/x.x/fpm/php.ini***:
+   ```ini
+   max_execution_time = 300
+   memory_limit = 512M
+   post_max_size = 128M
+   upload_max_filesize = 128M
+   ```
+
+   3. Reiniciar servicio:
+   ```sh
+   systemctl restart php8.2-fpm
+   ```
+
+3. [Instalar MariaDB](../database/sql/mariadb.md#instalar-mariadb-en-debian-12).
+   1. Crear DB:
+   ```sql
+   CREATE DATABASE nextcloud;
+   GRANT ALL PRIVILEGES ON nextcloud.* TO 'nextcloud'@'localhost' IDENTIFIED BY 'Password';
+   FLUSH PRIVILEGES;
+   EXIT;
+   ```
+
+4. Descargar Nextcloud:
+```sh
+wget  https://download.nextcloud.com/server/releases/latest.zip
+unzip latest.zip -d /var/www/
+chown -R www-data:www-data /var/www/nextcloud
+```
+
+5. Configurar nginx:
+
+    Agregar en ***/etc/nginx/conf.d/nextcloud.conf***:
+    ```nginx
+    server {
+      listen 80;
+      server_name your-domain.com www.your-domain.com;
+      root /var/www/nextcloud;
+      index index.php index.html;
+      charset utf-8;
+      location / {
+        try_files $uri $uri/ /index.php?$args;
+      }
+      location ~ .php$ {
+        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+      }
+    }
+    ```
+
+```sh
+systemctl restart nginx
+```
+
+6. Crear certificado:
+```sh
+apt install -y certbot python3-certbot-nginx
+
+certbot --nginx -d your-domain.com -d www.your-domain.com
+```
+
+7. Entrar a la url de nextcloud e instalar.
 
 ### [Instalar Nextcloud con docker](https://github.com/nextcloud/docker)
 
