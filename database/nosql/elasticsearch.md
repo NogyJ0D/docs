@@ -1,17 +1,25 @@
 # ElasticSearch
 
+---
+
 ## Contenido
+
 - [ElasticSearch](#elasticsearch)
   - [Contenido](#contenido)
   - [Documentación](#documentación)
   - [Instalación](#instalación)
     - [Instalar ElasticSearch 8 en Debian 12](#instalar-elasticsearch-8-en-debian-12)
 
+---
+
 ## Documentación
+
+---
 
 ## Instalación
 
 ### Instalar ElasticSearch 8 en Debian 12
+
 ```sh
 apt install -y gnupg apt-transport-https
 

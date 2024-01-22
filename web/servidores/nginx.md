@@ -1,7 +1,7 @@
 # Nginx
+-------
 
 ## Contenido
-
 - [Nginx](#nginx)
   - [Contenido](#contenido)
   - [Instalación](#instalación)
@@ -10,6 +10,7 @@
   - [Extras](#extras)
     - [Migrar nginx a otro servidor:](#migrar-nginx-a-otro-servidor)
 
+--------------
 ## Instalación
 
 ### Instalar Nginx en Debian
@@ -29,25 +30,27 @@ rc-update add nginx boot
 rc-service start nginx
 ```
 
+---------
 ## Extras
 
 ### Migrar nginx a otro servidor:
 
 1. Hacer backups:
 ```sh
-zip -r -y nginx.zip /etc/nginx/nginx.conf /etc/nginx/sites-available /etc/nginx/sites-enabled /etc/nginx/modules-enabled
-zip -r -y nginx_mods.zip /usr/share/nginx/modules /usr/share/nginx/modules-available
-zip -r -y certs.zip /etc/letsencrypt
+zip -ry nginx.zip /etc/nginx/nginx.conf /etc/nginx/sites-available /etc/nginx/sites-enabled /etc/nginx/modules-enabled
+zip -ry nginx_mods.zip /usr/share/nginx/modules /usr/share/nginx/modules-available
+zip -ry certs.zip /etc/letsencrypt
+# Revisar /var
 ```
 
-2. [Instalar nginx](#instalación).
+1. [Instalar nginx](#instalación).
 
-3. [Instalar certbot](../certbot.md#instalación).
+2. [Instalar certbot](../certbot.md#instalación).
 
-4. Mover los backups:
+3. Mover los backups:
 ```sh
 scp nginx_bkp.tar.gz {usuario}@{ip}:/{ruta_destino}
 scp letsencrypt_bkp.tar.gz {usuario}@{ip}:/{ruta_destino}
 ```
 
-5. Hacer un dry-run de certbot.
+1. Hacer un dry-run de certbot.
