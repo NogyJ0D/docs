@@ -1,14 +1,18 @@
 # Snap
+------
 
 ## Contenido
 
 - [Snapd](#snapd)
   - [Contenido](#contenido)
 
+----------------
 ## Documentación
 
+--------------
 ## Instalación
 
+---------------------------
 ### Instalar Snap en Debian
 
 ```sh
@@ -17,4 +21,5 @@ reboot
 snap install core
 ```
 
+---------
 ## Extras
