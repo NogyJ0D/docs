@@ -162,10 +162,11 @@
    1. Crear DB:
 
       ```sql
-      CREATE DATABASE nextcloud;
-      GRANT ALL PRIVILEGES ON nextcloud.* TO 'nextcloud'@'localhost' IDENTIFIED BY 'Password';
+      CREATE USER 'nextcloud'@'localhost' IDENTIFIED BY 'password';
+      CREATE DATABASE IF NOT EXISTS nextcloud CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+      GRANT ALL PRIVILEGES ON nextcloud.* TO 'nextcloud'@'localhost';
       FLUSH PRIVILEGES;
-      EXIT;
+      QUIT;
       ```
 
 4. Descargar Nextcloud:
@@ -208,6 +209,16 @@
 6. [Crear certificado](../web/certbot.md#nginx).
 
 7. Entrar a la url de nextcloud e instalar.
+
+8. [Habilitar cron](https://docs.nextcloud.com/server/latest/admin_manual/configuration_server/background_jobs_configuration.html#cron-jobs):
+
+    ```sh
+    crontab -u www-data -e
+    ```
+
+    ```text
+    */5 * * * * php -f /var/www/nextcloud/cron.php
+    ```
 
 ### [Instalar Nextcloud con docker](https://github.com/nextcloud/docker)
 
