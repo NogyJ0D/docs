@@ -12,13 +12,23 @@
 
 ## Instalación
 
-### Instalar Zabbix 6.4 en Debian 12 con Postgres y Nginx
+### Instalar Zabbix 6.4 en Debian 12
 
-1. Instalar PostgreSQL y Nginx:
+1. Instalar db y nginx:
 
-    ```sh
-    apt install sudo postgresql-15 nginx -y
-    ```
+   1. **Postgresql y Nginx**:
+
+        ```sh
+        apt install sudo postgresql-15 nginx -y
+        ```
+
+   2. **MariaDB y Nginx**:
+
+      ```sh
+      apt install sudo mariadb-server mariadb-client nginx -y
+      systemctl enable --now mariadb
+      mysql_secure_installation
+      ```
 
 2. Instalar repositorio:
 
@@ -28,13 +38,21 @@
 
 3. Instalar componentes:
 
-    ```sh
-    apt install zabbix-server-pgsql zabbix-frontend-php php8.2-pgsql zabbix-nginx-conf zabbix-sql-scripts zabbix-agent -y
-    ```
+   - **Con Postgres**:
+
+       ```sh
+       apt install zabbix-server-pgsql zabbix-frontend-php php8.2-pgsql zabbix-nginx-conf zabbix-sql-scripts zabbix-agent -y
+       ```
+
+   - **Con MariaDB**:
+
+       ```sh
+       apt install zabbix-server-mysql zabbix-frontend-php zabbix-nginx-conf zabbix-sql-scripts zabbix-agent -y
+       ```
 
 4. Crear base de datos:
 
-    - Ejecutar:
+   - **Con Postgres**:
 
       ```sh
       sudo -u postgres createuser --pwprompt zabbix
@@ -42,7 +60,31 @@
       zcat /usr/share/zabbix-sql-scripts/postgresql/server.sql.gz | sudo -u zabbix psql zabbix 
       ```
 
-    - Modificar en ***/etc/zabbix/zabbix_server.conf***:
+   - **Con MariDB**:
+
+      ```sh
+      mysql
+      ```
+
+      ```sql
+      CREATE DATABASE zabbix CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+      CREATE USER 'zabbix'@'localhost' IDENTIFIED BY 'password';
+      GRANT ALL PRIVILEGES ON zabbix.* TO 'zabbix'@'localhost';
+      SET GLOBAL log_bin_trust_function_creators = 1;
+      QUIT;
+      ```
+
+      ```sh
+      zcat /usr/share/zabbix-sql-scripts/mysql/server.sql.gz | mysql --default-character-set=utf8mb4 -u zabbix -p zabbix
+      mysql
+      ```
+
+      ```sql
+      SET GLOBAL log_bin_trust_function_creators = 0;
+      QUIT;
+      ```
+
+   - Modificar en ***/etc/zabbix/zabbix_server.conf***:
 
       ```conf
       DBPassword=<contraseña>
