@@ -14,6 +14,7 @@
     - [Instalar Nextcloud con docker](#instalar-nextcloud-con-docker)
     - [Instalar Nextcloud en Mageia](#instalar-nextcloud-en-mageia)
   - [Extras](#extras)
+    - [Activar LDAP](#activar-ldap)
 
 ---
 
@@ -29,30 +30,11 @@
 
 1. Instalar requisitos:
 
-   1. Instalar php:
+    ```sh
+    apt update && apt upgrade -y
 
-      ```sh
-      apt update && apt upgrade -y
-
-      apt install apache2 mariadb-server libapache2-mod-php php-gd php-mysql php-curl php-mbstring php-intl php-gmp php-bcmath php-xml php-imagick php-zip php-bz2 php-apcu php-redis libmagickcore-6.q16-6-extra unzip wget sudo -y
-      ```
-
-      - Para agregar LDAP instalar "php-ldap".
-
-   2. Editar en ***/etc/php/x.x/apache2/php.ini***:
-
-      ```ini
-      max_execution_time = 300
-      memory_limit = 512M
-      post_max_size = 128M
-      upload_max_filesize = 128M
-      ```
-
-   3. Reiniciar servicio:
-
-      ```sh
-      systemctl restart apache2
-      ```
+    apt install apache2 mariadb-server libapache2-mod-php php-gd php-mysql php-curl php-mbstring php-intl php-gmp php-bcmath php-xml php-imagick php-zip php-bz2 php-apcu php-redis php-ldap libmagickcore-6.q16-6-extra unzip wget sudo -y
+    ```
 
 2. Crear DB:
 
@@ -97,6 +79,9 @@
             <IfModule mod_dav.c>
                 Dav off
             </IfModule>
+            <IfModule mod_headers.c>
+                Header always set Strict-Transport-Security "max-age=15552000; includeSubDomains"
+            </IfModule>
         </Directory>
         ```
 
@@ -114,7 +99,23 @@
         a2enmod mime
         ```
 
-    3. Reiniciar servicio:
+    3. Habilitar ssl:
+
+        ```sh
+        a2enmod ssl && \
+        a2ensite default-ssl
+        ```
+
+    4. Editar en ***/etc/php/x.x/apache2/php.ini***:
+
+        ```ini
+        max_execution_time = 300
+        memory_limit = 512M
+        post_max_size = 128M
+        upload_max_filesize = 128M
+        ```
+
+    5. Reiniciar servicio:
 
         ```sh
         service apache2 restart
@@ -133,6 +134,8 @@
     'htaccess.RewriteBase' => '/nextcloud',
     ```
 
+    > Una vez que se cambie la ip o el dominio de la web, debe modificarse la linea overwrite.
+
     ```sh
     sudo -u www-data php /var/www/nextcloud/occ maintenance:update:htaccess
     ```
@@ -142,6 +145,7 @@
     - Agregar en ***/var/www/nextcloud/config/config.php***:
 
       ```php
+      'memcache.local' => '\OC\Memcache\APCu',
       'filelocking.enabled' => true,
       'memcache.locking' => '\OC\Memcache\Redis',
       'redis' => array(
@@ -151,9 +155,7 @@
       ),
       ```
 
-8. [Habilitar SSL](https://docs.nextcloud.com/server/latest/admin_manual/installation/source_installation.html#enabling-ssl).
-
-9. [Habilitar cron](https://docs.nextcloud.com/server/latest/admin_manual/configuration_server/background_jobs_configuration.html#cron-jobs):
+8. [Habilitar cron](https://docs.nextcloud.com/server/latest/admin_manual/configuration_server/background_jobs_configuration.html#cron-jobs):
 
     ```sh
     crontab -u www-data -e
@@ -163,7 +165,9 @@
     */5 * * * * php -f /var/www/nextcloud/cron.php
     ```
 
-10. Ir al panel de administración y corregir las advertencias.
+9. Ir al panel de administración y corregir las advertencias.
+
+    - Corregir el error del teléfono: agregar en ***/var/www/nextcloud/config/config.php*** "'default_phone_region' => 'AR',".
 
 #### [Instalar con Nginx](https://www.linuxtuto.com/how-to-install-nextcloud-on-debian-12/)
 
@@ -174,7 +178,7 @@
    1. Instalar php
 
       ```sh
-      apt install -y php php-cli php-fpm php-json php-common php-mysql php-zip php-gd php-intl php-curl php-xml php-mbstring php-bcmath php-gmp php-bz2 php-imagick php-apcu php-redis libmagickcore-6.q16-6-extra wget unzip sudo
+      apt install -y php php-cli php-fpm php-json php-common php-mysql php-zip php-gd php-intl php-curl php-xml php-mbstring php-bcmath php-gmp php-bz2 php-imagick php-apcu php-redis php-ldap libmagickcore-6.q16-6-extra wget unzip sudo
       ```
 
       - Para agregar LDAP instalar "php-ldap".
@@ -437,6 +441,8 @@
 
 10. Ir al panel de administración y corregir las advertencias.
 
+    - Corregir el error del teléfono: agregar en ***/var/www/nextcloud/config/config.php*** "'default_phone_region' => 'AR',".
+
 ### [Instalar Nextcloud con docker](https://github.com/nextcloud/docker)
 
 - Docker Compose
@@ -492,3 +498,11 @@
 ---
 
 ## Extras
+
+### Activar LDAP
+
+1. Asegurarse de tener instalado el paquete "php-ldap".
+
+2. Activar en la web la app "LDAP user and group backend".
+
+3. Entrar al panel de administración y configurar la app.
