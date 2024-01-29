@@ -81,15 +81,15 @@
     description="Apache Tomcat Server"
 
     start() {
-    ebegin "Starting Tomcat"
-    start-stop-daemon --start --exec $CATALINA_HOME/bin/startup.sh
-    eend $?
+      ebegin "Starting Tomcat"
+      start-stop-daemon --start --exec $CATALINA_HOME/bin/startup.sh
+      eend $?
     }
 
     stop() {
-    ebegin "Stopping Tomcat"
-    start-stop-daemon --start --exec $CATALINA_HOME/bin/shutdown.sh
-    eend $?
+      ebegin "Stopping Tomcat"
+      start-stop-daemon --start --exec $CATALINA_HOME/bin/shutdown.sh
+      eend $?
     }
     ```
 
