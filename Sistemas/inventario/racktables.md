@@ -11,6 +11,7 @@
     - [Instalar Racktables en Debian 12](#instalar-racktables-en-debian-12)
   - [Extras](#extras)
     - [Agregar plugins](#agregar-plugins)
+    - [Cambiar datos de la base de datos](#cambiar-datos-de-la-base-de-datos)
 
 ---
 
@@ -40,7 +41,7 @@ apt install apt-transport-https lsb-release ca-certificates -y
 
       ```sql
       CREATE DATABASE racktables_db CHARACTER SET utf8 COLLATE utf8_general_ci;
-      CREATE USER 'racktables_user'@'localhost' IDENTIFIED by ‘racktablepassword’;
+      CREATE USER 'racktables_user'@'localhost' IDENTIFIED by 'racktablepassword';
       GRANT ALL PRIVILEGES ON racktables_db.* TO 'racktables_user'@'localhost' WITH GRANT OPTION;
       FLUSH PRIVILEGES;
       QUIT;
@@ -79,3 +80,13 @@ apt install apt-transport-https lsb-release ca-certificates -y
 2. Crear la carpeta con el nombre del plugin.
 
 3. Descargar adentro el plugin bajo el nombre de ***plugin.php***.
+
+### Cambiar datos de la base de datos
+
+- Modificar en ***/var/www/html/wwwroot/inc/secret.php***:
+
+    ```php
+    $pdo_dsn = 'mysql:host=IP;dbname=racktables_db';
+    $db_username = 'racktables_user';
+    $db_password = 'Contraseña';
+    ```
