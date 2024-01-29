@@ -158,6 +158,9 @@
     - Ejecutar:
 
         ```sh
+        echo "unixsocket /var/run/redis/redis.sock" >> /etc/redis/redis.conf
+        echo "unixsocketperm 777" >> /etc/redis/redis.conf
+
         echo "vm.overcommit_memory = 1" | tee /etc/sysctl.d/nextcloud-aio-memory-overcommit.conf
         ```
 
@@ -184,7 +187,7 @@
    1. Instalar php
 
       ```sh
-      apt install -y php php-cli php-fpm php-json php-common php-mysql php-zip php-gd php-intl php-curl php-xml php-mbstring php-bcmath php-gmp php-bz2 php-imagick php-apcu php-redis php-ldap libmagickcore-6.q16-6-extra wget unzip sudo
+      apt install -y php-cli php-fpm php-json php-common php-mysql php-zip php-gd php-intl php-curl php-xml php-mbstring php-bcmath php-gmp php-bz2 php-imagick php-apcu php-redis php-ldap libmagickcore-6.q16-6-extra wget unzip sudo
       ```
 
       - Para agregar LDAP instalar "php-ldap".
@@ -214,7 +217,7 @@
       systemctl restart php8.2-fpm
       ```
 
-3. [Instalar MariaDB](../../database/sql/mariadb.md#instalar-mariadb-en-debian-12).
+3. [Instalar MariaDB](../../database/sql/mysql_mariadb.md#instalar-mariadb-en-debian-12).
 
    1. Crear DB:
 
@@ -438,6 +441,9 @@
     - Ejecutar:
 
         ```sh
+        echo "unixsocket /var/run/redis/redis.sock" >> /etc/redis/redis.conf
+        echo "unixsocketperm 777" >> /etc/redis/redis.conf
+
         echo "vm.overcommit_memory = 1" | tee /etc/sysctl.d/nextcloud-aio-memory-overcommit.conf
         ```
 
