@@ -155,6 +155,12 @@
       ),
       ```
 
+    - Ejecutar:
+
+        ```sh
+        echo "vm.overcommit_memory = 1" | tee /etc/sysctl.d/nextcloud-aio-memory-overcommit.conf
+        ```
+
 8. [Habilitar cron](https://docs.nextcloud.com/server/latest/admin_manual/configuration_server/background_jobs_configuration.html#cron-jobs):
 
     ```sh
@@ -162,7 +168,7 @@
     ```
 
     ```text
-    */5 * * * * php -f /var/www/nextcloud/cron.php
+    */5 * * * * php -f /var/www/nextcloud/cron.php --define apc.enable_cli=1
     ```
 
 9. Ir al panel de administración y corregir las advertencias.
@@ -429,6 +435,12 @@
       ),
       ```
 
+    - Ejecutar:
+
+        ```sh
+        echo "vm.overcommit_memory = 1" | tee /etc/sysctl.d/nextcloud-aio-memory-overcommit.conf
+        ```
+
 9. [Habilitar cron](https://docs.nextcloud.com/server/latest/admin_manual/configuration_server/background_jobs_configuration.html#cron-jobs):
 
     ```sh
@@ -436,7 +448,7 @@
     ```
 
     ```text
-    */5 * * * * php -f /var/www/nextcloud/cron.php
+    */5 * * * * php -f /var/www/nextcloud/cron.php --define apc.enable_cli=1
     ```
 
 10. Ir al panel de administración y corregir las advertencias.

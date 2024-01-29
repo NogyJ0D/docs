@@ -61,8 +61,7 @@
 6. Instalar autocompletado:
 
     ```sh
-    terraform -install-autocomplete
-    source ~/.bashrc
+    terraform -install-autocomplete && source ~/.bashrc
     ```
 
 ---
