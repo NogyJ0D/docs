@@ -33,22 +33,84 @@
     ```sh
     apt update && apt upgrade -y
 
-    apt install apache2 mariadb-server libapache2-mod-php php-gd php-mysql php-curl php-mbstring php-intl php-gmp php-bcmath php-xml php-imagick php-zip php-bz2 php-apcu php-redis php-ldap libmagickcore-6.q16-6-extra unzip wget sudo -y
+    apt install apache2 libapache2-mod-php php-gd php-mysql php-curl php-mbstring php-intl php-gmp php-bcmath php-xml php-imagick php-zip php-bz2 php-apcu php-redis php-ldap libmagickcore-6.q16-6-extra unzip wget sudo -y
     ```
 
-2. Crear DB:
+2. [Instalar MariaDB y crear db](../../database/sql/mysql_mariadb.md#instalar-mariadb-en-debian-12):
 
-    ```sh
-    mysql
-    ```
+     1. Configurar:
 
-    ```sql
-    CREATE USER 'nextcloud'@'localhost' IDENTIFIED BY 'password';
-    CREATE DATABASE IF NOT EXISTS nextcloud CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-    GRANT ALL PRIVILEGES ON nextcloud.* TO 'nextcloud'@'localhost';
-    FLUSH PRIVILEGES;
-    QUIT;
-    ```
+         - Tener ***/etc/mysql/my.conf*** como:
+
+            ```conf
+            [server]
+            skip_name_resolve = 1
+            innodb_buffer_pool_size = 128M
+            innodb_buffer_pool_instances = 1
+            innodb_flush_log_at_trx_commit = 2
+            innodb_log_buffer_size = 32M
+            innodb_max_dirty_pages_pct = 90
+            query_cache_type = 1
+            query_cache_limit = 2M
+            query_cache_min_res_unit = 2k
+            query_cache_size = 64M
+            tmp_table_size= 64M
+            max_heap_table_size= 64M
+            slow_query_log = 1
+            slow_query_log_file = /var/log/mysql/slow.log
+            long_query_time = 1
+
+            [client-server]
+            !includedir /etc/mysql/conf.d/
+            !includedir /etc/mysql/mariadb.conf.d/
+
+            [client]
+            default-character-set = utf8mb4
+
+            [mysqld]
+            character_set_server = utf8mb4
+            collation_server = utf8mb4_general_ci
+            transaction_isolation = READ-COMMITTED
+            binlog_format = ROW
+            innodb_large_prefix=on
+            innodb_file_format=barracuda
+            innodb_file_per_table=1
+            read_rnd_buffer_size = 4M
+            ```
+
+         - Tener ***/etc/php/x.x/apache2/conf.d/20-pdo_mysql.ini*** como:
+
+            ```ini
+            extension=pdo_mysql.so
+
+            [mysql]
+            mysql.allow_local_infile=On
+            mysql.allow_persistent=On
+            mysql.cache_size=2000
+            mysql.max_persistent=-1
+            mysql.max_links=-1
+            mysql.default_port=
+            mysql.default_socket=/run/mysqld/mysqld.sock
+            mysql.default_host=
+            mysql.default_user=
+            mysql.default_password=
+            mysql.connect_timeout=60
+            mysql.trace_mode=Off
+            ```
+
+     2. Crear:
+
+        ```sh
+        mysql
+        ```
+
+        ```sql
+        CREATE USER 'nextcloud'@'localhost' IDENTIFIED BY 'password';
+        CREATE DATABASE IF NOT EXISTS nextcloud CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+        GRANT ALL PRIVILEGES ON nextcloud.* TO 'nextcloud'@'localhost';
+        FLUSH PRIVILEGES;
+        QUIT;
+        ```
 
 3. Descargar Nextcloud:
 
@@ -115,7 +177,21 @@
         upload_max_filesize = 128M
         ```
 
-    5. Reiniciar servicio:
+    5. Habilitar OPCache en ***/etc/php/x.x/apache2/php.ini***:
+
+        ```ini
+        [opcache]
+        opcache.enable=1
+        opcache.memory_consumption=512
+        opcache.interned_strings_buffer=64
+        opcache.max_accelerated_files=50000
+        opcache.max_wasted_percentage=15
+        opcache.validate_timestamps=0
+        opcache.revalidate_freq=0
+        opcache.save_comments=1
+        ```
+
+    6. Reiniciar servicio:
 
         ```sh
         service apache2 restart
@@ -211,15 +287,89 @@
       env[TEMP] = /tmp
       ```
 
-   4. Reiniciar servicio:
+   4. Habilitar OPCache en ***/etc/php/x.x/fpm/php.ini***:
+
+      ```ini
+      [opcache]
+      opcache.enable=1
+      opcache.memory_consumption=512
+      opcache.interned_strings_buffer=64
+      opcache.max_accelerated_files=50000
+      opcache.max_wasted_percentage=15
+      opcache.validate_timestamps=0
+      opcache.revalidate_freq=0
+      opcache.save_comments=1
+      ```
+
+   5. Reiniciar servicio:
 
       ```sh
       systemctl restart php8.2-fpm
       ```
 
-3. [Instalar MariaDB](../../database/sql/mysql_mariadb.md#instalar-mariadb-en-debian-12).
+3. [Instalar MariaDB y crear db](../../database/sql/mysql_mariadb.md#instalar-mariadb-en-debian-12):
 
-   1. Crear DB:
+   1. Configurar MariaDB:
+
+      - Tener ***/etc/mysql/my.conf*** como:
+
+        ```conf
+        [server]
+        skip_name_resolve = 1
+        innodb_buffer_pool_size = 128M
+        innodb_buffer_pool_instances = 1
+        innodb_flush_log_at_trx_commit = 2
+        innodb_log_buffer_size = 32M
+        innodb_max_dirty_pages_pct = 90
+        query_cache_type = 1
+        query_cache_limit = 2M
+        query_cache_min_res_unit = 2k
+        query_cache_size = 64M
+        tmp_table_size= 64M
+        max_heap_table_size= 64M
+        slow_query_log = 1
+        slow_query_log_file = /var/log/mysql/slow.log
+        long_query_time = 1
+
+        [client-server]
+        !includedir /etc/mysql/conf.d/
+        !includedir /etc/mysql/mariadb.conf.d/
+
+        [client]
+        default-character-set = utf8mb4
+
+        [mysqld]
+        character_set_server = utf8mb4
+        collation_server = utf8mb4_general_ci
+        transaction_isolation = READ-COMMITTED
+        binlog_format = ROW
+        innodb_large_prefix=on
+        innodb_file_format=barracuda
+        innodb_file_per_table=1
+        read_rnd_buffer_size = 4M
+        ```
+
+      - Tener ***/etc/php/x.x/fpm/conf.d/20-pdo_mysql.ini*** como:
+
+        ```ini
+        extension=pdo_mysql.so
+
+        [mysql]
+        mysql.allow_local_infile=On
+        mysql.allow_persistent=On
+        mysql.cache_size=2000
+        mysql.max_persistent=-1
+        mysql.max_links=-1
+        mysql.default_port=
+        mysql.default_socket=/run/mysqld/mysqld.sock
+        mysql.default_host=
+        mysql.default_user=
+        mysql.default_password=
+        mysql.connect_timeout=60
+        mysql.trace_mode=Off
+        ```
+
+   2. Crear DB:
 
       ```sql
       CREATE USER 'nextcloud'@'localhost' IDENTIFIED BY 'password';
