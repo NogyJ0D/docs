@@ -45,7 +45,7 @@
             ```conf
             [server]
             skip_name_resolve = 1
-            innodb_buffer_pool_size = 128M
+            innodb_buffer_pool_size = 1G
             innodb_buffer_pool_instances = 1
             innodb_flush_log_at_trx_commit = 2
             innodb_log_buffer_size = 32M
@@ -76,6 +76,7 @@
             innodb_file_format=barracuda
             innodb_file_per_table=1
             read_rnd_buffer_size = 4M
+            sort_buffer_size = 4M
             ```
 
          - Tener ***/etc/php/x.x/apache2/conf.d/20-pdo_mysql.ini*** como:
@@ -172,7 +173,7 @@
 
         ```ini
         max_execution_time = 300
-        memory_limit = 512M
+        memory_limit = 2G
         post_max_size = 128M
         upload_max_filesize = 128M
         ```
@@ -191,7 +192,17 @@
         opcache.save_comments=1
         ```
 
-    6. Reiniciar servicio:
+    6. Editar en ***/etc/php/x.x/apache2/pool.d/www.conf:
+
+        ```conf
+        pm = dynamic
+        pm.max_children = 120
+        pm.start_servers = 12
+        pm.min_spare_servers = 6
+        pm.max_spare_servers = 18
+        ```
+
+    7. Reiniciar servicio:
 
         ```sh
         service apache2 restart
@@ -229,6 +240,7 @@
         'port' => 0,
         'timeout' => 0.0,
       ),
+      'loglevel' => 3,
       ```
 
     - Ejecutar:
@@ -250,7 +262,7 @@
     */5 * * * * php -f /var/www/nextcloud/cron.php --define apc.enable_cli=1
     ```
 
-9. Ir al panel de administración y corregir las advertencias.
+9.  Ir al panel de administración y corregir las advertencias.
 
     - Corregir el error del teléfono: agregar en ***/var/www/nextcloud/config/config.php*** "'default_phone_region' => 'AR',".
 
@@ -272,7 +284,7 @@
 
       ```ini
       max_execution_time = 300
-      memory_limit = 512M
+      memory_limit = 2G
       post_max_size = 128M
       upload_max_filesize = 128M
       ```
@@ -301,7 +313,17 @@
       opcache.save_comments=1
       ```
 
-   5. Reiniciar servicio:
+   5. Editar en ***/etc/php/x.x/fpm/pool.d/www.conf:
+
+      ```conf
+      pm = dynamic
+      pm.max_children = 120
+      pm.start_servers = 12
+      pm.min_spare_servers = 6
+      pm.max_spare_servers = 18
+      ```
+
+   6. Reiniciar servicio:
 
       ```sh
       systemctl restart php8.2-fpm
@@ -316,7 +338,7 @@
         ```conf
         [server]
         skip_name_resolve = 1
-        innodb_buffer_pool_size = 128M
+        innodb_buffer_pool_size = 1G
         innodb_buffer_pool_instances = 1
         innodb_flush_log_at_trx_commit = 2
         innodb_log_buffer_size = 32M
@@ -347,6 +369,7 @@
         innodb_file_format=barracuda
         innodb_file_per_table=1
         read_rnd_buffer_size = 4M
+        sort_buffer_size = 4M
         ```
 
       - Tener ***/etc/php/x.x/fpm/conf.d/20-pdo_mysql.ini*** como:
@@ -586,6 +609,7 @@
         'port' => 0,
         'timeout' => 0.0,
       ),
+      'loglevel' => 3,
       ```
 
     - Ejecutar:

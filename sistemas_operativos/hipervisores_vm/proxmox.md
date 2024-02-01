@@ -19,10 +19,23 @@
 
 ## Comandos
 
+### Listar vms
+
+```sh
+qm list
+```
+
 ### Información de la vm
 
 ```sh
 qm config <id>
+```
+
+### Listar discos en los storages
+
+```sh
+pvesm list <storage>
+# pvesm list local
 ```
 
 ### Información de los discos virtuales
