@@ -26,13 +26,13 @@
 ### Habilitar/deshabilitar usuario
 
 ```sh
-/usr/bin/samba-tool user enable/disable usuario
+samba-tool user enable/disable usuario
 ```
 
 ### Desbloquear usuario
 
 ```sh
-/usr/bin/samba-tool user unlock usuario
+samba-tool user unlock usuario
 ```
 
 ### Cambiar contraseña de usuario
@@ -44,7 +44,7 @@ samba-tool user setpassword usuario --option="check password script"="" --newpas
 ### Listar usuarios
 
 ```sh
-/usr/bin/samba-tool user list
+samba-tool user list
 
 pdbedit -L
 ```
@@ -57,7 +57,7 @@ pdbedit -L -v
 
 # Uno
 pdbedit -u usuario -v
-/usr/bin/samba-tool user show usuario
+samba-tool user show usuario
 ```
 
 ---
