@@ -51,10 +51,20 @@
 
 ## Qué hacer luego de instalar
 
+<!--### Ordenar mirrors
+
+```sh
+sudo pacman -S reflector
+
+sudo systemctl enable --now reflector.timer
+
+reflector --latest 10 --sort rate --protocol https --save /etc/pacman.d/mirrorlist
+```-->
+
 ### Instalar yay
 
 ```sh
-pacman -S --needed git base-devel && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
+sudo pacman -S --needed git base-devel && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
 ```
 
 ---
