@@ -47,7 +47,7 @@
     ```sh
     cp config.dist.php config.php && \
       nano config.php
-    # Modificar tambien "define('BASE', '/phpipam');"
+    # Modificar tambien "define('BASE', '/phpipam/');"
     ```
 
     - Conectarse al motor y crear:
