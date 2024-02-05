@@ -58,7 +58,7 @@ apt install apt-transport-https lsb-release ca-certificates -y
     chown -R www-data:www-data /var/www/html
 
     touch wwwroot/inc/secret.php
-    #chmod a=rw /var/www/html/racktables/wwwroot/inc/secret.php
+    chmod a=rw /var/www/html/wwwroot/inc/secret.php
     chown www-data:nogroup wwwroot/inc/secret.php
     chmod 440 wwwroot/inc/secret.php
     ```
