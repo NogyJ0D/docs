@@ -11,6 +11,7 @@
     - [Instalar phpipam en Debian 12](#instalar-phpipam-en-debian-12)
   - [Extras](#extras)
     - [Habilitar duplicacion de redes](#habilitar-duplicacion-de-redes)
+    - [Habilitar checkeo automático de redes](#habilitar-checkeo-automático-de-redes)
 
 ---
 
@@ -36,8 +37,9 @@
 3. Descargar phpipam:
 
     ```sh
-    git clone https://github.com/phpipam/phpipam.git /var/www/html/phpipam/ && \
-      cd /var/www/html/phpipam && \
+    rm /var/www/html/index.html && \
+      git clone https://github.com/phpipam/phpipam.git /var/www/html && \
+      cd /var/www/html && \
       git checkout 1.6 && \
       git submodule update --init --recursive
     ```
@@ -47,7 +49,7 @@
     ```sh
     cp config.dist.php config.php && \
       nano config.php
-    # Modificar tambien "define('BASE', '/phpipam/');"
+    # NO HACER # Modificar tambien "define('BASE', '/phpipam/');"
     ```
 
     - Conectarse al motor y crear:
@@ -63,32 +65,31 @@
 5. Configurar apache:
 
     ```sh
-    chown -R www-data:www-data /var/www/html/phpipam && \
-      chmod -R 755 /var/www/html/phpipam
-    nano /etc/apache2/sites-available/phpipam.conf
+    chown -R www-data:www-data /var/www/html && \
+      chmod -R 755 /var/www/html
+    nano /etc/apache2/sites-available/000-default.conf
     ```
 
     ```apache
     <VirtualHost *:80>
-      DocumentRoot "/var/www/html/phpipam"
-      ServerName example.com
-      <Directory "/var/www/html/phpipam">
-        Options Indexes FollowSymLinks
-        AllowOverride All
-        Require all granted
+      ServerAdmin webmaster@localhost
+      DocumentRoot /var/www/html
+
+      <Directory /var/www/html>
+        Options FollowSymLinks
+        AllowOverride all
+        Order allow,deny
+        Allow from all
       </Directory>
-      ErrorLog "/var/log/phpipam-error_log"
-      CustomLog "/var/log/phpipam-access_log" combined
     </VirtualHost>
     ```
 
     ```sh
-    a2ensite phpipam && \
-      a2enmod rewrite && \
+    a2enmod rewrite && \
       systemctl restart apache2
     ```
 
-6. Entrar a "<http://x.x.x.x/phpipam/index.php?page=install>" e instalar. Al poner los datos de la base de datos, desmarcar las tres opciones.
+6. Entrar a "<http://x.x.x.x/index.php?page=install>" e instalar. Al poner los datos de la base de datos, desmarcar las tres opciones.
 
 ---
 
@@ -97,3 +98,18 @@
 ### Habilitar duplicacion de redes
 
 Ir a Administration > Sections > Editar red > Strict Mode No.
+
+### Habilitar checkeo automático de redes
+
+1. Activar el escaneo en la subnet.
+
+2. Agregar el cron:
+
+    ```sh
+    crontab -u www-data -e
+    ```
+
+    ```text
+    */15 * * * * /usr/bin/php /var/www/html/functions/scripts/pingCheck.php
+    */15 * * * * /usr/bin/php /var/www/html/functions/scripts/discoveryCheck.php
+    ```
