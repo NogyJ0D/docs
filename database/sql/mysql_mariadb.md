@@ -16,6 +16,7 @@
     - [Mostrar DB](#mostrar-db)
     - [Crear usuario](#crear-usuario)
     - [Ver filas con otro formato](#ver-filas-con-otro-formato)
+    - [Ver permisos de usuario](#ver-permisos-de-usuario)
   - [Extras](#extras)
     - [Habilitar conexión remota](#habilitar-conexión-remota)
     - [Backup y restore](#backup-y-restore)
@@ -96,6 +97,12 @@ CREATE USER 'usuario'@'localhost/%' IDENTIFIED by 'contraseña';
 
 ```sql
 SELECT * FROM sometable\G
+```
+
+### Ver permisos de usuario
+
+```sql
+SHOW GRANTS FOR usuario;
 ```
 
 ---
