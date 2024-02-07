@@ -10,6 +10,9 @@
   - [Instalación](#instalación)
     - [Instalar Otobo en Debian 12](#instalar-otobo-en-debian-12)
   - [Extras](#extras)
+    - [Cambiar contraseña desde la consola](#cambiar-contraseña-desde-la-consola)
+    - [Agregar usuario desde la consola](#agregar-usuario-desde-la-consola)
+    - [Migrar/Actualizar Otobo](#migraractualizar-otobo)
 
 ---
 
@@ -32,7 +35,7 @@
     cd /opt/otobo-install
     wget https://ftp.otobo.org/pub/otobo/otobo-latest-...
     tar -xvzf otobo-latest-...
-    cp -r otobo-.../* /opt/otobo
+    # REVISAR cp -r otobo-.../* /opt/otobo
     ```
 
 3. Instalar adicionales:
@@ -88,9 +91,9 @@
       a2ensite zzz_otobo-443.conf
       ```
 
-      ```sh
-      systemctl restart apache2
-      ```
+    ```sh
+    systemctl restart apache2
+    ```
 
 7. Otorgar permisos:
 
@@ -100,11 +103,18 @@
 
 8. [Instalar MariaDB](../../database/sql/mariadb.md#instalar-mariadb-en-debian-12).
 
-   1. Ejecutar en mysql:
+   - A otobo no le gusta usar una base de datos existente con el instalador web, la opcion es crear una db con sql, usarla en la instalación y hacer un restore del dump en esta.
+
+   1. Crear usuario y db:
 
         ```sql
-        ALTER USER 'root'@'localhost' IDENTIFIED VIA mysql_native_password USING PASSWORD('root');
+        CREATE USER 'otobo'@'host' IDENTIFIED BY 'pass';
+        CREATE DATABASE otobo;
+        GRANT ALL ON otobo.* TO 'otobo'@'host';
+        FLUSH PRIVILEGES;
+        EXIT;
         ```
+
 
    2. Agregar en ***/etc/mysql/my.cnf***:
 
@@ -114,16 +124,16 @@
         innodb_log_file_size = 256M
         ```
 
-9. [Instalar ElasticSearch](../../a_clasificar/elasticsearch.md#instalar-elasticsearch-8-en-debian-12).
+9. [Instalar ElasticSearch](../../database/nosql/elasticsearch.md#instalar-elasticsearch-8-en-debian-12).
 
    1. Instalar módulos extras:
 
       ```sh
-      /usr/share/elasticsearch/bin/elasticsearch-plugin install --batch ingest-attachment
-      /usr/share/elasticsearch/bin/elasticsearch-plugin install --batch analysis-icu
+      /usr/share/elasticsearch/bin/elasticsearch-plugin install --batch ingest-attachment && \
+        /usr/share/elasticsearch/bin/elasticsearch-plugin install --batch analysis-icu
       ```
 
-   2. Modificar en ***/etc/elasticsearch/jvm.options***:
+   2. Descomentar en ***/etc/elasticsearch/jvm.options***:
 
       ```text
       -Xms4g
@@ -157,3 +167,82 @@
 ---
 
 ## Extras
+
+### Cambiar contraseña desde la consola
+
+```sh
+su -c "/opt/otobo/bin/otobo.Console.pl Admin::User::SetPassword <usuario> <contraseña>" -s /bin/bash otobo
+```
+
+### Agregar usuario desde la consola
+
+```sh
+su -c "/opt/otobo/bin/otobo.Console.pl Admin::User::Add --user-name <> --first-name <> --last-name <> --email-address <> --password <>" -s /bin/bash otobo
+```
+
+### Migrar/Actualizar Otobo
+
+1. Parar servicios:
+
+    ```sh
+    systemctl stop postfix apache2 cron
+    su otobo
+    cd /opt/otobo
+    bin/Cron.sh stop
+    bin/otobo.Daemon.pl stop
+    ```
+
+2. Respaldar:
+
+    ```sh
+    # como root
+    mkdir /root/otobo-update
+    cd /root/otobo-update
+    cp -pr /opt/otobo otobo-prod-old
+    mysqldump -u otobo -p otobo -r otobodump.sql
+
+    # Apache y certs
+    ```
+
+    - /etc/apache2/sites-enabled/zzz_otobo-443.conf
+    - /etc/apache2/sites-enabled/zzz_otobo-80.conf
+    - /opt/otobo/Kernel/Config.pm
+    - /opt/otobo/var/cron/
+    - /opt/otobo/var/article/*
+    - /opt/otobo/var/stats/*.installed
+    - [Base de datos](../../database/sql/mysql_mariadb.md#backup-y-restore)
+
+3. Descargar nueva versión:
+
+    ```sh
+    wget https://ftp.otobo.org/pub/otobo/otobo-latest-...
+    tar -xvzf otobo-latest-...
+    cp -r otobo-x.x/* /opt/otobo
+    ```
+
+4. Poner respaldos:
+
+      ```sh
+      cd /root/otobo-update
+
+      cp -p otobo-prod-old/Kernel/Config.pm /opt/otobo/Kernel
+      cp -p otobo-prod-old/var/cron/* /opt/otobo/var/cron/
+
+      cp -pr otobo-prod-old/var/article/* /opt/otobo/var/article/
+
+      cd otobo-prod-old/var/stats
+      cp *.installed /opt/otobo/var/stats
+      ```
+
+5. Actualizar e iniciar:
+
+    ```sh
+    /opt/otobo/bin/otobo.SetPermissions.pl
+
+    su otobo
+    /opt/otobo/bin/otobo.Console.pl Admin::Package::ReinstallAll
+    /opt/otobo/bin/otobo.Console.pl Admin::Package::UpgradeAll
+    exit
+
+    systemctl start postfix apache2 cron
+    ```
