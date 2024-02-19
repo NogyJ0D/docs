@@ -8,7 +8,9 @@
   - [Contenido](#contenido)
   - [Documentación](#documentación)
   - [Instalación](#instalación)
+    - [Instalar guacamole-server en Debian 12](#instalar-guacamole-server-en-debian-12)
   - [Extras](#extras)
+    - [Agregar a nginx](#agregar-a-nginx)
     - [Migrar de Proxmox LXC a Proxmox VM](#migrar-de-proxmox-lxc-a-proxmox-vm)
 
 ---
@@ -19,11 +21,82 @@
 
 ## Instalación
 
+### Instalar guacamole-server en Debian 12
+
+1. Instalar requisitos:
+
+    ```sh
+    apt install -y make libcairo2-dev libjpeg62-turbo-dev libpng-dev libtool-bin uuid-dev
+    apt install -y libavcodec-dev libavformat-dev libavutil-dev libswscale-dev freerdp2-dev libpango1.0-dev libssh2-1-dev libtelnet-dev libvncserver-dev libpulse-dev libssl-dev libvorbis-dev libwebp-dev libwebsockets-dev
+    ```
+
+2. [Instalar mariadb](../../database/sql/mysql_mariadb.md#instalar-mariadb-en-debian-12) o usar remoto.
+
+    ```sql
+    CREATE USER 'guacamole_user'@'host' IDENTIFIED BY 'pass';
+    CREATE DATABASE guacamole;
+    GRANT ALL ON guacamole.* TO 'guacamole_user'@'host';
+    FLUSH PRIVILEGES;
+    EXIT;
+    ```
+
+3. Instalar guacamole-server:
+
+   - Buscar última versión: <https://guacamole.apache.org/releases/>.
+
+    ```sh
+    wget https://dlcdn.apache.org/guacamole/1.5.4/source/guacamole-server-1.5.4.tar.gz && \
+      tar -xzf guacamole-server-1.5.4.tar.gz && \
+      cd guacamole-server-1.5.4/
+
+    ./configure --with-init-dir=/etc/init.d
+    make
+    make install
+    ldconfig
+    # reboot
+
+    systemctl daemon-reload
+    ```
+
+    > Si al compilar da error por algo de video.c, volver a configurar agregando "--disable-guacenc" y compilar.
+
+4. Instalar guacamole-client:
+
+   - [Instalar tomcat](../../web/servidores/tomcat.md#instalar-tomcat-en-debian-12).
+
+   - Buscar última versión del .war: <https://guacamole.apache.org/releases/>.
+
+    ```sh
+    wget https://dlcdn.apache.org/guacamole/1.5.4/binary/guacamole-1.5.4.war && \
+      mv guacamole-1.5.4.war /opt/tomcat/webapps/guacamole.war && \
+      systemctl restart tomcat guacd && \
+      systemctl enable --now guacd.service
+    ```
+
 ---
 
 ## Extras
 
+### Agregar a nginx
+
+```nginx
+location /guacamole/ {
+    proxy_pass http://HOSTNAME:8080;
+    proxy_buffering off;
+    proxy_http_version 1.1;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $http_connection;
+    client_max_body_size 1g;
+    access_log off;
+}
+```
+
 ### Migrar de Proxmox LXC a Proxmox VM
 
-1. Instalar guacamole en nueva VM
-2. Exportar datos
+1. [Instalar guacamole en nueva VM](#instalación).
+2. Guardar archivos importantes:
+
+     - /etc/guacamole/guacamole.properties
+     - /var/lib/tomcat/webapps/guacamole*
+     - Base de datos dump
