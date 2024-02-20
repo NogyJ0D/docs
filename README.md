@@ -2,6 +2,33 @@
 
 ---
 
+## Diseño del archivo
+
+```md
+# General
+
+---
+
+## Contenido
+
+[Automática]
+
+---
+
+## Documentación
+
+---
+
+## Instalación / Comandos / ETC
+
+---
+
+## Extras
+
+```
+
+---
+
 ## Contenido
 
 ```text
