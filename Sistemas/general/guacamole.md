@@ -8,7 +8,8 @@
   - [Contenido](#contenido)
   - [Documentación](#documentación)
   - [Instalación](#instalación)
-    - [Instalar guacamole-server en Debian 12](#instalar-guacamole-server-en-debian-12)
+    - [Instalar guacamole-server en Debian 12 compilando](#instalar-guacamole-server-en-debian-12-compilando)
+    - [Instalar guacamole-server en Debian 12 compilando](#instalar-guacamole-server-en-debian-12-compilando-1)
   - [Extras](#extras)
     - [Agregar a nginx](#agregar-a-nginx)
     - [Migrar de Proxmox LXC a Proxmox VM](#migrar-de-proxmox-lxc-a-proxmox-vm)
@@ -21,7 +22,15 @@
 
 ## Instalación
 
-### Instalar guacamole-server en Debian 12
+### [Instalar guacamole-server en Debian 12 compilando](https://github.com/itiligent/Guacamole-Install)
+
+1. Ejecutar el script:
+
+    ```sh
+    wget https://raw.githubusercontent.com/itiligent/Guacamole-Install/main/1-setup.sh && chmod +x 1-setup.sh && ./1-setup.sh
+    ```
+
+### Instalar guacamole-server en Debian 12 compilando
 
 1. Instalar requisitos:
 
