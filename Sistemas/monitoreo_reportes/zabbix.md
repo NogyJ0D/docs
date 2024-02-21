@@ -4,6 +4,13 @@
 
 ## Contenido
 
+- [Zabbix](#zabbix)
+  - [Contenido](#contenido)
+  - [Documentación](#documentación)
+  - [Instalación](#instalación)
+    - [Instalar Zabbix 6.4 en Debian 12](#instalar-zabbix-64-en-debian-12)
+  - [Extras](#extras)
+
 ---
 
 ## Documentación
