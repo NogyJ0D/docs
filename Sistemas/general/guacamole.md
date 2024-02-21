@@ -13,6 +13,7 @@
   - [Extras](#extras)
     - [Agregar a nginx](#agregar-a-nginx)
     - [Migrar de Proxmox LXC a Proxmox VM](#migrar-de-proxmox-lxc-a-proxmox-vm)
+    - [Branding](#branding)
 
 ---
 
@@ -103,9 +104,30 @@ location /guacamole/ {
 
 ### Migrar de Proxmox LXC a Proxmox VM
 
-1. [Instalar guacamole en nueva VM](#instalación).
-2. Guardar archivos importantes:
+1. Guardar archivos importantes:
 
      - /etc/guacamole/guacamole.properties
-     - /var/lib/tomcat/webapps/guacamole*
+     - /etc/guacamole/extensions
      - Base de datos dump
+
+2. [Instalar guacamole en nueva VM](#instalación).
+
+3. Migrar los backups.
+
+### Branding
+
+1. Instalar java y repositorio:
+
+    ```sh
+    apt install default-jdk git
+    git clone https://github.com/itiligent/Guacamole-Install
+    ```
+
+2. Editar archivos de ***./guacamole-install/guac-custom-theme-builder***.
+
+3. Compilar:
+
+    ```sh
+    jar cfmv branding.jar META-INF/MANIFEST.MF guac-manifest.json css images translations META-INF
+    mv branding.jar /etc/guacamole/extensions && chmod 664 /etc/guacamole/extensions/branding.jar && TOMCAT=$(ls /etc/ | grep tomcat) && systemctl restart guacd && systemctl restart ${TOMCAT}
+    ```
