@@ -7,22 +7,45 @@
 - [General](#general)
   - [Contenido](#contenido)
   - [Documentación](#documentación)
+  - [Comandos](#comandos)
+    - [Habilitar ssh como root](#habilitar-ssh-como-root)
+    - [Transferir archivos entre máquinas](#transferir-archivos-entre-máquinas)
   - [Aplicaciones](#aplicaciones)
     - [Tmux](#tmux)
-      - [Comandos](#comandos)
-      - [Instalación](#instalación)
+      - [Comandos tmux](#comandos-tmux)
+      - [Instalar tmux](#instalar-tmux)
     - [Zoxide](#zoxide)
-      - [Instalación](#instalación-1)
+      - [Instalar zoxide](#instalar-zoxide)
     - [Eza](#eza)
-      - [Instalación](#instalación-2)
-  - [Comandos](#comandos-1)
-    - [Habilitar ssh como root](#habilitar-ssh-como-root)
+      - [Instalar eza](#instalar-eza)
   - [Extras](#extras)
     - [Crontab](#crontab)
 
 ---
 
 ## Documentación
+
+---
+
+## Comandos
+
+### Habilitar ssh como root
+
+```sh
+sed -i -e 's/#Port 22/Port 22/' -e 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && service sshd restart && ip a
+```
+
+### Transferir archivos entre máquinas
+
+> rsync es mas rápido que scp y permite resumir transferencias.
+
+```sh
+rsync --rsh=ssh -vP archivo host@ip:/destino
+```
+
+- --rsh=ssh: hacerlo tan seguro como scp.
+- -v: verbose.
+- -P: resumir transferencias parciales.
 
 ---
 
@@ -35,7 +58,7 @@
 - [Cheatsheet](https://tmuxcheatsheet.com/).
 - El iniciador de comandos es Ctrl + B.
 
-#### Comandos
+#### Comandos tmux
 
 ```sh
 # Nueva sesión
@@ -67,7 +90,7 @@ Ctrl+B Flechas
 Ctrl+B : set mouse on
 ```
 
-#### Instalación
+#### Instalar tmux
 
 ```sh
 sudo apt install tmux -y
@@ -78,7 +101,7 @@ sudo apt install tmux -y
 - Reemplazo a comando **_cd_**.
 - Comando: **_z_**.
 
-#### Instalación
+#### Instalar zoxide
 
 ```sh
 curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
@@ -99,20 +122,10 @@ echo "eval '$(zoxide init zsh)'" >> ~/.zshrc
   - -r : orden reverso.
   - -s=field : orden según campo.
 
-#### Instalación
+#### Instalar eza
 
 ```sh
 cargo install eza
-```
-
----
-
-## Comandos
-
-### Habilitar ssh como root
-
-```sh
-sed -i -e 's/#Port 22/Port 22/' -e 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && service sshd restart && ip a
 ```
 
 ---
