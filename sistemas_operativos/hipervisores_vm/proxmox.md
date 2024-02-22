@@ -54,6 +54,15 @@ qemu create <id>
 qemu create <id> --name <nombre>
 ```
 
+### Modificar tamaño de un disco
+
+> Creo que solo funciona con disco virtio, no estoy seguro.
+
+```sh
+lvm lvreduce -L <-30g / +30g> <storage>/<disco>
+qm rescan
+```
+
 ---
 
 ## Extras
