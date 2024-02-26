@@ -1,12 +1,14 @@
-# Oviyam
+# DCM4CHEE + Oviyam
+
+> Nota: Oviyam es solo un visor dicom que toma las imagenes de un servidor dcm4chee.
 
 ## Contenido
 
-- [Oviyam](#oviyam)
+- [DCM4CHEE + Oviyam](#dcm4chee--oviyam)
   - [Contenido](#contenido)
   - [Documentación](#documentación)
   - [Instalación](#instalación)
-    - [Instalar oviyam 2.8 en Alpine Linux usando docker y dcm4chee](#instalar-oviyam-28-en-alpine-linux-usando-docker-y-dcm4chee)
+    - [Instalar D+O 2.8 en Alpine Linux usando docker](#instalar-do-28-en-alpine-linux-usando-docker)
     - [Instalar Oviyam 2.8.2 en Alpine Linux manualmente](#instalar-oviyam-282-en-alpine-linux-manualmente)
   - [Extras](#extras)
 
@@ -18,7 +20,7 @@
 
 ## Instalación
 
-### Instalar oviyam 2.8 en Alpine Linux usando docker y dcm4chee
+### Instalar D+O 2.8 en Alpine Linux usando docker
 
 1. Instalar docker
 
@@ -118,8 +120,6 @@
       > Modificar /usr/local/tomcat/conf/tomcat-users.xml
 
    2. Agregar un servidor dicom: "DCM4CHEE", "DCM3CHEE", "arc", "11112", "WADO, "dcm4chee-arc/aets/DCM4CHEE/wado", "8080", "JPEG".
-
-
 
 ### Instalar Oviyam 2.8.2 en Alpine Linux manualmente
 
