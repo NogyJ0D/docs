@@ -24,7 +24,7 @@
 ### Instalar Docker en Alpine
 
 ```sh
-apk add --update docker docker-cli-compose
+apk add --update docker docker-cli-compose openrc
 rc-update add docker boot
 service docker start
 ```
