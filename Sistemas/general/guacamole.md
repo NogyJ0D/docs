@@ -8,8 +8,8 @@
   - [Contenido](#contenido)
   - [Documentación](#documentación)
   - [Instalación](#instalación)
+    - [Instalar guacamole-server en Debian 12 usando script](#instalar-guacamole-server-en-debian-12-usando-script)
     - [Instalar guacamole-server en Debian 12 compilando](#instalar-guacamole-server-en-debian-12-compilando)
-    - [Instalar guacamole-server en Debian 12 compilando](#instalar-guacamole-server-en-debian-12-compilando-1)
   - [Extras](#extras)
     - [Agregar a nginx](#agregar-a-nginx)
     - [Migrar de Proxmox LXC a Proxmox VM](#migrar-de-proxmox-lxc-a-proxmox-vm)
@@ -23,7 +23,7 @@
 
 ## Instalación
 
-### [Instalar guacamole-server en Debian 12 compilando](https://github.com/itiligent/Guacamole-Install)
+### [Instalar guacamole-server en Debian 12 usando script](https://github.com/itiligent/Guacamole-Install)
 
 1. Ejecutar el script:
 
@@ -114,7 +114,7 @@ location /guacamole/ {
 
 3. Migrar los backups.
 
-### Branding
+### [Branding](https://github.com/itiligent/Guacamole-Install/tree/main/guac-custom-theme-builder)
 
 1. Instalar java y repositorio:
 
@@ -128,6 +128,5 @@ location /guacamole/ {
 3. Compilar:
 
     ```sh
-    jar cfmv branding.jar META-INF/MANIFEST.MF guac-manifest.json css images translations META-INF
-    mv branding.jar /etc/guacamole/extensions && chmod 664 /etc/guacamole/extensions/branding.jar && TOMCAT=$(ls /etc/ | grep tomcat) && systemctl restart guacd && systemctl restart ${TOMCAT}
+    (jar cfmv branding.jar META-INF/MANIFEST.MF guac-manifest.json css images translations META-INF) && (mv branding.jar /etc/guacamole/extensions && chmod 664 /etc/guacamole/extensions/branding.jar && TOMCAT=$(ls /etc/ | grep tomcat) && systemctl restart guacd && systemctl restart ${TOMCAT})
     ```
