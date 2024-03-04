@@ -10,7 +10,7 @@
   - [Instalación](#instalación)
     - [Instalar D + Oviyam en Alpine Linux usando Docker - Sin seguridad](#instalar-d--oviyam-en-alpine-linux-usando-docker---sin-seguridad)
     - [Instalar D + Oviyam en Alpine Linux usando docker - Con seguridad](#instalar-d--oviyam-en-alpine-linux-usando-docker---con-seguridad)
-    - [Instalar D + MedDream Viewer on Alpine Linux usando Docker](#instalar-d--meddream-viewer-on-alpine-linux-usando-docker)
+    - [Instalar D + OHIF Viewer on Alpine Linux usando Docker](#instalar-d--ohif-viewer-on-alpine-linux-usando-docker)
     - [Instalar Oviyam 2.8.2 en Alpine Linux manualmente](#instalar-oviyam-282-en-alpine-linux-manualmente)
   - [Extras](#extras)
 
@@ -102,7 +102,7 @@
           POSTGRES_USER: pacs
           POSTGRES_PASSWORD: <contraseña db>
           WILDFLY_CHOWN: /storage
-          WILDFLY_WAIT_FOR: ldap:389 db:5432
+          WILDFLY_WAIT_FOR: "ldap:389 db:5432"
         depends_on:
           - ldap
           - db
@@ -154,7 +154,7 @@
 
    2. Agregar un servidor dicom: "DCM4CHEE", "DCM4CHEE", "arc", "11112", "WADO, "dcm4chee-arc/aets/DCM4CHEE/wado", "8080", "JPEG".
 
-### Instalar D + Oviyam en Alpine Linux usando docker - [Con seguridad]()
+### Instalar D + Oviyam en Alpine Linux usando docker - Con seguridad
 
 - [Instalar docker](../../herramientas/docker.md#instalar-docker-en-alpine).
 
@@ -285,90 +285,129 @@
 
 4. Entrar a <https://\<docker-host\>:8843/admin/dcm4che/console> como "root" y "changeit".
 
-### Instalar D + MedDream Viewer on Alpine Linux usando Docker
+### Instalar D + OHIF Viewer on Alpine Linux usando Docker
 
-```yml
-version: '3.7'
+1. Crear configuración de OHIF en ***/root/dcm4chee-arc/ohif.js***:
 
-networks:
-  dcm4chee_net:
-    name: dcm4chee_net
+    ```sh
+    window.config = {
+      routerBasename: '/',
+      extensions: [],
+      modes: [],
+      showStudyList: true,
+      dataSources: [
+        {
+          namespace: '@ohif/extension-default.dataSourcesModule.dicomweb',
+          sourceName: 'dicomweb',
+          configuration: {
+            friendlyName: 'dcmjs DICOMWeb Server',
+            name: 'DCM4CHEE',
+            wadoUriRoot: 'https://host:8443/dcm4chee-arc/aets/DCM4CHEE/wado',
+            qidoRoot: 'https://host:8443/dcm4chee-arc/aets/DCM4CHEE/rs',
+            wadoRoot: 'https://host:8443/dcm4chee-arc/aets/DCM4CHEE/rs',
+            qidoSupportsIncludeField: true,
+            supportsReject: true,
+            imageRendering: 'wadors',
+            thumbnailRendering: 'wadors',
+            enableStudyLazyLoad: true,
+            supportsFuzzyMatching: true,
+            supportsWildcard: true,
+            omitQuotationForMultipartRequest: true,
+          },
+        },
+      ],
+      defaultDataSourceName: 'dicomweb',
+    };
+    ```
 
-services:
-  ldap:
-    image: dcm4che/slapd-dcm4chee:2.6.5-31.1
-    container_name: ldap
-    restart: always
-    environment:
-      STORAGE_DIR: /storage/fs1
-      LDAP_ROOTPASS: changeit
+2. Levantar contenedor:
+
+    ```yml
+    version: "3"
+    services:
+      ldap:
+        image: dcm4che/slapd-dcm4chee:2.6.5-31.2
+        logging:
+          driver: json-file
+          options:
+            max-size: "10m"
+        ports:
+          - "389:389"
+        environment:
+          STORAGE_DIR: /storage/fs1
+        volumes:
+          - /root/dcm4chee-arc/ldap:/var/lib/openldap/openldap-data
+          - /root/dcm4chee-arc/slapd.d:/etc/openldap/slapd.d
+        networks:
+          - dcm4chee_default
+        restart: always
+
+      db:
+        image: dcm4che/postgres-dcm4chee:15.4-31
+        logging:
+          driver: json-file
+          options:
+            max-size: "10m"
+        ports:
+        - "5432:5432"
+        environment:
+          POSTGRES_DB: pacsdb
+          POSTGRES_USER: pacs
+          POSTGRES_PASSWORD: <contraseña>
+        volumes:
+          - /etc/localtime:/etc/localtime:ro
+          - /etc/timezone:/etc/timezone:ro
+          - /root/dcm4chee-arc/db:/var/lib/postgresql/data
+        networks:
+          - dcm4chee_default
+        restart: always
+
+      arc:
+        image: dcm4che/dcm4chee-arc-psql:5.31.2
+        logging:
+          driver: json-file
+          options:
+            max-size: "10m"
+        ports:
+          - "8080:8080"
+          - "8443:8443"
+          - "9990:9990"
+          - "9993:9993"
+          - "11112:11112"
+          - "2762:2762"
+          - "2575:2575"
+          - "12575:12575"
+        environment:
+          POSTGRES_DB: pacsdb
+          POSTGRES_USER: pacs
+          POSTGRES_PASSWORD: <contraseña>
+          WILDFLY_CHOWN: /storage
+          WILDFLY_WAIT_FOR: ldap:389 db:5432
+        depends_on:
+          - ldap
+          - db
+        volumes:
+          - /etc/localtime:/etc/localtime:ro
+          - /etc/timezone:/etc/timezone:ro
+          - /root/dcm4chee-arc/wildfly:/opt/wildfly/standalone
+          - /root/dcm4chee-arc/storage:/storage
+        networks:
+          - dcm4chee_default
+        restart: always
+
+      ohif:
+        image: ohif/app:latest
+        networks:
+          - dcm4chee_default
+        ports:
+          - "80:80"
+        volumes:
+          - /root/dcm4chee-arc/ohif.js:/usr/share/nginx/html/app-config.js
+        restart: always
+
     networks:
-      - dcm4chee_net
-    ports:
-      - "389:389"
-    volumes:
-      - /root/dcm4chee-arc-meddream/ldap:/var/lib/openldap/openldap-data
-      - /root/dcm4chee-arc-meddream/slapd.d:/etc/openldap/slapd.d
-
-  db:
-    image: dcm4che/postgres-dcm4chee:15.4-31
-    container_name: db
-    restart: always
-    networks:
-      - dcm4chee_net
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_DB: pacsdb
-      POSTGRES_USER: pacs
-      POSTGRES_PASSWORD: pacs
-    volumes:
-      - /root/dcm4chee-arc-meddream/db:/var/lib/postgresql/data
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
-
-  arc:
-    image: dcm4che/dcm4chee-arc-psql:5.31.1
-    container_name: arc
-    restart: always
-    networks:
-      - dcm4chee_net
-    ports:
-      - "8080:8080"
-      - "8443:8443"
-      - "9990:9990"
-      - "9993:9993"
-      - "11112:11112"
-      - "2762:2762"
-      - "2575:2575"
-      - "12575:12575"
-    environment:
-      POSTGRES_DB: pacsdb
-      POSTGRES_USER: pacs
-      POSTGRES_PASSWORD: pacs
-      WILDFLY_CHOWN: /storage
-      WILDFLY_WAIT_FOR: "ldap:389 db:5432"
-      LDAP_ROOTPASS: changeit
-    volumes:
-      - /root/dcm4chee-arc-meddream/wildfly:/opt/wildfly/standalone
-      - /root/dcm4chee-arc/storage:/storage
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
-
-  meddream:
-    image: meddream/dcm4chee-dicom-viewer:8.3.1
-    container_name: meddream
-    restart: always
-    networks:
-      - dcm4chee_net
-    ports:
-      - "80:8080"
-    volumes:
-      - /root/dcm4chee-arc-meddream/wildfly/data/fs1:/storage
-    environment:
-      integration: study
-    command: sh -c "chown -R 1023:1023 /storage && docker-entrypoint.sh"
-```
+      dcm4chee_default:
+    ```
 
 ### Instalar Oviyam 2.8.2 en Alpine Linux manualmente
 
