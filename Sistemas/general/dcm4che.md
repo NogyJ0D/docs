@@ -8,7 +8,7 @@
   - [Contenido](#contenido)
   - [Documentación](#documentación)
   - [Instalación](#instalación)
-    - [\<= Instalar DCM4CHEE en Alpine Linux usando Docker - Sin seguridad](#-instalar-dcm4chee-en-alpine-linux-usando-docker---sin-seguridad)
+    - [Instalar DCM4CHEE en Alpine Linux usando Docker - Sin seguridad](#instalar-dcm4chee-en-alpine-linux-usando-docker---sin-seguridad)
     - [\<= Instalar DCM4CHEE en Alpine Linux usando docker - Con seguridad](#-instalar-dcm4chee-en-alpine-linux-usando-docker---con-seguridad)
     - [A](#a)
     - [\<= Instalar Oviyam 2.8.2 en Alpine Linux manualmente](#-instalar-oviyam-282-en-alpine-linux-manualmente)
@@ -27,7 +27,7 @@
 
 ## Instalación
 
-### [<=](#contenido) Instalar DCM4CHEE en Alpine Linux usando Docker - [Sin seguridad](https://github.com/dcm4che/dcm4chee-arc-light/wiki/Run-secured-archive-services-on-a-single-host)
+### Instalar DCM4CHEE en Alpine Linux usando Docker - [Sin seguridad](https://github.com/dcm4che/dcm4chee-arc-light/wiki/Run-secured-archive-services-on-a-single-host)
 
 - [Instalar docker](../../herramientas/docker.md#instalar-docker-en-alpine).
 
