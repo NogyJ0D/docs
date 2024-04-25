@@ -15,11 +15,14 @@
   - [Comandos](#comandos)
     - [Listar cuentas y contraseñas](#listar-cuentas-y-contraseñas)
     - [Cambiar contraseña de cuenta](#cambiar-contraseña-de-cuenta)
+    - [Agregar usuario a qmail](#agregar-usuario-a-qmail)
   - [Extras](#extras)
 
 ---
 
 ## Documentación
+
+- [Página oficial: cr.yp.to](http://cr.yp.to/qmail.html)
 
 ---
 
@@ -57,7 +60,16 @@
 
 - MTA: Mail Transfer Agent => Servidor de correo (qmail).
 - MUA: Mail User Agent => Cliente de correo (thunderbird).
-- Información de la configuración global: **_/var/qmail/control_**.
+- Información de la configuración global: **_/var/qmail/control_**. Archivos:
+  - **_me_**: el nombre del host, sirve para usarse en otros archivos.
+  - **_defaulthost_**: agrega el contenido a email saliente local que no tiene dominio. EJ: de "pepe" pasa a "<pepe@example.com>".
+  - **_defaultdomain_**: es el dominio a agregar en mails salientes locales que no lo incluyen.
+  - **_locals_**.
+  - **_rcpthosts_**: de que dominios debe recibir qmail los emails por smtp. Siempre debe existir.
+- Los grupos y usuarios se compilan en el mismo qmail, no se agregan luego. Se definen en archivos **_conf-groups_** y **_conf-users_**, pero deben ser creados antes.
+- La carpeta base de qmail se define en el archivo **_conf-qmail_** del código fuente.
+- Existe la carpeta **_/service_** que contiene servicios a correr por el daemon "supervise".
+- Los logs de envio se encuentran en **_/var/log/qmail/send/current_**.
 
 ---
 
@@ -74,6 +86,18 @@ cat /home/vpopmail/domains/dominio/vpasswd
 ```sh
 /home/vpopmail/bin/vpasswd correo@dominio contraseña
 ```
+
+### Agregar usuario a qmail
+
+1. Copiar el archivo _**INSTALL.ids**_ del código fuente a _**/tmp/mu**_.
+
+2. Modificar archivo según sistema.
+
+3. Ejecutar archivo:
+
+   ```sh
+   sh /tmp/mu
+   ```
 
 ---
 
