@@ -11,7 +11,6 @@
     - [Instalar Certbot en Debian y Ubuntu](#instalar-certbot-en-debian-y-ubuntu)
   - [Extras](#extras)
     - [Generar certificados](#generar-certificados)
-      - [Self Signed](#self-signed)
       - [Nginx](#nginx)
 
 ---
@@ -26,22 +25,30 @@
 
 ### Instalar Certbot en Debian y Ubuntu
 
-1. [Instalar snap](../sistemas_operativos/linux/gestor_paquetes/snap.md#instalar-snap-en-debian).
+- Con apt
 
-2. Instalar Certbot:
+  ```sh
+  apt install certbot python3-certbot-nginx
+  ```
 
-    ```sh
-    snap install --classic certbot
-    ln -s /snap/bin/certbot /usr/bin/certbot
-    snap set certbot trust-plugin-with-root=ok
-    snap install certbot-dns-<PLUGIN> # google, cloudflare
-    ```
+- Con snap
 
-3. Probar renovación:
+  1. [Instalar snap](../sistemas_operativos/linux/gestor_paquetes/snap.md#instalar-snap-en-debian).
 
-    ```sh
-    certbot renew --dry-run
-    ```
+  2. Instalar Certbot:
+
+      ```sh
+      snap install --classic certbot
+      ln -s /snap/bin/certbot /usr/bin/certbot
+      snap set certbot trust-plugin-with-root=ok
+      snap install certbot-dns-<PLUGIN> # google, cloudflare
+      ```
+
+- Probar renovación:
+
+  ```sh
+  certbot renew --dry-run
+  ```
 
 ---
 
@@ -49,18 +56,8 @@
 
 ### Generar certificados
 
-#### Self Signed
-
-1. Instalar openssl.
-
-2. Crear certificado:
-
-    ```sh
-    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/cert-selfsigned.key -out /etc/ssl/certs/cert-selfsigned.crt
-    ```
-
 #### Nginx
 
 ```sh
-certbot certonly --nginx -d example.com -d www.example.com
+certbot --nginx -d example.com -d www.example.com
 ```
