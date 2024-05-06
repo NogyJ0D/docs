@@ -1,12 +1,236 @@
 # Gentoo
 
 - [Gentoo](#gentoo)
+  - [Instalación Handbook AMD64](#instalación-handbook-amd64)
+  - [Instalación 2](#instalación-2)
+  - [Comandos](#comandos)
+  - [Paquetes](#paquetes)
+  - [Extras](#extras)
 
 ---
 
-## [Instalación](https://github.com/tuxtor/manual-instalacion-gentoo/blob/master/manual.md)
+## Instalación Handbook AMD64
 
-1. Descargar la ISO __install-amd65-minimal__ <https://www.gentoo.org/downloads/mirrors/> ubicado en ___/gentoo/releases/amd64/autobuilds/ultima___.
+1. Descargar la ISO __install-amd64-minimal__ del mirror <https://www.gentoo.org/downloads/mirrors/>.
+
+2. Configurar la red:
+
+   1. Revisar las interfaces con "ifconfig".
+
+   2. Si la interfaz no obtuvo IP automáticamente, iniciar DHCP: "dhcpd [interfaz]".
+
+3. [Preparar el disco con GPT para UEFI](https://wiki.gentoo.org/wiki/Handbook:AMD64/Installation/Disks/es):
+
+   1. Crear las particiones:
+
+      ```sh
+      fdisk /dev/sda
+      ```
+
+      1. Eliminar particiones y crear etiqueta GPT:
+
+          ```sh
+          g
+          ```
+
+      2. Crear particion EFI (FAT32, 1GB):
+
+          ```sh
+          n
+          1
+          2048
+          +1G
+          t
+          1
+          ```
+
+      3. Crear la partición SWAP (SWAP, RAM * 2):
+
+          ```sh
+          n
+          2
+          Enter
+          +4G
+          t
+          2
+          19
+          ```
+
+      4. Crear la partición RAIZ (ext4, Resto):
+
+          ```sh
+          n
+          3
+          Enter
+          Enter
+          t
+          3
+          23
+          ```
+
+      5. Guardar cambios y salir:
+
+          ```sh
+          w
+          q
+          ```
+
+   2. Crear los sistemas de archivos:
+
+      ```sh
+      mkfs.vfat -F 32 /dev/sda1
+      mkswap /dev/sda2
+      swapon /dev/sda2
+      mkfs.ext4 /dev/sda3
+      ```
+
+   3. Montar las particiones:
+
+      ```sh
+      mkdir -p /mnt/gentoo
+      mount /dev/sda3 /mnt/gentoo
+      ```
+
+4. [Descargar los archivos de instalación](https://wiki.gentoo.org/wiki/Handbook:AMD64/Installation/Stage/es):
+
+   1. Configurar la hora:
+
+      ```sh
+      chronyd -q
+      ```
+
+   2. Descargar el stage del [mirror](https://www.gentoo.org/downloads/mirrors/):
+
+      ```sh
+      cd /mnt/gentoo
+      links https://www.gentoo.org/downloads/mirrors
+      tar xpvf stage3-*.tar.xz # Si no anda, xpvJf
+      ```
+
+   3. Configurar Portage:
+
+      - Buscar las Safe CFLAGS para el procesador en: <https://wiki.gentoo.org/wiki/Safe_CFLAGS>.
+        - Ryzen 3000, 4000, 5000, 7xx2: "-O2 -march=znver2 -pipe"
+
+      ```sh
+      nano /mnt/gentoo/etc/portage/make.conf
+      ```
+
+5. [Instalar el sistema base](https://wiki.gentoo.org/wiki/Handbook:AMD64/Installation/Base/es):
+  
+    > Si la instalación se rompe luego de este punto, continuar desde acá
+
+   1. Copiar los DNS:
+
+      ```sh
+      cp /etc/resolv.conf /mnt/gentoo/etc/
+      ```
+
+   2. Montar los sistemas de archivo:
+
+      ```sh
+      mount --types proc /proc /mnt/gentoo/proc
+      mount --rbind /sys /mnt/gentoo/sys
+      mount --rbind /dev /mnt/gentoo/dev
+      mount --bind /run /mnt/gentoo/run
+      ```
+
+   3. Entrar en el nuevo entorno:
+
+      ```sh
+      chroot /mnt/gentoo /bin/bash
+      source /etc/profile
+      export PS1="(chroot) ${PS1}"
+      ```
+
+   4. Preparar el gestor de arranque UEFI:
+
+      ```sh
+      mkdir /efi
+      mount /dev/sda1 /efi
+      ```
+
+   5. Configurar Portage:
+
+      1. Agregar repositorio base:
+
+          ```sh
+          mkdir -p /etc/portage/repos.conf
+          cp /usr/share/portage/config/repos.conf /etc/portage/repos.conf/gentoo.conf
+          emerge-webrsync
+          ```
+
+      2. Agregar mirrors:
+
+          ```sh
+          emerge --ask --verbose --oneshot app-portage/mirrorselect
+          mirrorselect -i -o >> /etc/portage/make.conf
+          echo 'ACCEPT_LICENSE="*"' >> /etc/portage/make.conf
+          ```
+
+      3. Elegir el perfil:
+
+         ```sh
+         eselect profile list
+         eselect profile set [num]
+         ```
+
+      4. Si no será solo consola, configurar VIDEO_CARDS:
+
+         ```sh
+         echo 'VIDEO_CARDS="[nvidia/intel/radeon/nouveau]"' >> /etc/portage/make.conf
+         ```
+
+      5. Limpiar paquetes:
+
+         ```sh
+         emerge --ask --pretend --depclean
+         emerge --ask --depclean
+         ```
+
+   6. Zona horaria:
+
+      ```sh
+      echo "America/Argentina/Buenos_Aires" > /etc/timezone
+      emerge --config sys-libs/timezone-data
+      ```
+
+   7. Localizaciones:
+
+      ```sh
+      echo "es_AR.UTF-8 UTF-8" >> /etc/locale.gen
+      echo "es_AR ISO-8859-1" >> /etc/locale.gen
+      locale-gen
+      eselect locale list
+      eselect locale [num]
+      env-update && source /etc/profile && export PS1="(chroot) ${PS1}"
+      ```
+
+6. Configurar el kernel:
+
+   1. Instalar linux-firmware:
+
+      ```sh
+      emerge --ask sys-kernel/linux-firmware
+      emerge --ask sys-firmware/intel-microcode # Solo para Intel
+      ```
+
+   2. Instalar genkernel:
+
+      ```sh
+      emerge --ask sys-kernel/genkernel
+      genkernel --mountboot --install all
+      echo "sys-kernel/installkernel grub" >> /etc/portage/package.use/installkernel
+      emerge --ask sys-kernel/installkernel
+      ```
+
+7. Configurar el sistema:
+
+
+
+## [Instalación 2](https://github.com/tuxtor/manual-instalacion-gentoo/blob/master/manual.md)
+
+1. Descargar la ISO __install-amd64-minimal__ <https://www.gentoo.org/downloads/mirrors/> ubicado en ___/gentoo/releases/amd64/autobuilds/ultima___.
 
 2. Verificar la interfaz de red:
 
