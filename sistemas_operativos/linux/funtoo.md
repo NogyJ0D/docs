@@ -151,6 +151,7 @@
 
       ```sh
       nano -w /etc/conf.d/keymaps
+      emerge -avu system
       emerge -av ibus
       ```
 
@@ -175,12 +176,14 @@
     ```
 
     ```sh
-    emerge -av inter-microcode iucode_tool # Solo Intel
+    emerge -av intel-microcode iucode_tool # Solo Intel
     ```
 
     ```sh
     mount -o remount,rw /sys/firmware/efi/efivars
     grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id="Funtoo Linux [GRUB]" --recheck
+    grub-mkconfig -o /boot/grub/grub.cfg
+    efibootmgr --create --disk /dev/sda --part 1 --label "Funtoo Linux [GRUB]" --loader /EFI/GRUB/grubx64.efi
     ego boot update
     ```
 
