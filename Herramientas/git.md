@@ -10,6 +10,12 @@
 
 ## Comandos
 
+- Eliminar rama local:
+
+  ```sh
+  git branch -d [nombre]
+  ```
+
 - Deshacer commit:
 
   ```sh
