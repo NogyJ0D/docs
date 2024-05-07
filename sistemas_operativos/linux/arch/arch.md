@@ -4,9 +4,9 @@
   - [Documentación](#documentación)
   - [Instalación oficial](#instalación-oficial)
   - [Instalación archinstall (con net iso)](#instalación-archinstall-con-net-iso)
-  - [Qué hacer luego de instalar](#qué-hacer-luego-de-instalar)
-    - [Instalar yay](#instalar-yay)
   - [Extras](#extras)
+    - [Instalar yay](#instalar-yay)
+    - [Instalar Pipewire (audio)](#instalar-pipewire-audio)
     - [Instalar openbox](#instalar-openbox)
     - [Instalar XFCE](#instalar-xfce)
     - [Instalar Mate](#instalar-mate)
@@ -143,7 +143,14 @@
       arch-chroot /mnt
       ```
 
-   3. Tiempo y teclado:
+   3. NetworkManager:
+
+      ```sh
+      pacman -S networkmanager
+      systemctl enable --now NetworkManager
+      ```
+
+   4. Tiempo y teclado:
 
       ```sh
       ln -sf /usr/share/zoneinfo/America/Argentina/Buenos_Aires /etc/localtime
@@ -155,13 +162,13 @@
       echo "KEYMAP=es" > /etc/vconsole.conf
       ```
 
-   4. Hostname:
+   5. Hostname:
 
       ```sh
       echo "hostname" > /etc/hostname
       ```
 
-   5. Contraseña:
+   6. Contraseña:
 
       ```sh
       passwd
@@ -180,14 +187,7 @@
 
 9. Post install:
 
-   1. NetworkManager:
-
-      ```sh
-      pacman -S networkmanager
-      systemctl enable --now NetworkManager
-      ```
-
-   2. Usuario con sudo:
+   1. Usuario con sudo:
 
       ```sh
       pacman -S base-devel git
@@ -225,11 +225,11 @@
    - **Minimal**: terminal.
    - [**Openbox**](#instalar-openbox).
 
----
+<!-----
 
 ## Qué hacer luego de instalar
 
-<!--### Ordenar mirrors
+### Ordenar mirrors
 
 ```sh
 sudo pacman -S reflector
@@ -239,15 +239,22 @@ sudo systemctl enable --now reflector.timer
 reflector --latest 10 --sort rate --protocol https --save /etc/pacman.d/mirrorlist
 ```-->
 
+---
+
+## Extras
+
 ### Instalar yay
 
 ```sh
 sudo pacman -S --needed git base-devel && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
 ```
 
----
+### Instalar Pipewire (audio)
 
-## Extras
+```sh
+pacman -Rdd pulseaudio
+pacman -S pipewire pipewire-{alsa,jack,media-session,pulse}
+```
 
 ### [Instalar openbox](https://wiki.archlinux.org/title/openbox)
 
