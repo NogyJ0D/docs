@@ -7,6 +7,7 @@
   - [Extras](#extras)
     - [Instalar yay](#instalar-yay)
     - [Instalar Pipewire (audio)](#instalar-pipewire-audio)
+    - [Instalar libreoffice](#instalar-libreoffice)
     - [Instalar openbox](#instalar-openbox)
     - [Instalar XFCE](#instalar-xfce)
     - [Instalar Mate](#instalar-mate)
@@ -254,6 +255,12 @@ sudo pacman -S --needed git base-devel && git clone https://aur.archlinux.org/ya
 ```sh
 pacman -Rdd pulseaudio
 pacman -S pipewire pipewire-{alsa,jack,media-session,pulse}
+```
+
+### Instalar libreoffice
+
+```sh
+pacman -S libreoffice-fresh libreoffice-fresh-es
 ```
 
 ### [Instalar openbox](https://wiki.archlinux.org/title/openbox)
