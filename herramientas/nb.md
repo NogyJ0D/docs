@@ -18,18 +18,32 @@ yay -S nb
 
 ## Comandos
 
-### Agregar nota
+### Listar
 
 - Raiz:
 
     ```sh
-    nb add [nombre].md 
+    nb list
     ```
 
-- En carpeta:
+- Carpeta:
 
     ```sh
-    nb add [carpeta]/[nombre].md
+    nb list [id]/
+    ```
+
+### Agregar nota
+
+```sh
+nb add [id_carpeta]/[nombre].md
+```
+
+### Editar nota
+
+- Normal:
+
+    ```sh
+    nb edit [id_carpeta]/[id_nota]
     ```
 
 ---
