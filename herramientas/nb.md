@@ -18,6 +18,20 @@ yay -S nb
 
 ## Comandos
 
+### Agregar nota
+
+- Raiz:
+
+    ```sh
+    nb add [nombre].md 
+    ```
+
+- En carpeta:
+
+    ```sh
+    nb add [carpeta]/[nombre].md
+    ```
+
 ---
 
 ## Extras
