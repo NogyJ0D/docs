@@ -1,5 +1,7 @@
 # nb
 
+- [WIKI](https://xwmx.github.io/nb/#home)
+
 - [nb](#nb)
 
 ---
@@ -37,6 +39,9 @@ yay -S nb
 ```sh
 nb add [id_carpeta]/[nombre].md
 ```
+
+- Parámetros:
+  - --encryption: agrega protección con contraseña.
 
 ### Editar nota
 
