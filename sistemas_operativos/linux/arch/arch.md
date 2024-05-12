@@ -11,6 +11,8 @@
     - [Instalar openbox](#instalar-openbox)
     - [Instalar XFCE](#instalar-xfce)
     - [Instalar Mate](#instalar-mate)
+    - [Instalar Plasma](#instalar-plasma)
+    - [Instalar Steam](#instalar-steam)
 
 ---
 
@@ -198,6 +200,17 @@
       nano /etc/sudoers # Descomentar la linea %wheel ALL=(ALL:ALL) ALL
       ```
 
+   2. Actualizar hora:
+
+      ```sh
+      pacman -S chrony
+      systemctl enable --now chronyd
+      hwclock --systohc
+      ```
+
+   - Revisar:
+     - [SSD](../general.md#soporte-para-ssd)
+
 ## Instalación archinstall (con net iso)
 
 1. Actualizar:
@@ -328,3 +341,30 @@ pacman -S libreoffice-fresh libreoffice-fresh-es
    ```
 
 - Modificar la distribución de teclado desde el centro de control.
+
+### Instalar Plasma
+
+```sh
+pacman -S plasma sddm
+systemctl enable sddm
+reboot
+```
+
+### [Instalar Steam](https://wiki.archlinux.org/title/steam)
+
+1. Habilitar el repositorio multilib:
+
+   ```sh
+   nano /etc/pacman.conf # Descomentar [multilib] al fondo
+   pacman -Sy
+   ```
+
+2. Descargar steam:
+
+   - Hay que elegir un driver para vulkan:
+      - Si se tiene el driver nouveau de nvidia (que viene por defecto en el kernel) usar vulkan-nouveau
+      - Si se tiene el driver propietario de nvidia, usar nvidia-utils.
+
+    ```sh
+    pacman -S steam
+    ```

@@ -11,6 +11,8 @@
     - [Habilitar ssh como root](#habilitar-ssh-como-root)
     - [Transferir archivos entre máquinas](#transferir-archivos-entre-máquinas)
   - [Aplicaciones](#aplicaciones)
+    - [bat](#bat)
+      - [Instalar bat](#instalar-bat)
     - [Tmux](#tmux)
       - [Comandos tmux](#comandos-tmux)
       - [Instalar tmux](#instalar-tmux)
@@ -20,6 +22,8 @@
       - [Instalar eza](#instalar-eza)
   - [Extras](#extras)
     - [Crontab](#crontab)
+    - [TRIM para SSD](#trim-para-ssd)
+    - [Colores para la terminal](#colores-para-la-terminal)
 
 ---
 
@@ -50,6 +54,18 @@ rsync --rsh=ssh -vP archivo host@ip:/destino
 ---
 
 ## Aplicaciones
+
+### bat
+
+- Muestra textos como less pero mejor visualmente y con soporte para git.
+
+#### Instalar bat
+
+- Arch:
+
+    ```sh
+    pacman -S bat
+    ```
 
 ### Tmux
 
@@ -172,4 +188,33 @@ cargo install eza
     ```sh
     export EDITOR=nano
     crontab -e
+    ```
+
+### TRIM para SSD
+
+1. Verificar soporte TRRIM:
+
+    ```sh
+    lsblk --discard
+    # Si  DISC_GRAN y DISC_MAX devuelven distinto a 0, el disco soporta TRIM
+    ```
+
+2. Habilitar TRIM periódico:
+
+    ```sh
+    systemctl enable --now fstrim.timer
+    ```
+
+### Colores para la terminal
+
+- iproute2:
+
+    ```sh
+    alias ip='ip -color=auto'
+    ```
+
+- less:
+
+    ```sh
+    alias less='less -R --use-color -Dd+r -Du+b'
     ```
