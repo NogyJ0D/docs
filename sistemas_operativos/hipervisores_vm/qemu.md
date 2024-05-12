@@ -8,6 +8,7 @@
     - [Convertir imagen](#convertir-imagen)
     - [Cambiar tamaño de disco virtual](#cambiar-tamaño-de-disco-virtual)
   - [Extras](#extras)
+    - [Descargar drivers virtio para windows](#descargar-drivers-virtio-para-windows)
 
 ---
 
@@ -15,10 +16,20 @@
 
 ### Instalar qemu en arch
 
-```sh
+<!--```sh
 egrep -c "(vmx|svm)" /proc/cpuinfo # Si devuelve > 0, la virtualización está habilitada
 pacman -S qemu-full
 pacman -S virt-manager # OPCIONAL, GUI para manejar las vms
+```-->
+
+```sh
+
+pacman -S qemu virt-manager virt-viewer dnsmasq vde2 bridge-utils openbsd-netcat dmidecode libguestfs
+systemctl enable --now libvirtd
+nano /etc/libvirt/libvirtd.conf # Descomentar unix_sock_group = "libvirt" y unix_sock_rw_perms = "0770" y agregar al final libvirtd_opts="--timeout 120 --listen"
+usermod -aG libvirt $(whoami)
+newgrp libvirt
+systemctl restart libvirtd
 ```
 
 ---
@@ -83,3 +94,18 @@ qemu-img convert -f raw -O qcow2 [input.img] [output].qcow2
 ---
 
 ## Extras
+
+### Descargar drivers virtio para windows
+
+- Iso:
+
+    ```sh
+    wget https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso
+    ```
+
+- En arch:
+
+    ```sh
+    yay -S virtio-win
+    # La iso se guarda en /var/lib/libvirt/images
+    ```
