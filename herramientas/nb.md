@@ -20,6 +20,12 @@ yay -S nb
 
 ## Comandos
 
+### Buscar nota
+
+```sh
+nb search "[query]" -l
+```
+
 ### Listar
 
 - Raiz:
