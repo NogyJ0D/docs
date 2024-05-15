@@ -24,9 +24,13 @@
 
     ```sh
     mkdir ~/.config/waybar
-    touch ~/.config/waybar/config
-    touch ~/.config/waybar/style.css
+    cp /etc/xdg/waybar/ -r ~/.config
     ```
+
+    - En style.css poner como *{ font-family: Cascadia Mono; }.
+    - En config.jsonc editar:
+      - Comentar en modules-right el idle-inhibitor.
+      - Agregar icono 🌐 en "network"."format-ethernet" porque Cascadia no lo reconoce.
 
 ---
 
