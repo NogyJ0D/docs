@@ -13,22 +13,25 @@
 ### Instalar hyprland en arch
 
 - Componentes:
-  - hyprland: 
+  - hyprland.
   - kitty: terminal.
   - wofi: menú de aplicaciones.
+  - swaylock: menú de sesión.
+  - waybar: barra superior.
+  - thunar: gestor de archivos.
+  - hyprpaper: gestor de wallpapers.
 
 1. Instalar hyprland:
 
     ```sh
-    pacman -S hyprland kitty wofi waybar hyprpaper
-    mkdir ~/.config/hypr
+    pacman -S hyprland swaylock waybar wofi kitty thunar nm-connection-editor hyprpaper
+    mkdir -p ~/.config/hypr
     cp /usr/share/hyprland/hyprland.conf ~/.config/hypr
     ```
 
 2. Configurar waybar:
 
     ```sh
-    mkdir ~/.config/waybar
     cp /etc/xdg/waybar/ -r ~/.config
     ```
 
@@ -92,6 +95,23 @@
     ```conf
     preload = /home/user/imagenes
     wallpaper = monitor,/home/user/imagenes/imagen.png
+    ```
+
+5. Configurar mako:
+
+    ```sh
+    mkdir ~/.config/mako
+    nano ~/.config/mako/config
+    ```
+
+    ```conf
+    [mako]
+    background-color=#222222
+    text-color=#ffffff
+    border-color=#444444
+    border-size=2
+    padding=10
+    font=Cascadia Mono 12
     ```
 
 ---
