@@ -44,12 +44,11 @@
 monitor=nombre,WidthxHeight,auto,auto # sacar nombre de hyprctl monitors all
 
 # My Programs
-$terminal = bitty
+$terminal = kitty
 $fileManager = dolphin/tunar/x
 $browser = firefox
 
 # Autostart
-exec-once = $terminal
 exec-once = nm-applet & # NetworkManager applet
 exec-once = waybar & hyprpaper # Barra de tareas
 
@@ -58,7 +57,7 @@ general {
     col.active_border = rgb(aabbcc) rgb(aabbcc) 45deg # Borde de ventana activa
     col.inactive_border = rgba(595959aa) # Borde de ventana inactiva
 
-    layout = master o dwindle # Master = todas las ventanas abren a la izquierda y las otras se achican. Dwindle = las ventanas se abren en el cuadro donde tengo foco y las que estan en ese cuadro se acomodan
+    layout = master o dwindle (mejor) # Master = todas las ventanas abren a la izquierda y las otras se achican. Dwindle = las ventanas se abren en el cuadro donde tengo foco y las que estan en ese cuadro se acomodan
 }
 
 misc {
