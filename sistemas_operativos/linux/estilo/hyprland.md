@@ -12,6 +12,11 @@
 
 ### Instalar hyprland en arch
 
+- Componentes:
+  - hyprland: 
+  - kitty: terminal.
+  - wofi: menú de aplicaciones.
+
 1. Instalar hyprland:
 
     ```sh
@@ -32,6 +37,63 @@
       - Comentar en modules-right el idle-inhibitor.
       - Agregar icono 🌐 en "network"."format-ethernet" porque Cascadia no lo reconoce.
 
+3. Configurar wofi:
+
+    ```sh
+    mkdir ~/.config/wofi
+    nano ~/.config/wofi/style.css
+    ```
+
+    ```css
+    * {
+      border-radius: 5px;
+    }
+
+    window {
+      font-size: 14px;
+      font-family: Cascadia Mono;
+      background-color: rgba(50, 50, 50, 0.9);
+      color: white;
+      #border-color: linear-gradient(to right, #f12711, #f5af19);
+      border-bottom: 3px solid white;
+    }
+
+    #entry:selected {
+      background-color: #bbccdd;
+      color: #333333;
+      background: linear-gradient(to right, #bbccdd, #dd77ff);
+    }
+
+    #text:selected {
+      color: #333333;
+    }
+
+    #input {
+      background-color: rgba(50,50,50,0.5);
+      color: white;
+      padding: 0.25rem;
+      font-weight: 700;
+    }
+
+    #entry {
+      padding: 0.25rem;
+    }
+
+    image {
+      margin-left: 0.25rem;
+      margin-right: 0.25rem;
+    }
+    ```
+
+4. Configurar hyprpaper:
+
+    - Agregar en ***~/.config/hypr/hyprpaper.conf***:
+
+    ```conf
+    preload = /home/user/imagenes
+    wallpaper = monitor,/home/user/imagenes/imagen.png
+    ```
+
 ---
 
 ## Configuración
@@ -46,6 +108,7 @@ monitor=nombre,WidthxHeight,auto,auto # sacar nombre de hyprctl monitors all
 # My Programs
 $terminal = kitty
 $fileManager = dolphin/tunar/x
+$menu = wofi --show drun -I
 $browser = firefox
 
 # Autostart
@@ -72,8 +135,10 @@ input {
 
 # Keybindings
 bind = $mainMod, Q, exec, $terminal
+bind = $mainMod, L, exit, # Reemplazar M
 bind = $mainMod, R, exec, $menu
 bind = $mainMod, B, exec, $browser
+bind = $mainMod, M, fullscreen, 1 # Maximizar ventana
 
 #       Mover ventanas con las flechas
 bind = $mainMod ALT, code:37, movewindow, l
