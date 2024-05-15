@@ -12,11 +12,21 @@
 
 ### Instalar hyprland en arch
 
-```sh
-pacman -S hyprland kitty wofi waybar hyprpaper
-mkdir ~/.config/hypr
-cp /usr/share/hyprland/hyprland.conf ~/.config/hypr
-```
+1. Instalar hyprland:
+
+    ```sh
+    pacman -S hyprland kitty wofi waybar hyprpaper
+    mkdir ~/.config/hypr
+    cp /usr/share/hyprland/hyprland.conf ~/.config/hypr
+    ```
+
+2. Configurar waybar:
+
+    ```sh
+    mkdir ~/.config/waybar
+    touch ~/.config/waybar/config
+    touch ~/.config/waybar/style.css
+    ```
 
 ---
 
