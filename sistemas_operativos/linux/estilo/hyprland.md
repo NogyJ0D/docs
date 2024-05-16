@@ -26,7 +26,7 @@
 
     ```sh
     pacman -S sddm hyprland wofi kitty thunar hyprpaper swayidle ttf-cascadia-code-nerd gvfs ttf-joypixels thunar-volman pavucontrol nm-connection-editor
-    yay -S swaylock-effects
+    yay -S swaylock-effects hyprshot
     mkdir -p ~/.config/hypr
     cp /usr/share/hyprland/hyprland.conf ~/.config/hypr
     ```
@@ -154,6 +154,8 @@ bind = $mainMod, R, exec, $menu
 bind = $mainMod, B, exec, $browser
 bind = $mainMod, M, fullscreen, 1 # Maximizar ventana
 bind = $mainMod, L, exec, swaylock --clock --indicator --screenshots --effect-greyscale --effect-pixelate 10 --effect-scale 1.1 --scaling center --indicator-radius 100 --indicator-thickness 10 --ring-color bd93f9 --inside-color 282a36 --line-color 000000 --key-hl-color ff79c6
+bind = $mainMod, PRINT, exec, hyprshot -m region # Capturas de regiones
+
 
 #       Mover ventanas con las flechas
 bind = $mainMod ALT, left, movewindow, l
