@@ -16,7 +16,7 @@
   - hyprland.
   - kitty: terminal.
   - wofi: menú de aplicaciones.
-  - swaylock: menú de sesión.
+  - swaylock-effects: menú de sesión.
   - thunar: gestor de archivos.
   - hyprpaper: gestor de wallpapers.
   - mako: gestor de notificaciones.
@@ -25,7 +25,8 @@
 1. Instalar grupo:
 
     ```sh
-    pacman -S sddm hyprland swaylock wofi kitty thunar hyprpaper swayidle ttf-cascadia-code
+    pacman -S sddm hyprland wofi kitty thunar hyprpaper swayidle ttf-cascadia-code
+    yay -S swaylock-effects
     mkdir -p ~/.config/hypr
     cp /usr/share/hyprland/hyprland.conf ~/.config/hypr
     ```
@@ -105,17 +106,6 @@
     font=Cascadia Mono 12
     ```
 
-5. Configurar swaylock:
-
-    ```sh
-    mkdir ~/.config/swaylock
-    nano ~/.config/swaylock/config
-    ```
-
-    ```conf
-
-    ```
-
 ---
 
 ## Configuración
@@ -137,7 +127,7 @@ $browser = firefox
 # exec-once = nm-applet & # NetworkManager applet
 # exec-once = waybar & hyprpaper # Barra de tareas
 exec-once = hyprpaper
-exec-once = swaidle -w timeout 900 'swaylock -f -c "$HOME/.config/swaylock/config"' # 900 segundos, 15 minutos
+exec-once = swaidle -w timeout 900 'swaylock --clock --indicator --screenshots --effect-greyscale --effect-pixelate 10 --effect-scale 1.1 --scaling center --indicator-radius 100 --indicator-thickness 10 --ring-color bd93f9 --inside-color 282a36 --line-color 000000 --key-hl-color ff79c6' # 900 segundos, 15 minutos
 
 # Look and feel
 general {
@@ -163,7 +153,7 @@ bind = $mainMod, ESC, exit, # Reemplazar M
 bind = $mainMod, R, exec, $menu
 bind = $mainMod, B, exec, $browser
 bind = $mainMod, M, fullscreen, 1 # Maximizar ventana
-bind = $mainMod, L, exec, swaylock -C '$HOME/.config/swaylock/config'
+bind = $mainMod, L, exec, swaylock --clock --indicator --screenshots --effect-greyscale --effect-pixelate 10 --effect-scale 1.1 --scaling center --indicator-radius 100 --indicator-thickness 10 --ring-color bd93f9 --inside-color 282a36 --line-color 000000 --key-hl-color ff79c6
 
 #       Mover ventanas con las flechas
 bind = $mainMod ALT, left, movewindow, l
