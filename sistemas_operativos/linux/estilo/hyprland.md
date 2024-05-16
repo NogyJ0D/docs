@@ -20,11 +20,12 @@
   - waybar: barra superior.
   - thunar: gestor de archivos.
   - hyprpaper: gestor de wallpapers.
+  - mako: gestor de notificaciones.
 
 1. Instalar hyprland:
 
     ```sh
-    pacman -S hyprland swaylock waybar wofi kitty thunar nm-connection-editor hyprpaper
+    pacman -S sddm hyprland swaylock waybar wofi kitty thunar nm-connection-editor hyprpaper ttf-cascadia-code
     mkdir -p ~/.config/hypr
     cp /usr/share/hyprland/hyprland.conf ~/.config/hypr
     ```
@@ -161,10 +162,10 @@ bind = $mainMod, B, exec, $browser
 bind = $mainMod, M, fullscreen, 1 # Maximizar ventana
 
 #       Mover ventanas con las flechas
-bind = $mainMod ALT, code:37, movewindow, l
-bind = $mainMod ALT, code:38, movewindow, u
-bind = $mainMod ALT, code:39, movewindow, r
-bind = $mainMod ALT, code:40, movewindow, d
+bind = $mainMod ALT, left, movewindow, l
+bind = $mainMod ALT, up, movewindow, u
+bind = $mainMod ALT, right, movewindow, r
+bind = $mainMod ALT, down, movewindow, d
 
 #       Ajustar tamaño con las fechas
 bind = $mainMod SHIFT, left, resizeactive, -100 0
