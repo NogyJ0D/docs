@@ -27,11 +27,20 @@
     ```sh
     pacman -S sddm hyprland wofi kitty thunar hyprpaper swayidle ttf-cascadia-code-nerd gvfs ttf-joypixels thunar-volman pavucontrol nm-connection-editor
     yay -S swaylock-effects hyprshot
-    mkdir -p ~/.config/hypr
-    cp /usr/share/hyprland/hyprland.conf ~/.config/hypr
+    mkdir ~/.config/
+    #cp /usr/share/hyprland/hyprland.conf ~/.config/hypr
+    
     ```
 
-    - [Configurar hyprland](#configuración).
+    - Aplicar configuración de respositorio como link simbólico:
+
+      ```sh
+      ln -s docs/sistemas_operativos/linux/estilo/.config/hypr /home/valentin/.config/
+      ln -s docs/sistemas_operativos/linux/estilo/.config/wofi /home/valentin/.config/
+      ln -s docs/sistemas_operativos/linux/estilo/.config/kitty /home/valentin/.config/
+      ln -s docs/sistemas_operativos/linux/estilo/.config/mako /home/valentin/.config/
+      ln -s docs/sistemas_operativos/linux/estilo/.config/waybar /home/valentin/.config/
+      ```
 
 2. Configurar wofi:
 
