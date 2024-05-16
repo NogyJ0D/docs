@@ -1,6 +1,12 @@
 # Seguridad
 
 - [Seguridad](#seguridad)
+  - [openssl](#openssl)
+    - [Instalar openssl](#instalar-openssl)
+    - [Generar/Renovar certificado](#generarrenovar-certificado)
+  - [gpg](#gpg)
+  - [Recuperar archivo](#recuperar-archivo)
+  - [Extras](#extras)
 
 ---
 
@@ -52,6 +58,35 @@ apt install openssl
 ---
 
 ## gpg
+
+---
+
+## Recuperar archivo
+
+- Evento: se formateó una PC y no se respaldó x archivo.
+
+1. Instalar testdisct y escanear disco con photorec
+
+    ```sh
+    pacman -S testdisct
+    mkdir respaldo
+    cd respaldo
+    photorec
+    ```
+
+2. Mientras se recuperan los archivos buscar el deseado:
+
+    > photorec genera archivos con nombres que no son los originales, ademas de que modifica extensiones. Ej: .js pasa a ser .java.
+
+    ```sh
+    find . -type f -name "*.7z" # Buscar archivos recursivamente por nombre con la extensión 7z
+    grep -r "palabra" # Buscar archivos recursivamente que contengan la cadena "palabra"
+    ```
+
+    - Aplicaciones útiles para ir viendo:
+      - p7zip-gui: abrir archivos 7z sin extraer.
+      - gedit: editor de texto.
+      - thunar: explorador de archivos.
 
 ---
 
