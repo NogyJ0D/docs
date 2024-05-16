@@ -1,0 +1,38 @@
+* {
+  border-radius: 5px;
+}
+
+window {
+  font-size: 14px;
+  font-family: CaskaydiaCove Nerd Font Mono;
+  background-color: rgba(50, 50, 50, 0.9);
+  color: white;
+  #border-color: linear-gradient(to right, #f12711, #f5af19);
+  border-bottom: 3px solid white;
+}
+
+#entry:selected {
+  background-color: #bbccdd;
+  color: #333333;
+  background: linear-gradient(to right, #bbccdd, #dd77ff);
+}
+
+#text:selected {
+  color: #333333;
+}
+
+#input {
+  background-color: rgba(50,50,50,0.5);
+  color: white;
+  padding: 0.25rem;
+  font-weight: 700;
+}
+
+#entry {
+  padding: 0.25rem;
+}
+
+image {
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
+}
