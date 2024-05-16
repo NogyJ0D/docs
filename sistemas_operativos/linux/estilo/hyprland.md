@@ -35,11 +35,11 @@
     - Aplicar configuración de respositorio como link simbólico:
 
       ```sh
-      ln -s docs/sistemas_operativos/linux/estilo/.config/hypr /home/valentin/.config/
-      ln -s docs/sistemas_operativos/linux/estilo/.config/wofi /home/valentin/.config/
-      ln -s docs/sistemas_operativos/linux/estilo/.config/kitty /home/valentin/.config/
-      ln -s docs/sistemas_operativos/linux/estilo/.config/mako /home/valentin/.config/
-      ln -s docs/sistemas_operativos/linux/estilo/.config/waybar /home/valentin/.config/
+      ln -s docs/sistemas_operativos/linux/estilo/.config/hypr $HOME/.config/
+      ln -s docs/sistemas_operativos/linux/estilo/.config/wofi $HOME/.config/
+      ln -s docs/sistemas_operativos/linux/estilo/.config/kitty $HOME/.config/
+      ln -s docs/sistemas_operativos/linux/estilo/.config/mako $HOME/.config/
+      ln -s docs/sistemas_operativos/linux/estilo/.config/waybar $HOME/.config/
       ```
 
 2. Configurar wofi:
