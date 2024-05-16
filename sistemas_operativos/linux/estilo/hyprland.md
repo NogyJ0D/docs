@@ -25,7 +25,7 @@
 1. Instalar grupo:
 
     ```sh
-    pacman -S sddm hyprland wofi kitty thunar hyprpaper swayidle ttf-cascadia-code
+    pacman -S sddm hyprland wofi kitty thunar hyprpaper swayidle ttf-cascadia-code-nerd gvfs ttf-joypixels thunar-volman pavucontrol nm-connection-editor
     yay -S swaylock-effects
     mkdir -p ~/.config/hypr
     cp /usr/share/hyprland/hyprland.conf ~/.config/hypr
@@ -47,7 +47,7 @@
 
     window {
       font-size: 14px;
-      font-family: Cascadia Mono;
+      font-family: CaskaydiaCove Nerd Font Mono;
       background-color: rgba(50, 50, 50, 0.9);
       color: white;
       #border-color: linear-gradient(to right, #f12711, #f5af19);
@@ -119,7 +119,7 @@ monitor=nombre,WidthxHeight,auto,auto # sacar nombre de hyprctl monitors all
 
 # My Programs
 $terminal = kitty
-$fileManager = dolphin/tunar/x
+$fileManager = tunar
 $menu = wofi --show drun -I
 $browser = firefox
 
