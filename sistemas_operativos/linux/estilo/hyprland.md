@@ -17,31 +17,22 @@
   - kitty: terminal.
   - wofi: menú de aplicaciones.
   - swaylock: menú de sesión.
-  - waybar: barra superior.
   - thunar: gestor de archivos.
   - hyprpaper: gestor de wallpapers.
   - mako: gestor de notificaciones.
+  - swayidle: daemon de inactividad.
 
-1. Instalar hyprland:
+1. Instalar grupo:
 
     ```sh
-    pacman -S sddm hyprland swaylock waybar wofi kitty thunar nm-connection-editor hyprpaper ttf-cascadia-code
+    pacman -S sddm hyprland swaylock wofi kitty thunar hyprpaper swayidle ttf-cascadia-code
     mkdir -p ~/.config/hypr
     cp /usr/share/hyprland/hyprland.conf ~/.config/hypr
     ```
 
-2. Configurar waybar:
+    - [Configurar hyprland](#configuración).
 
-    ```sh
-    cp /etc/xdg/waybar/ -r ~/.config
-    ```
-
-    - En style.css poner como *{ font-family: Cascadia Mono; }.
-    - En config.jsonc editar:
-      - Comentar en modules-right el idle-inhibitor.
-      - Agregar icono 🌐 en "network"."format-ethernet" porque Cascadia no lo reconoce.
-
-3. Configurar wofi:
+2. Configurar wofi:
 
     ```sh
     mkdir ~/.config/wofi
@@ -89,7 +80,7 @@
     }
     ```
 
-4. Configurar hyprpaper:
+3. Configurar hyprpaper:
 
     - Agregar en ***~/.config/hypr/hyprpaper.conf***:
 
@@ -98,7 +89,7 @@
     wallpaper = monitor,/home/user/imagenes/imagen.png
     ```
 
-5. Configurar mako:
+4. Configurar mako:
 
     ```sh
     mkdir ~/.config/mako
@@ -106,13 +97,23 @@
     ```
 
     ```conf
-    [mako]
     background-color=#222222
     text-color=#ffffff
     border-color=#444444
     border-size=2
     padding=10
     font=Cascadia Mono 12
+    ```
+
+5. Configurar swaylock:
+
+    ```sh
+    mkdir ~/.config/swaylock
+    nano ~/.config/swaylock/config
+    ```
+
+    ```conf
+
     ```
 
 ---
@@ -133,8 +134,10 @@ $menu = wofi --show drun -I
 $browser = firefox
 
 # Autostart
-exec-once = nm-applet & # NetworkManager applet
-exec-once = waybar & hyprpaper # Barra de tareas
+# exec-once = nm-applet & # NetworkManager applet
+# exec-once = waybar & hyprpaper # Barra de tareas
+exec-once = hyprpaper
+exec-once = swaidle -w timeout 900 'swaylock -f -c "$HOME/.config/swaylock/config"' # 900 segundos, 15 minutos
 
 # Look and feel
 general {
@@ -156,10 +159,11 @@ input {
 
 # Keybindings
 bind = $mainMod, Q, exec, $terminal
-bind = $mainMod, L, exit, # Reemplazar M
+bind = $mainMod, ESC, exit, # Reemplazar M
 bind = $mainMod, R, exec, $menu
 bind = $mainMod, B, exec, $browser
 bind = $mainMod, M, fullscreen, 1 # Maximizar ventana
+bind = $mainMod, L, exec, swaylock -C '$HOME/.config/swaylock/config'
 
 #       Mover ventanas con las flechas
 bind = $mainMod ALT, left, movewindow, l
