@@ -1,6 +1,7 @@
 * {
     /* `otf-font-awesome` is required to be installed for icons */
-    font-family: CaskaydiaCove Nerd Font;
+    /* font-family: CaskaydiaCove Nerd Font; */z
+  font-family: PxPlus IBM VGA8;
     font-size: 13px;
 }
 
