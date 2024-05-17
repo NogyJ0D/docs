@@ -1,0 +1,24 @@
+{
+    "label" : "lock",
+    "action" : "swaylock --clock --indicator --screenshots --effect-greyscale --effect-pixelate 10 --effect-scale 1.1 --scaling center --indicator-radius 100 --indicator-thickness 10 --ring-color bd93f9 --inside-color 282a36 --line-color 000000 --key-hl-color ff79c6",
+    "text" : "Bloquear",
+    "keybind" : "l"
+}
+{
+    "label" : "logout",
+    "action" : "loginctl terminate-user $USER",
+    "text" : "Cerrar sesión",
+    "keybind" : "e"
+}
+{
+    "label" : "shutdown",
+    "action" : "systemctl poweroff",
+    "text" : "Apagar",
+    "keybind" : "s"
+}
+{
+    "label" : "reboot",
+    "action" : "systemctl reboot",
+    "text" : "Reiniciar",
+    "keybind" : "r"
+}
