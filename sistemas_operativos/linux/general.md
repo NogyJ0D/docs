@@ -11,7 +11,9 @@
     - [Habilitar ssh como root](#habilitar-ssh-como-root)
     - [Transferir archivos entre máquinas](#transferir-archivos-entre-máquinas)
   - [Aplicaciones](#aplicaciones)
-    - [bat](#bat)
+    - [⭐ trash-cli](#-trash-cli)
+      - [Instalar trash-cli](#instalar-trash-cli)
+    - [⭐ bat](#-bat)
       - [Instalar bat](#instalar-bat)
     - [Tmux](#tmux)
       - [Comandos tmux](#comandos-tmux)
@@ -55,7 +57,19 @@ rsync --rsh=ssh -vP archivo host@ip:/destino
 
 ## Aplicaciones
 
-### bat
+### ⭐ trash-cli
+
+- Permite enviar archivos a una papelera y gestionarla.
+
+#### Instalar trash-cli
+
+- Arch:
+
+  ```sh
+  pacman -S trash-cli
+  ```
+
+### ⭐ bat
 
 - Muestra textos como less pero mejor visualmente y con soporte para git.
 
@@ -63,9 +77,9 @@ rsync --rsh=ssh -vP archivo host@ip:/destino
 
 - Arch:
 
-    ```sh
-    pacman -S bat
-    ```
+  ```sh
+  pacman -S bat
+  ```
 
 ### Tmux
 
@@ -194,27 +208,27 @@ cargo install eza
 
 1. Verificar soporte TRRIM:
 
-    ```sh
-    lsblk --discard
-    # Si  DISC_GRAN y DISC_MAX devuelven distinto a 0, el disco soporta TRIM
-    ```
+   ```sh
+   lsblk --discard
+   # Si  DISC_GRAN y DISC_MAX devuelven distinto a 0, el disco soporta TRIM
+   ```
 
 2. Habilitar TRIM periódico:
 
-    ```sh
-    systemctl enable --now fstrim.timer
-    ```
+   ```sh
+   systemctl enable --now fstrim.timer
+   ```
 
 ### Colores para la terminal
 
 - iproute2:
 
-    ```sh
-    alias ip='ip -color=auto'
-    ```
+  ```sh
+  alias ip='ip -color=auto'
+  ```
 
 - less:
 
-    ```sh
-    alias less='less -R --use-color -Dd+r -Du+b'
-    ```
+  ```sh
+  alias less='less -R --use-color -Dd+r -Du+b'
+  ```
