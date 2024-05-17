@@ -1,0 +1,2 @@
+sudo pacman -S nano-syntax-highlighting
+sudo sed -i 's/icolor brightnormal/icolor normal/g' /usr/share/nano-syntax-highlighting/nanorc.nanorc
