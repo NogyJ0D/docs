@@ -24,8 +24,8 @@
 1. Instalar grupo:
 
     ```sh
-    pacman -S sddm hyprland wofi kitty thunar hyprpaper swayidle ttf-cascadia-code-nerd gvfs ttf-joypixels thunar-volman pavucontrol nm-connection-editor otf-font-awesome
-    yay -S swaylock-effects hyprshot pxplus-ibm-vga8
+    pacman -S sddm hyprland wofi kitty thunar hyprpaper swayidle ttf-cascadia-code-nerd gvfs ttf-joypixels thunar-volman pavucontrol nm-connection-editor otf-font-awesome bat
+    yay -S swaylock-effects hyprshot pxplus-ibm-vga8 wlogout
     mkdir ~/.config/
     #cp /usr/share/hyprland/hyprland.conf ~/.config/hypr
     
@@ -39,6 +39,7 @@
       ln -s docs/sistemas_operativos/linux/estilo/.config/kitty $HOME/.config/
       ln -s docs/sistemas_operativos/linux/estilo/.config/mako $HOME/.config/
       ln -s docs/sistemas_operativos/linux/estilo/.config/waybar $HOME/.config/
+      ln -s docs/sistemas_operativos/linux/estilo/.config/wlogout $HOME/.config/
       ```
 
 3. Configurar monitores en $HOME/.config/hypr_monitors.conf:
@@ -50,7 +51,7 @@
 
 4. Configurar hyprpaper:
 
-    - Agregar en ***~/.config/hypr/hyprpaper.conf***:
+    - Agregar en ***~/.config/hyprpaper.conf***:
 
     ```conf
     preload = /home/user/imagenes
