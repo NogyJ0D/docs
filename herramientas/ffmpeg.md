@@ -1,6 +1,19 @@
 # ffmpeg
 
 - [ffmpeg](#ffmpeg)
+  - [Instalación](#instalación)
+    - [Instalar ffmpeg en windows](#instalar-ffmpeg-en-windows)
+  - [Comandos de ffmpeg](#comandos-de-ffmpeg)
+    - [Convertir formato](#convertir-formato)
+    - [Extraer audio](#extraer-audio)
+    - [Comprimir video](#comprimir-video)
+    - [Cortar video](#cortar-video)
+    - [Crear gif](#crear-gif)
+    - [Quitar audio](#quitar-audio)
+  - [Extras](#extras)
+    - [yt-dlp - Descargar videos de youtube](#yt-dlp---descargar-videos-de-youtube)
+      - [Comandos de yt-dlp](#comandos-de-yt-dlp)
+      - [Instalar yt-dlp en windows](#instalar-yt-dlp-en-windows)
 
 ---
 
@@ -52,9 +65,19 @@ ffmpeg -i video.mp4 --ss hh:mm:ss -to hh:mm:ss -c copy output.mp4
 
 ### Crear gif
 
-```sh
-ffmpeg -i video.mp4 -vf "fps=24,scale=320:-1:flags=lanczos" -o output.gif
-```
+- Método 1: mas liviano
+
+    ```sh
+    ffmpeg -i video.mp4 -vf palettegen paleta.png # Generar paleta de colores
+    ffmpeg -i video.mp4 -i paleta.png -filter_complex paletteuse -r 10 -s 320x480 output.gif
+    rm paleta.png
+    ```
+
+- Método 2: mas pesado
+
+    ```sh
+    ffmpeg -i video.mp4 -vf "fps=24,scale=320:-1:flags=lanczos" output.gif
+    ```
 
 - fps=24: tasa de fotogramas.
 - scale=320: ancho del gif.
@@ -78,7 +101,7 @@ ffmpeg -i video.mp4 -an output.mp4
 - Descargar video:
 
     ```sh
-    yt-dlp [URL] -P [destino] -O [nombre] -f [id formato]
+    yt-dlp [URL] -P [destino] -o [nombre] -f [id formato]
     ```
 
   - -F: listar formatos disponibles.
