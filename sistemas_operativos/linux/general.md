@@ -22,7 +22,12 @@
       - [Instalar zoxide](#instalar-zoxide)
     - [Eza](#eza)
       - [Instalar eza](#instalar-eza)
+    - [⭐ pipx](#-pipx)
+      - [Instalar pipx](#instalar-pipx)
+    - [frogmouth](#frogmouth)
+      - [Instalar frogmouth](#instalar-frogmouth)
   - [Extras](#extras)
+    - [SSH](#ssh)
     - [Crontab](#crontab)
     - [TRIM para SSD](#trim-para-ssd)
     - [Colores para la terminal](#colores-para-la-terminal)
@@ -57,17 +62,17 @@ rsync --rsh=ssh -vP archivo host@ip:/destino
 
 ## Aplicaciones
 
+- [Lista de aplicaciones de todo tipo](https://terminaltrove.com/categories/linux/).
+
 ### ⭐ trash-cli
 
 - Permite enviar archivos a una papelera y gestionarla.
 
 #### Instalar trash-cli
 
-- Arch:
-
-  ```sh
-  pacman -S trash-cli
-  ```
+```sh
+pacman -S trash-cli # Arch
+```
 
 ### ⭐ bat
 
@@ -75,11 +80,9 @@ rsync --rsh=ssh -vP archivo host@ip:/destino
 
 #### Instalar bat
 
-- Arch:
-
-  ```sh
-  pacman -S bat
-  ```
+```sh
+pacman -S bat # Arch
+```
 
 ### Tmux
 
@@ -158,9 +161,49 @@ echo "eval '$(zoxide init zsh)'" >> ~/.zshrc
 cargo install eza
 ```
 
+### ⭐ pipx
+
+- Alternativa a pip.
+- Útil para instalar aplicaciones de pip.
+
+#### Instalar pipx
+
+```sh
+pacman -S python-pipx # Arch
+```
+
+### frogmouth
+
+- Lector de markdwon desde la terminal.
+
+#### Instalar frogmouth
+
+```sh
+pipx install frogmouth
+```
+
 ---
 
 ## Extras
+
+### SSH
+
+- Se puede crear un archivo para almacenar sesiones.
+  - El archivo se encuentra en **_$HOME/.ssh/config_**.
+  - Con este archivo, hay que hacer ssh a los hosts agregados.
+  - Contenido del archivo:
+
+      ```conf
+      Host [nombre]
+        HostName [ip]
+        User [usuario a usar]
+        Port [opcional]
+
+      Host * # configuración para todos
+        User root
+      ```
+
+  - Útil con el programa [sshclick](https://github.com/karlot/sshclick).
 
 ### Crontab
 
