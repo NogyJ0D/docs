@@ -6,6 +6,7 @@
     - [Generar/Renovar certificado](#generarrenovar-certificado)
   - [gpg](#gpg)
   - [Recuperar archivo](#recuperar-archivo)
+    - [Analizar archivos](#analizar-archivos)
   - [Extras](#extras)
 
 ---
@@ -87,6 +88,24 @@ apt install openssl
       - p7zip-gui: abrir archivos 7z sin extraer.
       - gedit: editor de texto.
       - thunar: explorador de archivos.
+
+---
+
+### Analizar archivos
+
+- Comando "strings": analiza un archivo y devuelve cadenas de texto "entendibles". En lugar de mostrar basura en un binario, busca lo que puede entender una persona.
+  - Se usa como "strings [archivo]".
+- Comando "file": devuelve el tipo de archivo del argumento ingresado.
+  - Se usa como "file [archivo]".
+- Comando "xxd": genera un dump hexadecimal de un archivo y viceversa.
+  - Hay que descargarlo. En arch usar "tinyxxd".
+  - Se usa como "xxd [archivo]".
+  - Si se usa "-b" devuelve en binario en lugar de hexa.
+  - Si se usa "-r" transforma hexa al contenido original.
+- Comando "objdump": desensambla un binario y muestra el contenido en assembly.
+  - Se usa como "objdump -D [archivo]".
+- Comando "nm": devuelve los simbolos de un binario.
+  - Se usa como "nm [archivo]".
 
 ---
 
