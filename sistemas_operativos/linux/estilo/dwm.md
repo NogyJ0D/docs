@@ -40,7 +40,22 @@
     sudo make clean install
     ```
 
-    
+3. Agregar al display manager:
+
+    ```sh
+    su -
+    nano /usr/share/xsessions/dwm.desktop
+    ```
+
+    ```desktop
+    [Desktop Entry]
+    Encoding=UTF-8
+    Name=dwm
+    Comment=Dynamic window manager
+    Exec=dwm
+    Icon=dwm
+    Type=XSession
+    ```
 
 ---
 
