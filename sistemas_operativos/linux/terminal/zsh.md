@@ -13,6 +13,7 @@
     - [zsh-syntax-highlighting](#zsh-syntax-highlighting)
     - [ZSH-AutoSuggestion](#zsh-autosuggestion)
   - [Extras](#extras)
+    - [Agregar completado](#agregar-completado)
 
 ---
 
@@ -49,3 +50,11 @@ git clone https://github.com/zsh-users/zsh-autosuggestions $ZSH_CUSTOM/plugins/z
 ---
 
 ## Extras
+
+### Agregar completado
+
+- Agregar a .zshrc:
+
+  ```rc
+  autoload -Uz compinit && compinit
+  ```
