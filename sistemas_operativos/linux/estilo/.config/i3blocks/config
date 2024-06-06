@@ -1,0 +1,9 @@
+# Volume
+[volume]
+command=pactl get-sink-volume @DEFAULT_SINK@ | awk '{print $5}'
+interval=1
+signal=10
+
+[date]
+command=date '+%d-%m-%Y %H:%M:%S'
+interval=1
