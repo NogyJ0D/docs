@@ -49,4 +49,56 @@ iex(irm christitus.com/win)
 
 ---
 
+### Nueva instalación
+
+- Cosas generales a hacer luego de instalar.
+
+```powershell
+$urls = @(
+    "https://raw.githubusercontent.com/W4RH4WK/Debloat-Windows-10/master/scripts/remove-onedrive.ps1",
+    "https://raw.githubusercontent.com/W4RH4WK/Debloat-Windows-10/master/scripts/remove-default-apps.ps1",
+    "https://raw.githubusercontent.com/W4RH4WK/Debloat-Windows-10/master/scripts/optimize-windows-update.ps1",
+    "https://raw.githubusercontent.com/W4RH4WK/Debloat-Windows-10/master/scripts/fix-privacy-settings.ps1",
+    "https://raw.githubusercontent.com/W4RH4WK/Debloat-Windows-10/master/scripts/block-telemetry.ps1",
+    "https://raw.githubusercontent.com/W4RH4WK/Debloat-Windows-10/master/utils/disable-edge-prelaunch.reg",
+    "https://raw.githubusercontent.com/W4RH4WK/Debloat-Windows-10/master/utils/enable-god-mode.ps1",
+    "https://raw.githubusercontent.com/W4RH4WK/Debloat-Windows-10/master/utils/enable-photo-viewer.reg",
+    "https://raw.githubusercontent.com/W4RH4WK/Debloat-Windows-10/master/utils/lower-ram-usage.reg",
+    "https://dl5.oo-software.com/files/ooshutup10/OOSU10.exe"
+)
+
+# Define the output directory
+$outputDir = "C:\Downloads\DebloatScripts"
+
+# Create the output directory if it doesn't exist
+if (-Not (Test-Path -Path $outputDir)) {
+    New-Item -ItemType Directory -Path $outputDir
+}
+
+# Function to download files
+function Download-File {
+    param (
+        [string]$url,
+        [string]$outputDir
+    )
+    
+    $fileName = [System.IO.Path]::GetFileName($url)
+    $outputPath = Join-Path -Path $outputDir -ChildPath $fileName
+    
+    try {
+        Invoke-WebRequest -Uri $url -OutFile $outputPath
+        Write-Output "Downloaded: $url to $outputPath"
+    } catch {
+        Write-Output "Failed to download: $url"
+    }
+}
+
+# Download each file
+foreach ($url in $urls) {
+    Download-File -url $url -outputDir $outputDir
+}
+
+Write-Output "All downloads completed."
+```
+
 ## Extras
