@@ -9,6 +9,7 @@
     - [POP3 (Post Office Protocol)](#pop3-post-office-protocol)
     - [IMAP (Internet Message Access Protocol)](#imap-internet-message-access-protocol)
     - [SMTP (Simple Mail Transfer Protocol)](#smtp-simple-mail-transfer-protocol)
+  - [StartTLS](#starttls)
   - [Dominios](#dominios)
   - [Software](#software)
 
@@ -50,6 +51,13 @@ Usuario > MTA > MDA > Usuario
 
 - Utilizado para enviar y recibir mensajes de correo por internet.
 - Puertos 25 (original, sin uso), 587 (en uso, cifrado), 465 (viejo pero en uso, soporta cifrado) y 2525 (alternativa nueva al 587).
+
+---
+
+## StartTLS
+
+- Extensión al protocolo TLS.
+- Se emplea para SMTP, IMAP y POP.
 
 ---
 

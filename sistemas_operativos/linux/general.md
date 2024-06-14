@@ -28,6 +28,9 @@
       - [Instalar frogmouth](#instalar-frogmouth)
   - [Extras](#extras)
     - [SSH](#ssh)
+      - [Configuración ideal](#configuración-ideal)
+      - [Configuración ssh](#configuración-ssh)
+      - [Claves ssh](#claves-ssh)
     - [Crontab](#crontab)
     - [TRIM para SSD](#trim-para-ssd)
     - [Colores para la terminal](#colores-para-la-terminal)
@@ -188,22 +191,61 @@ pipx install frogmouth
 
 ### SSH
 
+#### Configuración ideal
+
+- En un host la mejor configuración es:
+
+  - **_/etc/ssh/sshd_config_**:
+
+    ```conf
+    Port 22
+    ChallengeResponseAuthentication no
+    PasswordAuthentication no
+    UsePAM no
+    PermitRootLogin no
+    ```
+
+    - **Port**: 22 o alternativo.
+    - **ChallengeResponseAuthentication** + **PasswordAuthentication** + **UsePAM**: deshabilitar inicio por contraseña y usar [claves](#claves-ssh).
+    - **PermitRootLogin**: desahbilitar usuario root, conectarse como usuario normal y elevar con "su -".
+
+- Esta debe aplicarse luego de generar la clave y agregarla.
+
+#### Configuración ssh
+
 - Se puede crear un archivo para almacenar sesiones.
+
   - El archivo se encuentra en **_$HOME/.ssh/config_**.
   - Con este archivo, hay que hacer ssh a los hosts agregados.
   - Contenido del archivo:
 
-      ```conf
-      Host [nombre]
-        HostName [ip]
-        User [usuario a usar]
-        Port [opcional]
+    ```conf
+    Host [nombre]
+      HostName [ip]
+      User [usuario a usar]
+      Port [opcional]
 
-      Host * # configuración para todos
-        User root
-      ```
+    Host * # configuración para todos
+      User root
+    ```
 
   - Útil con el programa [sshclick](https://github.com/karlot/sshclick).
+
+#### Claves ssh
+
+- Se pueden generar claves públicas para agregar al cliente ssh.
+- Cuando genero mi par de claves privada y pública, copio la pública a un host remoto para que este acepte mi conexión usando la clave.
+- Con esto, puedo desactivar ssh por contraseña y usar solo claves.
+
+- Generar clave:
+
+  ```sh
+  ssh-keygen -t ed25519 -C "email@dom.com"
+  ```
+
+- Para enviar la clave al host remoto:
+  - Ejecutar "ssh-copy-id usuario@host-remoto".
+  - Copiar el contenido de la llave pública y pegarlo en **_.ssh/authorized_keys_**.
 
 ### Crontab
 

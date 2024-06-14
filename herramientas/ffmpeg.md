@@ -12,7 +12,9 @@
     - [Quitar audio](#quitar-audio)
   - [Extras](#extras)
     - [yt-dlp - Descargar videos de youtube](#yt-dlp---descargar-videos-de-youtube)
-      - [Comandos de yt-dlp](#comandos-de-yt-dlp)
+      - [Descargar video:](#descargar-video)
+      - [Formato a elegir](#formato-a-elegir)
+      - [Descargar playlist como audio](#descargar-playlist-como-audio)
       - [Instalar yt-dlp en windows](#instalar-yt-dlp-en-windows)
 
 ---
@@ -96,42 +98,60 @@ ffmpeg -i video.mp4 -an output.mp4
 
 ### yt-dlp - Descargar videos de youtube
 
-#### Comandos de yt-dlp
+#### Descargar video:
 
-- Descargar video:
+```sh
+yt-dlp [URL] -P [destino] -o [nombre] -f [id formato]
+```
 
-    ```sh
-    yt-dlp [URL] -P [destino] -o [nombre] -f [id formato]
-    ```
+- -F: listar formatos disponibles.
+- -O: opcional.
+- -x: extraer audio luego de descargar. Requiere ffmpeg y ffprobe.
+- --audio-format mp3: usado cuando está -x para convertir el audio.
+- -k: no borrar el video luego de usar -x.
+- --ffmpeg-location: path al ejecutable.
 
-  - -F: listar formatos disponibles.
-  - -O: opcional.
-  - -x: extraer audio luego de descargar. Requiere ffmpeg y ffprobe.
-  - --audio-format mp3: usado cuando está -x para convertir el audio.
-  - -k: no borrar el video luego de usar -x.
-  - --ffmpeg-location: path al ejecutable.
+#### Formato a elegir
 
-- Formato a elegir: por defecto, se descarga el mejor formato de video. Si este no tiene audio, se une con el mejor formato de audio.
-  - Formato de video 100 y formato de audio 200 si 100 no tiene audio: -f "100*+200".
-  - Formato de video 100 y formato de audio 200: -f "100+200".
-  - Formato de video 100 y formato de audio 200 o mejor formato si 100 no está disponible: -f "100+200/b".
-  - Mejor formato de video con mejor formato de audio (default): -f "bv+ba".
+Por defecto, se descarga el mejor formato de video. Si este no tiene audio, se une con el mejor formato de audio.
+
+- Formato de video 100 y formato de audio 200 si 100 no tiene audio: -f "100*+200".
+- Formato de video 100 y formato de audio 200: -f "100+200".
+- Formato de video 100 y formato de audio 200 o mejor formato si 100 no está disponible: -f "100+200/b".
+- Mejor formato de video con mejor formato de audio (default): -f "bv+ba".
 
 - Ordenar formatos:
 
-    ```sh
-    yt-dlp [URL] -F -S [campo1,campon]
-    ```
+  ```sh
+  yt-dlp [URL] -F -S [campo1,campon]
+  ```
 
-  - Orden:
-    - +campo: ascendente.
-    - campo: descendente. Default.
-  - Campos:
-    - res
-    - quality
-    - fps
-    - hasvid: tienen video
-    - hasaud: tienen audio
+- Orden:
+  - +campo: ascendente.
+  - campo: descendente. Default.
+- Campos:
+  - res
+  - quality
+  - fps
+  - hasvid: tienen video
+  - hasaud: tienen audio
+
+#### Descargar playlist como audio
+
+```sh
+yt-dlp \
+  -ciwx \
+  -f bestaudio \
+  --audio-format m4a \
+  --download-archive sync.txt \
+  -o "%(title)s.%(ext)s" \
+  -P [ruta] \
+  [URL]
+```
+
+- Descarga una playlist en una carpeta extrayendo el audio en la mejor calidad.
+- Guarda una lista de videos descargados para no volver a bajarlos. Permtie tener una sincronización con los faltantes de internet.
+- Para tener las miniaturas agregar "*--embed-thumbnail*".
 
 #### Instalar yt-dlp en windows
 
