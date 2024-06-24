@@ -12,6 +12,8 @@
   - [StartTLS](#starttls)
   - [Dominios](#dominios)
   - [Software](#software)
+  - [Extras](#extras)
+    - [Enviar correo desde telnet](#enviar-correo-desde-telnet)
 
 ---
 
@@ -85,3 +87,22 @@ Usuario > MTA > MDA > Usuario
   - Thunderbird (local)
 - Listas de correo
   - MailMan
+
+---
+
+## Extras
+
+### Enviar correo desde telnet
+
+```sh
+telnet localhost 25
+ehlo localhost
+mail from: test@localhost
+rcpt to: user1@example.com
+data
+Subject: Test Email
+
+This is a test email.
+.
+quit
+```

@@ -67,43 +67,44 @@ touch /etc/exim4/conf.d/main/00_exim4-config_custom
 
 - Modificar en **_/etc/exim4/update-exim4.conf.conf_**:
 
-    ```conf
-    dc_local_interfaces='0.0.0.0.25 : 0.0.0.0.587 : 0.0.0.0.465'
-    dc_use_split_config='true'
-    dc_localdelivery='maildir_home'
-    ```
+  ```conf
+  dc_local_interfaces='0.0.0.0.25 : 0.0.0.0.587 : 0.0.0.0.465'
+  dc_use_split_config='true'
+  dc_localdelivery='maildir_home'
+  ```
 
 - Crear certificado:
 
-    ```sh
-    mkdir /etc/letsencrypt/live/localhost -p
-    openssl req -x509 -nodes -new -sha256 -days 1024 -newkey rsa:2048 -keyout /root/localhost.key -out /root/localhost.pem -subj "/C=AR/CN=localhost"
-    openssl x509 -outform pem -in /root/localhost.pem -out /root/localhost.crt
-    openssl dhparam -out /root/dh.pem 2048
+  ```sh
+  openssl req -new -x509 -days 365 -nodes -newkey rsa:2048 -out /etc/ssl/certs/localhost.crt -keyout /etc/ssl/private/localhost.key
+  openssl dhparam -out /root/dh.pem 2048
+  chmod 640 /etc/ssl/private/localhost.key
+  chown root:Debian-exim /etc/ssl/private/localhost.key
 
-    #chown -R root:ssl-cert /etc/letsencrypt
-    #find /etc/letsencrypt -type d -exec chmod g+s {} \;
-    #chmod -R g+r /etc/letsencrypt
-    #adduser Debian-exim ssl-cert
-    ```
+  #chown -R root:ssl-cert /etc/letsencrypt
+  #find /etc/letsencrypt -type d -exec chmod g+s {} \;
+  #chmod -R g+r /etc/letsencrypt
+  #adduser Debian-exim ssl-cert
+  ```
 
 - Agregar en **_/etc/exim4/main/00_exim4-config_custom_**:
 
-    ```conf
-    MAIN_TLS_ENABLE = yes
-    tls_on_connect_ports = 465
+  ```conf
+  MAIN_TLS_ENABLE = yes
+  tls_on_connect_ports = 465
+  daemon_smtp_ports = 25 : 465 : 587
 
-    MAIN_TLS_CERTIFICATE = /root/localhost.crt
-    MAIN_TLS_PRIVATEKEY = /root/localhost.key
-    ```
+  MAIN_TLS_CERTIFICATE = /etc/ssl/certs/localhost.crt
+  MAIN_TLS_PRIVATEKEY = /etc/ssl/private/localhost.key
+  ```
 
 - Reiniciar y probar:
 
-    ```sh
-    systemctl restart exim4
-    tail -f /var/log/exim4/mainlog
-    openssl -starttls smtp -connect [ip]:25 # En otra computadora
-    ```
+  ```sh
+  systemctl restart exim4
+  tail -f /var/log/exim4/mainlog
+  openssl s_client -starttls smtp -connect localhost:25
+  ```
 
 ---
 
@@ -131,13 +132,13 @@ exim -bp [id]
 
 - Crear usuario vmail:
 
-    ```sh
-    mkdir -p /home/vhosts/example.com
-    mkdir -p /home/vhosts/example.org
-    groupadd -g 5000 vmail
-    useradd -g vmail -u 5000 vmail -d /home/vhosts/
-    chown -R vmail:vmail /home/vhosts/
-    ```
+  ```sh
+  mkdir -p /home/vhosts/example.com
+  mkdir -p /home/vhosts/example.org
+  groupadd -g 5000 vmail
+  useradd -g vmail -u 5000 vmail -d /home/vhosts/
+  chown -R vmail:vmail /home/vhosts/
+  ```
 
 - Agregar usuario virtual:
 
@@ -155,54 +156,54 @@ exim -bp [id]
 
 - Agregar dominios virtuales en **_/etc/exim4/virtual-domains_**:
 
-    ```conf
-    example.com
-    example.org
-    ````
+  ```conf
+  example.com
+  example.org
+  ```
 
 - Configurar correo entrante:
 
-  - Agregar "MAIN_LOCAL_DOMAINS = partial-lsearch;CONFDIR/virtual-domains" en **_/etc/exim4/conf.d/main/00_exim4-config_custom_**.
+  - Agregar "MAIN\*LOCAL_DOMAINS = partial-lsearch;CONFDIR/virtual-domains" en \*\**/etc/exim4/conf.d/main/00*exim4-config_custom\*\*\*.
   - Agregar router en **_/etc/exim4/conf.d/router/275_exim4-config_virtual_local_user_**:
 
-      ```conf
-      virtual_local_user:
-        debug_print = "R: virtual_user for $local_part@$domain"
-        driver = accept
-        domains = +local_domains
-        condition = ${lookup{$local_part@$domain}lsearch*@{CONFDIR/virtual-users}}
-        transport = virtual_local
-      ```
+    ```conf
+    virtual_local_user:
+      debug_print = "R: virtual_user for $local_part@$domain"
+      driver = accept
+      domains = +local_domains
+      condition = ${lookup{$local_part@$domain}lsearch*@{CONFDIR/virtual-users}}
+      transport = virtual_local
+    ```
 
   - Agregar transport en **_/etc/exim4/conf.d/transport/30_exim4-config_virtual_**:
 
-      ```conf
-      virtual_local:
-        debug_print = "T: virtual_local for $local_part@$domain"
-        driver = appendfile
-        # directory= ${extract{5}{:}{${lookup{$local_part@$domain}\
-        #                lsearch{CONFDIR/virtual-users}{$value}}}}/\
-        #            ${if eq {$h_X-Spam-Flag:}{YES} {.Junk/}}
+    ```conf
+    virtual_local:
+      debug_print = "T: virtual_local for $local_part@$domain"
+      driver = appendfile
+      # directory= ${extract{5}{:}{${lookup{$local_part@$domain}\
+      #                lsearch{CONFDIR/virtual-users}{$value}}}}/\
+      #            ${if eq {$h_X-Spam-Flag:}{YES} {.Junk/}}
 
-        directory = ${extract{5}{:}{${lookup{$local_part@$domain}\
-                        lsearch{CONFDIR/virtual-users}{$value}}}}
-        delivery_date_add
-        envelope_to_add
-        return_path_add
-        maildir_format
-        mode = 0660
-        mode_fail_narrower = false
-        user=vmail
-        group=vmail
-      ```
+      directory = ${extract{5}{:}{${lookup{$local_part@$domain}\
+                      lsearch{CONFDIR/virtual-users}{$value}}}}
+      delivery_date_add
+      envelope_to_add
+      return_path_add
+      maildir_format
+      mode = 0660
+      mode_fail_narrower = false
+      user=vmail
+      group=vmail
+    ```
 
   - Probar:
 
-      ```sh
-      tail -f /var/log/exim4/mainlog
-      echo "Hola" | mail usuario@example.com -s "Prueba"
-      ls /home/vhosts/example.com/usuario
-      ```
+    ```sh
+    tail -f /var/log/exim4/mainlog
+    echo "Hola" | mail usuario@example.com -s "Prueba"
+    ls /home/vhosts/example.com/usuario
+    ```
 
 - Configurar correo saliente:
 
@@ -229,19 +230,19 @@ exim -bp [id]
 
   - Probar auth:
 
-      ```sh
-      systemctl restart exim4
+    ```sh
+    systemctl restart exim4
 
-      echo -ne "usuario@example.com" | base64 # Copiar resultado
-      echo -ne "contraseña" | base64          # Copiar resultado
+    echo -ne "usuario@example.com" | base64 # Copiar resultado
+    echo -ne "contraseña" | base64          # Copiar resultado
 
-      openssl s_client -starttls smtp -connect localhost:25
-      EHLO prueba.com
-      AUTH LOGIN
-      # Pegar email
-      # Pegar contraseña
-      # Tiene que responder 235 Authentication succeeded
-      QUIT
-      ```
+    openssl s_client -starttls smtp -connect localhost:25
+    EHLO prueba.com
+    AUTH LOGIN
+    # Pegar email
+    # Pegar contraseña
+    # Tiene que responder 235 Authentication succeeded
+    QUIT
+    ```
 
 - Agregar Dovecot.
