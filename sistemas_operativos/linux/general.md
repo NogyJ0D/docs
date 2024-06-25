@@ -1,15 +1,7 @@
 # General
 
----
-
-## Contenido
-
 - [General](#general)
-  - [Contenido](#contenido)
   - [Documentación](#documentación)
-  - [Comandos](#comandos)
-    - [Habilitar ssh como root](#habilitar-ssh-como-root)
-    - [Transferir archivos entre máquinas](#transferir-archivos-entre-máquinas)
   - [Aplicaciones](#aplicaciones)
     - [⭐ trash-cli](#-trash-cli)
       - [Instalar trash-cli](#instalar-trash-cli)
@@ -27,6 +19,9 @@
     - [frogmouth](#frogmouth)
       - [Instalar frogmouth](#instalar-frogmouth)
   - [Extras](#extras)
+    - [Habilitar ssh como root](#habilitar-ssh-como-root)
+    - [Transferir archivos entre máquinas](#transferir-archivos-entre-máquinas)
+    - [Agregar VLAN con NetworkManager CLI](#agregar-vlan-con-networkmanager-cli)
     - [SSH](#ssh)
       - [Configuración ideal](#configuración-ideal)
       - [Configuración ssh](#configuración-ssh)
@@ -38,28 +33,6 @@
 ---
 
 ## Documentación
-
----
-
-## Comandos
-
-### Habilitar ssh como root
-
-```sh
-sed -i -e 's/#Port 22/Port 22/' -e 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && service sshd restart && ip a
-```
-
-### Transferir archivos entre máquinas
-
-> rsync es mas rápido que scp y permite resumir transferencias.
-
-```sh
-rsync --rsh=ssh -vP archivo host@ip:/destino
-```
-
-- --rsh=ssh: hacerlo tan seguro como scp.
-- -v: verbose.
-- -P: resumir transferencias parciales.
 
 ---
 
@@ -188,6 +161,36 @@ pipx install frogmouth
 ---
 
 ## Extras
+
+### Habilitar ssh como root
+
+```sh
+sed -i -e 's/#Port 22/Port 22/' -e 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && service sshd restart && ip a
+```
+
+### Transferir archivos entre máquinas
+
+> rsync es mas rápido que scp y permite resumir transferencias.
+
+```sh
+rsync --rsh=ssh -vP archivo host@ip:/destino
+```
+
+- --rsh=ssh: hacerlo tan seguro como scp.
+- -v: verbose.
+- -P: resumir transferencias parciales.
+
+### Agregar VLAN con NetworkManager CLI
+
+```sh
+nmcli con # Ver conexiones
+nmcli con add type vlan con-name [nombre] ifname [nombre] dev [interfaz] id [tag]
+# nmcli con add type vlan con-name vlan10 ifname vlan10 dev eth0 id 10
+nmcli con modify [nombre] ipv4.addresses [ip/msk] ipv4.method manual # Agregar IP fija
+nmcli con up [nombre] # Persistir configuración
+nmcli con mod [nombre] connection.autoconnect yes # Que se conecte al iniciar
+nmcli con # Ver cambios
+```
 
 ### SSH
 
