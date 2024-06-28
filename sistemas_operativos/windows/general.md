@@ -15,6 +15,7 @@
     - [Eliminar usuario](#eliminar-usuario)
     - [Borrar entrada ssh en known\_hosts](#borrar-entrada-ssh-en-known_hosts)
   - [Extras](#extras)
+    - [Desinstalar Edge](#desinstalar-edge)
 
 ---
 
@@ -118,3 +119,10 @@ ssh-keygen -R x.x.x.x
 ---
 
 ## Extras
+
+### Desinstalar Edge
+
+```ps
+cd 'C:\Program Files (x86)\Microsoft\Edge\Application\x\Installer\'
+setup --uninstall --force-uninstall --system-level
+```

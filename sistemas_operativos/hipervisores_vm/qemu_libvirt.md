@@ -5,18 +5,29 @@
     - [Instalar qemu-base + libvirt + virt-manager en arch](#instalar-qemu-base--libvirt--virt-manager-en-arch)
   - [Comandos](#comandos)
     - [Listar](#listar)
-    - [Crear pools](#crear-pools)
+    - [Pools](#pools)
+    - [Ver información del host](#ver-información-del-host)
     - [Crear disco virtual](#crear-disco-virtual)
     - [Crear máquina virtual](#crear-máquina-virtual)
     - [Convertir imagen](#convertir-imagen)
     - [Cambiar tamaño de disco virtual](#cambiar-tamaño-de-disco-virtual)
+    - [CDROM](#cdrom)
+    - [Snapshots](#snapshots)
   - [Extras](#extras)
-    - [Si osinfo-query no encuentra la distro que quiero:](#si-osinfo-query-no-encuentra-la-distro-que-quiero)
+    - [Si osinfo-query no encuentra la distro que quiero](#si-osinfo-query-no-encuentra-la-distro-que-quiero)
     - [Descargar drivers virtio para windows](#descargar-drivers-virtio-para-windows)
+    - [Si Windows no tiene internet](#si-windows-no-tiene-internet)
 
 ---
 
 ## Instalación
+
+- Para usar libvirt como root, modificar en el archivo **_/etc/libvirt/qemu.conf_** y reiniciar **libvirtd**:
+
+    ```sh
+    user = "root"
+    group = "root"
+    ```
 
 ### Instalar qemu-base + libvirt + virt-manager en arch
 
@@ -42,14 +53,32 @@ virsh list --all
 - VMs: "virsh list --all"
 - Pools: "virsh pool-list --all"
 
-### Crear pools
+### Pools
 
-- Uno para isos y otro para discos.
+- Crear pool:
+
+  - Uno para isos y otro para discos.
+
+    ```sh
+    virsh pool-define-as [pool] dir - - - - "[ruta]"
+    virsh pool-build [pool]
+    virsh pool-start [pool]
+    virsh pool-autostart [pool]
+    ```
+
+- Borrar pool:
+
+    ```sh
+    virsh pool-destroy [pool]
+    virsh pool-delete [pool]
+    virsh pool-undefine [pool]
+    ```
+
+### Ver información del host
 
 ```sh
-virsh pool-define-as --name [nombre] --type dir --target [ruta]
-virsh pool-start [nombre]
-virsh pool-autostart [nombre]
+virsh sysinfo
+virsh hostname
 ```
 
 ### Crear disco virtual
@@ -59,6 +88,12 @@ virsh pool-autostart [nombre]
     ```sh
     virsh vol-create-as [nombre pool] [disco].qcow2 [tamaño GB]G --format qcow2
     virsh vol-list [nombre pool]
+    ```
+
+- Con qemu:
+
+    ```sh
+    qemu-img create -f qcow2 [ruta].qcow2 [tamaño]G
     ```
 
 ### Crear máquina virtual
@@ -98,12 +133,13 @@ virsh pool-autostart [nombre]
       --name [nombre vm] \
       --vcpus $(nproc) \
       --memory [ram MB] \
-      --disk vol=[pool discos]/[disco].qcow2 \
-      --cdrom vol=[pool isos]/[iso].iso \
-      --os-variant [tipo de OS] \
+      --disk [ruta disco].qcow2 \
+      --cdrom [ruta iso].iso \
+      --os-variant [tipo de OS ó "generic"] \
       --network [network=default,model=virtio para NAT] \
       --graphics vnc,listen=0.0.0.0 \
       --noautoconsole
+      --noreboot
     ```
 
     - Para buscar la variante del OS: "osinfo-query os"
@@ -148,11 +184,55 @@ qemu-img convert -f raw -O qcow2 [input.img] [output].qcow2
   qemu-img resize --shrink [nombre] -10G
   ```
 
+### CDROM
+
+- Agregar media:
+
+    ```sh
+    virsh dumpxml [vm] # Buscar el target del media. EJ: sdb
+    virsh change-media [vm] [target] --insert [ruta disco]
+    ```
+
+- Quitar media:
+
+    ```sh
+    virsh dumpxml [vm] # Buscar el target del media. EJ: sdb
+    virsh change-media [vm] [target] --eject
+    ```
+
+### Snapshots
+
+- Crear snapshot:
+
+    ```sh
+    virsh snapshot-create-as --domain [vm] --name [nombre snapshot] --description "[descripción]"
+    ```
+
+- Información:
+
+    ```sh
+    virsh snapshot-list [vm]
+    virsh snapshot-info [vm] [snapshot]
+    qemu-img info /var/lib/libvirt/images/[imagen]
+    ```
+
+- Revertir a snapshot:
+
+    ```sh
+    virsh snapshot-revert [vm] [snapshot]
+    ```
+
+- Borrar snapshot:
+
+    ```sh
+    virsh snapshot-delete [vm] [snapshot]
+    ```
+
 ---
 
 ## Extras
 
-### Si osinfo-query no encuentra la distro que quiero:
+### Si osinfo-query no encuentra la distro que quiero
 
 - Usar "generic".
 - Actualizar base de datos:
@@ -172,15 +252,16 @@ qemu-img convert -f raw -O qcow2 [input.img] [output].qcow2
 
 ### Descargar drivers virtio para windows
 
-- Iso:
-
-    ```sh
-    wget https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso
-    ```
-
+- [Iso](https://github.com/virtio-win/virtio-win-pkg-scripts/blob/master/README.md)
 - En arch:
 
     ```sh
     yay -S virtio-win
     # La iso se guarda en /var/lib/libvirt/images
     ```
+
+### Si Windows no tiene internet
+
+1. Descargar [driver virtio](#descargar-drivers-virtio-para-windows).
+2. [Agregar el disco a la VM](#cdrom).
+3. En la vm ir a "Administración de Dispositivos" y buscar el desconocido llamado "Ethernet Controller", buscar actualización y seleccionar la carpeta "NetKVM" del disco del driver.

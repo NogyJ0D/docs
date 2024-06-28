@@ -39,6 +39,14 @@ code --install-extension [id]
 
 ## Extras
 
+### Sincronización
+
+- Instalar extensiones teniendo las id en un archivo:
+
+   ```sh
+   while read -r line; do code --install-extension $line; done < [archivo]
+   ```
+
 ### Rutas
 
 - Configuraciones del usuario: **_$HOME/.config/Code/User/settings.json_**
