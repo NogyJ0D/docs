@@ -1,11 +1,19 @@
 # Proxmox
 
----
-
-## Contenido
-
 - [Proxmox](#proxmox)
-  - [Contenido](#contenido)
+  - [Documentación](#documentación)
+  - [Instalación](#instalación)
+  - [Comandos](#comandos)
+    - [Listar vms](#listar-vms)
+    - [Información de la vm](#información-de-la-vm)
+    - [Listar discos en los storages](#listar-discos-en-los-storages)
+    - [Información de los discos virtuales](#información-de-los-discos-virtuales)
+    - [Crear vm vacía](#crear-vm-vacía)
+    - [Modificar tamaño de un disco](#modificar-tamaño-de-un-disco)
+  - [Extras](#extras)
+    - [Migrar VM de un proxmox a otro](#migrar-vm-de-un-proxmox-a-otro)
+    - [Crear VM usando configuración de una existente](#crear-vm-usando-configuración-de-una-existente)
+    - [Borrar partición LVM](#borrar-partición-lvm)
 
 ---
 
@@ -149,4 +157,14 @@ Resultado ejemplo:
 
 ```sh
 qm create $NEW_VMID --name myvm-clone --memory 1024 --cores 1 --sockets 1 --cpu host --net0 virtio=AA:AA:AA:AA:AA:AA,bridge=vmbr0,firewall=1 --ostype l26 --boot order=scsi0;ide2 --agent 1 --scsi0 local-lvm:$NEW_VMID-disk-0,size=50G
+```
+
+### Borrar partición LVM
+
+- EJ: borrar la partición por defecto para almacenar discos e isos y alargar la principal.
+
+```sh
+lvremove /dev/pve/data
+lvresize -l +100%FREE /dev/pve/root
+resize2fs /dev/pve/root
 ```

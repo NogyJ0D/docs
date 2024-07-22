@@ -11,11 +11,13 @@
     - [Saltarse inicio de sesión de microsoft](#saltarse-inicio-de-sesión-de-microsoft)
   - [Documentación](#documentación)
   - [Comandos](#comandos)
+    - [Descargar idioma](#descargar-idioma)
     - [Habilitar usuario administrador con cmd](#habilitar-usuario-administrador-con-cmd)
     - [Eliminar usuario](#eliminar-usuario)
     - [Borrar entrada ssh en known\_hosts](#borrar-entrada-ssh-en-known_hosts)
   - [Extras](#extras)
     - [Desinstalar Edge](#desinstalar-edge)
+    - [Actualizar windows con powershell](#actualizar-windows-con-powershell)
 
 ---
 
@@ -99,6 +101,17 @@
 
 ## Comandos
 
+### Descargar idioma
+
+> Si los comandos no se encuentran en un Windows recién instalado, actualizar este primero.
+
+```ps
+Get-InstalledLanguage
+Install-Language -Language es-AR -CopyToSettings -ExcludeFeatures
+Set-SystemPreferredUILanguage -Language es-AR
+Restart-Computer
+```
+
 ### Habilitar usuario administrador con cmd
 
 ```ps
@@ -125,4 +138,16 @@ ssh-keygen -R x.x.x.x
 ```ps
 cd 'C:\Program Files (x86)\Microsoft\Edge\Application\x\Installer\'
 setup --uninstall --force-uninstall --system-level
+```
+
+### Actualizar windows con powershell
+
+- No recomendado, no descarga todas las actualizaciones como el menú.
+
+```ps
+Install-Module PSWindowsUpdate
+Set-ExecutionPolicy Unrestricted
+Import-Module PSWindowsUpdate
+Get-WindowsUpdate
+Install-WindowsUpdate -AcceptAll -AutoReboot
 ```
