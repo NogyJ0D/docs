@@ -1,10 +1,23 @@
-# HDD
+# Discos
 
-- [HDD](#hdd)
+- [Discos](#discos)
+  - [Particionado](#particionado)
+    - [MBR - Master Boot Record](#mbr---master-boot-record)
+    - [GPT - GUID Partition Table](#gpt---guid-partition-table)
   - [Partes](#partes)
   - [Extras](#extras)
 
 ---
+
+## Particionado
+
+### MBR - Master Boot Record
+
+- Permite 4 particiones y está limitado a 2TB.
+
+### GPT - GUID Partition Table
+
+- No tiene límite de tamaño y permite hasta 128 particiones.
 
 ## [Partes](https://hddscan.com/doc/HDD_from_inside.html)
 
