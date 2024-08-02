@@ -101,4 +101,12 @@ foreach ($url in $urls) {
 Write-Output "All downloads completed."
 ```
 
+## Claves de registro
+
+- BingSearchEnabled: false
+
+    ```powershell
+    Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" -Name "BingSearchEnabled" -Value 0 -Type DWord
+    ```
+
 ## Extras
