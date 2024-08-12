@@ -15,8 +15,9 @@
     - [Habilitar usuario administrador con cmd](#habilitar-usuario-administrador-con-cmd)
     - [Eliminar usuario](#eliminar-usuario)
     - [Borrar entrada ssh en known\_hosts](#borrar-entrada-ssh-en-known_hosts)
-  - [Extras](#extras)
     - [Desinstalar Edge](#desinstalar-edge)
+    - [Habilitar autologon](#habilitar-autologon)
+  - [Extras](#extras)
     - [Actualizar windows con powershell](#actualizar-windows-con-powershell)
 
 ---
@@ -129,16 +130,22 @@ net user [usuario o administrator] [poner contraseña, * para que la pida o no p
 ssh-keygen -R x.x.x.x
 ```
 
----
-
-## Extras
-
 ### Desinstalar Edge
 
 ```ps
 cd 'C:\Program Files (x86)\Microsoft\Edge\Application\x\Installer\'
 setup --uninstall --force-uninstall --system-level
 ```
+
+### Habilitar autologon
+
+1. Modificar clave de registro **HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\PasswordLess\Device\DevicePasswordLessBuildVersion** y poner valor en "**0**".
+
+2. Abrir **netplwiz**, seleccionar el usuario a habilitar el autologon y desmarcar la casilla de arriba.
+
+---
+
+## Extras
 
 ### Actualizar windows con powershell
 
