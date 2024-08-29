@@ -35,11 +35,11 @@
 
    - Java SE 11 o superior
    - Wildfly 32.0.1
-   - [PostgreSQL 16](../../database/sql/postgres.md#instalar-postgresql-en-debian-12)
+   - [PostgreSQL 15](../../database/sql/postgres.md#instalar-postgresql-en-debian-12)
    - OpenLDAP 2.5.11
 
     ```sh
-    apt install openjdk-17-jre openjdk-17-jdk sldap ldap-utils
+    apt install postgresql-15 openjdk-17-jre openjdk-17-jdk slapd ldap-utils maven unzip
     # Recordar contraseña del administrador de ldap
     wget https://github.com/wildfly/wildfly/releases/download/32.0.1.Final/wildfly-32.0.1.Final.zip
     ```
@@ -47,17 +47,15 @@
 2. Descargar el [archcive](https://sourceforge.net/projects/dcm4che/files/dcm4chee-arc-light5/):
 
     ```sh
-    wget https://sourceforge.net/projects/dcm4che/files/dcm4chee-arc-light5/5.32.0/dcm4chee-arc-5.32.0-psql.zip/download
-    unzip download
+    wget https://sourceforge.net/projects/dcm4che/files/dcm4chee-arc-light5/5.32.0/dcm4chee-arc-5.32.0-psql.zip/download -O dcm4chee-arc-5.32.0-psql.zip
+    unzip dcm4chee-arc-5.32.0-psql.zip
     ```
 
 3. Crear base de datos:
 
     ```sh
-    su postgres
-    createuser -U postgres -P -d dcm4chee
-    createdb -h localhost -U dcm4chee dcm4chee
-    exit
+    su postgres -c "createuser -U postgres -P -d dcm4chee"
+    su postgres -c "createdb -h localhost -U dcm4chee dcm4chee"
 
     psql -h localhost dcm4chee dcm4chee < $DCM4CHEE_ARC/sql/psql/create-psql.sql
     psql -h localhost dcm4chee dcm4chee < $DCM4CHEE_ARC/sql/psql/create-fk-index.sql
@@ -123,7 +121,7 @@
       ldapadd -x -W -Dcn=admin,dc=dcm4che,dc=org -f add-vendor-data.ldif
 
       # Verificar configuración. Tiene que devolver dicomVendotData:: Texto largo
-      ldapsearch -LLLsbase -xwsecret -Dcn=admin,dc=dcm4che,dc=org -b "dicomDeviceName=dcm4chee-arc,cn=Devices,cn=DICOM Configuration,dc=dcm4che,dc=org" dicomVendorData | head
+      ldapsearch -LLLsbase -x -W -Dcn=admin,dc=dcm4che,dc=org -b "dicomDeviceName=dcm4chee-arc,cn=Devices,cn=DICOM Configuration,dc=dcm4che,dc=org" dicomVendorData | head
       ```
 
 5. Configurar wildfly:
