@@ -93,7 +93,6 @@
 
       ```ldif
       dn: dc=dcm4che,dc=org
-
       changetype: add
       objectClass: top
       objectClass: dcObject
