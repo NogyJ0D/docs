@@ -14,7 +14,8 @@
     - [A](#a)
     - [\<= Instalar Oviyam 2.8.2 en Alpine Linux manualmente](#-instalar-oviyam-282-en-alpine-linux-manualmente)
   - [Extras](#extras)
-    - [\<= Agregar visor DICOM web como contenedor](#-agregar-visor-dicom-web-como-contenedor)
+    - [Migrar estudios de un servidor a otro](#migrar-estudios-de-un-servidor-a-otro)
+    - [Agregar visor DICOM web como contenedor](#agregar-visor-dicom-web-como-contenedor)
       - [Oviyam](#oviyam)
       - [OHIF](#ohif)
   - [Keycloak](#keycloak)
@@ -768,7 +769,24 @@ services:
 
 ## Extras
 
-### [<=](#contenido) Agregar visor DICOM web como contenedor
+### Migrar estudios de un servidor a otro
+
+- Descargar [dcm4chee completo](https://sourceforge.net/projects/dcm4che/files/dcm4che3/) para las tools:
+
+    ```sh
+    wget version.tar.gz -O dcm.tar.gz
+    tar xvzf dcm.tar.gz
+
+    cd dcm4chee.../bin/
+    ./storescu -c [aet]@[ip]:[puerto] [storage]
+    ```
+
+  - aet: AET destino. DCM4CHEE u ORTHANC son default.
+  - ip: ip del servidor destino.
+  - puerto: puerto del servidor destino. 11112 para DCM4CHEE o 4242 para Orthanc.
+  - storage: ruta de los estudios. Puede ser /storage/fs1 para dcm en docker, /root/wildfly/standalone/data/fs1 para la instalación manual.
+
+### Agregar visor DICOM web como contenedor
 
 #### Oviyam
 
