@@ -25,14 +25,19 @@
 
   ```sh
   su -c /usr/bin/psql postgres
-  # O
   sudo -u postgres psql
+  su postgres -c psql
   ```
 
 - Crear usuario:
 
   ```sh
   createuser --pwprompt {usuario}
+  ```
+
+  ```sql
+  CREATE USER usuario WITH CREATEDB CREATEROLE;
+  ALTER USER usuario WITH ENCRYPTED PASSWORD 'contraseña';
   ```
 
 - Crear DB:
@@ -47,6 +52,29 @@
 
 ### Instalar Postgresql en Debian 12
 
-```sh
-sudo apt -y install postgresql-15
-```
+- Método 1, recomendado:
+
+    ```sh
+    apt install postgresql-[version]
+    ```
+
+- Método 2, si no funciona el otro:
+
+    ```sh
+    apt -y install postgresql-common
+    /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+    apt update
+    apt install postgresql-[version]
+    ```
+
+- Entrar a la consola:
+
+    ```sh
+    su postgres -c psql
+    ```
+
+- Cambiar contraseña por defecto:
+
+    ```sql
+    ALTER USER postgres WITH PASSWORD 'contraseña';
+    ```

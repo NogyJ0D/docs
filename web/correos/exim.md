@@ -133,8 +133,7 @@ exim -bp [id]
 - Crear usuario vmail:
 
   ```sh
-  mkdir -p /home/vhosts/example.com
-  mkdir -p /home/vhosts/example.org
+  mkdir -p /home/vhosts/example.com /home/vhosts/example.org
   groupadd -g 5000 vmail
   useradd -g vmail -u 5000 vmail -d /home/vhosts/
   chown -R vmail:vmail /home/vhosts/
@@ -148,7 +147,7 @@ exim -bp [id]
     openssl passwd -1 [contraseña] # Generar contraseña encriptada
     ```
 
-  - Agregar usuario en **_/etc/exim4/virtual-users_**:
+  - Agregar usuario en **_/etc/exim4/virtual-users_** y crear su carpeta:
 
     ```passwd
     usuario@example.com:contraseña:,,,:/home/vhosts/example.com/usuario
@@ -163,16 +162,17 @@ exim -bp [id]
 
 - Configurar correo entrante:
 
-  - Agregar "MAIN\*LOCAL_DOMAINS = partial-lsearch;CONFDIR/virtual-domains" en \*\**/etc/exim4/conf.d/main/00*exim4-config_custom\*\*\*.
+  - Agregar _"MAIN_LOCAL_DOMAINS = partial-lsearch;CONFDIR/virtual-domains"_ en **_/etc/exim4/conf.d/main/00_exim4_config_custom_**.
+  
   - Agregar router en **_/etc/exim4/conf.d/router/275_exim4-config_virtual_local_user_**:
 
     ```conf
     virtual_local_user:
-      debug_print = "R: virtual_user for $local_part@$domain"
-      driver = accept
-      domains = +local_domains
-      condition = ${lookup{$local_part@$domain}lsearch*@{CONFDIR/virtual-users}}
-      transport = virtual_local
+        debug_print = "R: virtual_user for $local_part@$domain"
+        driver = accept
+        domains = +local_domains
+        condition = ${lookup{$local_part@$domain}lsearch*@{CONFDIR/virtual-users}}
+        transport = virtual_local
     ```
 
   - Agregar transport en **_/etc/exim4/conf.d/transport/30_exim4-config_virtual_**:

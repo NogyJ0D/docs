@@ -8,6 +8,7 @@
   - [Contenido](#contenido)
   - [Documentación](#documentación)
   - [Instalación](#instalación)
+    - [Instalar dcm4chee-arc-light manualmente en debian 12](#instalar-dcm4chee-arc-light-manualmente-en-debian-12)
     - [Instalar DCM4CHEE en Alpine Linux usando Docker - Sin seguridad](#instalar-dcm4chee-en-alpine-linux-usando-docker---sin-seguridad)
     - [\<= Instalar DCM4CHEE en Alpine Linux usando docker - Con seguridad](#-instalar-dcm4chee-en-alpine-linux-usando-docker---con-seguridad)
     - [A](#a)
@@ -26,6 +27,210 @@
 ---
 
 ## Instalación
+
+### [Instalar dcm4chee-arc-light manualmente](https://github.com/dcm4che/dcm4chee-arc-light/wiki/Installation) en debian 12
+
+1. Requisitos:
+
+   - Java SE 11 o superior
+   - Wildfly 32.0.1
+   - [PostgreSQL 16](../../database/sql/postgres.md#instalar-postgresql-en-debian-12)
+   - OpenLDAP 2.5.11
+
+    ```sh
+    apt install openjdk-17-jre openjdk-17-jdk sldap ldap-utils
+    # Recordar contraseña del administrador de ldap
+    wget https://github.com/wildfly/wildfly/releases/download/32.0.1.Final/wildfly-32.0.1.Final.zip
+    ```
+
+2. Descargar el [archcive](https://sourceforge.net/projects/dcm4che/files/dcm4chee-arc-light5/):
+
+    ```sh
+    wget https://sourceforge.net/projects/dcm4che/files/dcm4chee-arc-light5/5.32.0/dcm4chee-arc-5.32.0-psql.zip/download
+    unzip download
+    ```
+
+3. Crear base de datos:
+
+    ```sh
+    su postgres
+    createuser -U postgres -P -d dcm4chee
+    createdb -h localhost -U dcm4chee dcm4chee
+    exit
+
+    psql -h localhost dcm4chee dcm4chee < $DCM4CHEE_ARC/sql/psql/create-psql.sql
+    psql -h localhost dcm4chee dcm4chee < $DCM4CHEE_ARC/sql/psql/create-fk-index.sql
+    psql -h localhost dcm4chee dcm4chee < $DCM4CHEE_ARC/sql/psql/create-case-insensitive-index.sql
+    ```
+
+4. Configurar ldap:
+
+    ```sh
+    ldapadd -Y EXTERNAL -H ldapi:/// -f $DCM4CHEE_ARC/ldap/slapd/dicom.ldif
+    ldapadd -Y EXTERNAL -H ldapi:/// -f $DCM4CHEE_ARC/ldap/slapd/dcm4che.ldif
+    tr -d \\r < $DCM4CHEE_ARC/ldap/slapd/dcm4chee-archive.ldif | ldapadd -Y EXTERNAL -H ldapi:///
+    ldapadd -Y EXTERNAL -H ldapi:/// -f $DCM4CHEE_ARC/ldap/slapd/dcm4chee-archive-ui.ldif
+
+    slappasswd # Copiar resultado para dcm4che
+    ```
+
+   - Crear el archivo **_modify-baseDN.ldif_**:
+
+      ```ldif
+      dn: olcDatabase={1}mdb,cn=config
+      changetype: modify
+      replace: olcSuffix
+      olcSuffix: dc=dcm4che,dc=org
+      -
+      replace: olcRootDN
+      olcRootDN: cn=admin,dc=dcm4che,dc=org
+      -
+      replace: olcRootPW
+      olcRootPW: [Resultado slappasswd]
+      ```
+
+   - Crear el archivo **_slapd_setup_basic.ldif_**:
+
+      ```ldif
+      dn: dc=dcm4che,dc=org
+
+      changetype: add
+      objectClass: top
+      objectClass: dcObject
+      objectClass: organization
+      o: Example org name
+      dc: dcm4che
+
+      dn: cn=admin,dc=dcm4che,dc=org
+      changetype: add
+      objectClass: simpleSecurityObject
+      objectClass: organizationalRole
+      cn: admin
+      description: LDAP administrator
+      userPassword: [Contraseña usada al instalar slapd]
+      ```
+
+      ```sh
+      ldapmodify -Y EXTERNAL -H ldapi:/// -f modify-baseDN.ldif
+      ldapmodify -x -W -D "cn=admin,dc=dcm4che,dc=org" -H ldapi:/// -f slapd_setup_basic.ldif
+
+      ldapadd -x -W -D "cn=admin,dc=dcm4che,dc=org" -f $DCM4CHEE_ARC/ldap/init-baseDN.ldif
+      ldapadd -x -W -D "cn=admin,dc=dcm4che,dc=org" -f $DCM4CHEE_ARC/ldap/init-config.ldif
+      ldapadd -x -W -D "cn=admin,dc=dcm4che,dc=org" -f $DCM4CHEE_ARC/ldap/default-config.ldif
+      ldapadd -x -W -D "cn=admin,dc=dcm4che,dc=org" -f $DCM4CHEE_ARC/ldap/default-ui-config.ldif
+
+      cd $DCM4CHEE_ARC/ldap
+      ldapadd -xw[contraseña admin] -Dcn=admin,dc=dcm4che,dc=org -f add-vendor-data.ldif
+
+      # Verificar configuración. Tiene que devolver dicomVendotData:: Texto largo
+      ldapsearch -LLLsbase -xwsecret -Dcn=admin,dc=dcm4che,dc=org -b "dicomDeviceName=dcm4chee-arc,cn=Devices,cn=DICOM Configuration,dc=dcm4che,dc=org" dicomVendorData | head
+      ```
+
+5. Configurar wildfly:
+
+    ```sh
+    cp -r $DCM4CHEE_ARC/configuration /root/wildfly-x.x.x.Final/standalone
+    cd /root/wildfly-x.x.x.Final/standalone/configuration/
+    cp standalone.xml dcm4chee-arc.xml
+    editor dcm4chee-arc/ldap.properties # Cambiar contraseña de ldap por la de dcm4chee
+
+    cd /root/wildfly-x.x.x.Final
+    unzip $DCM4CHEE_ARC/jboss-modules/dcm4che-jboss-modules-5.x.x.zip
+    unzip $DCM4CHEE_ARC/jboss-modules/jai_imageio-jboss-modules-1.2-pre-dr-b04.zip
+    unzip $DCM4CHEE_ARC/jboss-modules/jclouds-jboss-modules-2.2.1-noguava.zip
+    unzip $DCM4CHEE_ARC/jboss-modules/jdbc-jboss-modules-mysql-8.0.20.zip
+
+    cd /root
+    wget https://github.com/dcm4che/ecs-object-client-jboss-modules/archive/refs/heads/master.zip
+    unzip master.zip
+    cd ecs-object-client-jboss-modules-master
+    mvn install
+    unzip target/ecs-object-client-jboss-modules-3.0.0.zip -d /root/wildfly-...
+    ```
+
+   - Correr wildfly en una terminal:
+
+      ```sh
+      $WILDFLY_HOME/bin/standalone.sh -c dcm4chee-arc.xml -b 0.0.0.0
+      # Si da error, revisar que en /etc/hosts esté el nombre de la maquina como local
+      ```
+
+   - En otra terminal en simultaneo:
+
+      ```sh
+      $WILDFLY_HOME/bin/jboss-cli.sh -c
+      /subsystem=datasources/jdbc-driver=psql:add(driver-name=psql,driver-module-name=org.postgresql)
+
+      data-source add --name=PacsDS \
+        --driver-name=psql \
+        --connection-url=jdbc:postgresql://127.0.0.1:5432/dcm4chee \
+        --jndi-name=java:/PacsDS \
+        --user-name=dcm4chee \
+        --password=[contraseña]
+
+      exit
+
+      $WILDFLY_HOME/bin/jboss-cli.sh -c --file=$DCM4CHEE_ARC/cli/adjust-managed-executor.cli
+
+      $WILDFLY_HOME/bin/jboss-cli.sh -c
+      reload
+      /subsystem=undertow/server=default-server/http-listener=default:write-attribute(name=max-post-size,value=10000000000)
+      /subsystem=undertow/server=default-server/https-listener=https:write-attribute(name=max-post-size,value=10000000000)
+      reload
+
+      deploy /root/dcm4chee-arc-5.32.0-psql/deploy/dcm4chee-arc-ear-5.32.0-psql.ear
+      deploy /root/dcm4chee-arc-5.32.0-psql/deploy/dcm4chee-arc-ui2-5.32.0.war
+      ```
+
+   - Probar que funcione <http://ip:8080/dcm4chee-arc/ui2>
+   - Apagar wildfly.
+
+6. Crear archivo **_/etc/systemd/system/wildfly.service_**:
+
+    ```service
+    [Unit]
+    Description=Wildfly Application Server
+    After=network.target
+
+    [Service]
+    Type=simple
+    User=root
+    Group=root
+    ExecStart=/root/wildfly-32.0.1.Final/bin/standalone.sh -b 0.0.0.0 -c dcm4chee-arc.xml
+    ExecStop=/root/wildfly-32.0.1.Final/bin/jboss-cli.sh --connect command=:shutdown
+    Restart=on-failure
+
+    [Install]
+    WantedBy=multi-user.target
+    ```
+
+    ```sh
+    systemctl enable --now wildfly.service
+    ```
+
+- Extra:
+
+  - Aumentar la ram para la jvm de wildfly:
+    - Modificar esta linea en el archivo **_$WILDFLY/bin/standalone.conf_**: JBOSS_JAVA_SIZING="-Xms2G -Xmx3G -XX:MetaspaceSize=128M -XX:MaxMetaspaceSize=512m".
+
+<!--
+If configured Directory Base DN is other thandc=dcm4che,dc=org, replace all occurrences of dc=dcm4che,dc=org in LDIF files
+
+$DCM4CHEE_ARC/ldap/init-baseDN.ldif
+$DCM4CHEE_ARC/ldap/init-config.ldif
+$DCM4CHEE_ARC/ldap/default-config.ldif
+$DCM4CHEE_ARC/ldap/default-ui-config.ldif
+$DCM4CHEE_ARC/ldap/add-vendor-data.ldif
+
+by your Directory Base DN, e.g.:
+
+> cd $DCM4CHEE_ARC/ldap
+> sed -i s/dc=dcm4che,dc=org/dc=my-domain,dc=com/ init-baseDN.ldif
+> sed -i s/dc=dcm4che,dc=org/dc=my-domain,dc=com/ init-config.ldif
+> sed -i s/dc=dcm4che,dc=org/dc=my-domain,dc=com/ default-config.ldif
+> sed -i s/dc=dcm4che,dc=org/dc=my-domain,dc=com/ default-ui-config.ldif
+> sed -i s/dc=dcm4che,dc=org/dc=my-domain,dc=com/ add-vendor-data.ldif
+ -->
 
 ### Instalar DCM4CHEE en Alpine Linux usando Docker - [Sin seguridad](https://github.com/dcm4che/dcm4chee-arc-light/wiki/Run-secured-archive-services-on-a-single-host)
 
@@ -611,7 +816,7 @@ services:
         restart: always
     ```
 
-- ***/root/dcm4chee-arc/ohif.js***:
+- _**/root/dcm4chee-arc/ohif.js**_:
 
     ```js
     window.config = {
@@ -649,4 +854,3 @@ services:
 ### [<=](#contenido) Habilitar self-registration
 
 1. Ir a Realm Settings.
-

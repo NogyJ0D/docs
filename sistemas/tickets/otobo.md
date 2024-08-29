@@ -42,7 +42,7 @@
 3. Instalar adicionales:
 
     ```sh
-    apt install -y libarchive-zip-perl libtimedate-perl libdatetime-perl libconvert-binhex-perl libcgi-psgi-perl libdbi-perl libdbix-connector-perl libfile-chmod-perl liblist-allutils-perl libmoo-perl libnamespace-autoclean-perl libnet-dns-perl libnet-smtp-ssl-perl libpath-class-perl libsub-exporter-perl libtemplate-perl libtext-trim-perl libtry-tiny-perl libxml-libxml-perl libyaml-libyaml-perl libdbd-mysql-perl libapache2-mod-perl2 libmail-imapclient-perl libauthen-sasl-perl libauthen-ntlm-perl libjson-xs-perl libtext-csv-xs-perl libpath-class-perl libplack-perl libplack-middleware-header-perl libplack-middleware-reverseproxy-perl libencode-hanextra-perl libio-socket-ssl-perl libnet-ldap-perl libcrypt-eksblowfish-perl libxml-libxslt-perl libxml-parser-perl libconst-fast-perl libtext-csv-perl libjavascript-minifier-xs-perl libcss-minifier-xs-perl libcapture-tiny-perl
+    apt install -y libarchive-zip-perl libtimedate-perl libdatetime-perl libconvert-binhex-perl libcgi-psgi-perl libdbi-perl libdbix-connector-perl libfile-chmod-perl liblist-allutils-perl libmoo-perl libnamespace-autoclean-perl libnet-dns-perl libnet-smtp-ssl-perl libpath-class-perl libsub-exporter-perl libtemplate-perl libtext-trim-perl libtry-tiny-perl libxml-libxml-perl libyaml-libyaml-perl libdbd-mysql-perl libapache2-mod-perl2 libmail-imapclient-perl libauthen-sasl-perl libauthen-ntlm-perl libjson-xs-perl libtext-csv-xs-perl libpath-class-perl libplack-perl libplack-middleware-header-perl libplack-middleware-reverseproxy-perl libencode-hanextra-perl libio-socket-ssl-perl libnet-ldap-perl libcrypt-eksblowfish-perl libxml-libxslt-perl libxml-parser-perl libconst-fast-perl libtext-csv-perl libjavascript-minifier-xs-perl libcss-minifier-xs-perl libcapture-tiny-perl libdbd-pg-perl
     perl /opt/otobo/bin/otobo.CheckModules.pl -list
     ```
 
@@ -64,14 +64,8 @@
     ```sh
     apt install apache2 libapache2-mod-perl2 -y
 
-    a2dismod mpm_event && \
-    a2dismod mpm_worker && \
-    a2enmod mpm_prefork
-
-    a2enmod perl && \
-    a2enmod deflate && \
-    a2enmod filter && \
-    a2enmod headers
+    a2dismod mpm_event mpm_worker
+    a2enmod mpm_prefork perl deflate filter headers
     ```
 
    - Configurar sin SSL:
@@ -144,19 +138,6 @@
       ```sh
       /usr/share/elasticsearch/bin/elasticsearch-plugin install --batch ingest-attachment && \
         /usr/share/elasticsearch/bin/elasticsearch-plugin install --batch analysis-icu
-      ```
-
-   2. Descomentar en ***/etc/elasticsearch/jvm.options***:
-
-      ```text
-      -Xms[mitad de la ram]g
-      -Xmx[mitad de la ram]g
-      ```
-
-   3. reiniciar servicio:
-
-      ```sh
-      systemctl restart elasticsearch
       ```
 
 10. Ingresar a <http://ip/otobo/installer.pl> y seguir los pasos.
@@ -265,7 +246,7 @@ su -c "/opt/otobo/bin/otobo.Console.pl Admin::User::Add --user-name <> --first-n
 > Otobo tiene que ser versión 10, no sirve 11 o superior.
 
 1. Detener el daemon de OTRS.
-2. Empaquetar la carpeta **_/opt/otrs_** y enviarla al servidor de otobo.
+2. Empaquetar la carpeta ***/opt/otrs*** y enviarla al servidor de otobo.
 3. Asignar permisos a otrs:
 
     ```sh
