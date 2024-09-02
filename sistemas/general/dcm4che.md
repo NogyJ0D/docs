@@ -14,7 +14,9 @@
     - [A](#a)
     - [\<= Instalar Oviyam 2.8.2 en Alpine Linux manualmente](#-instalar-oviyam-282-en-alpine-linux-manualmente)
   - [Extras](#extras)
+    - [Modifcar UI](#modifcar-ui)
     - [Migrar estudios de un servidor a otro](#migrar-estudios-de-un-servidor-a-otro)
+    - [Mover instalación a nueva particion](#mover-instalación-a-nueva-particion)
     - [Agregar visor DICOM web como contenedor](#agregar-visor-dicom-web-como-contenedor)
       - [Oviyam](#oviyam)
       - [OHIF](#ohif)
@@ -767,6 +769,18 @@ services:
 
 ## Extras
 
+### Modifcar UI
+
+- Ir a Configuration > Devices > dcm4chee-arc > Extensions > Device Extension > Child Objects > UI Configuration.
+  - Child Objects:
+    - Modificar Language Config y agregar es y en.
+  - Attributes:
+    - Background URL: ruta a archivo
+    - Logo URL: ruta a archivo
+    - Hide Clock
+    - Page Title
+    - Default Widget AETs > DCM4CHEE
+
 ### Migrar estudios de un servidor a otro
 
 - Descargar [dcm4chee completo](https://sourceforge.net/projects/dcm4che/files/dcm4che3/) para las tools:
@@ -783,6 +797,36 @@ services:
   - ip: ip del servidor destino.
   - puerto: puerto del servidor destino. 11112 para DCM4CHEE o 4242 para Orthanc.
   - storage: ruta de los estudios. Puede ser /storage/fs1 para dcm en docker, /root/wildfly/standalone/data/fs1 para la instalación manual.
+
+### Mover instalación a nueva particion
+
+1. Crear y agregar disco en proxmox.
+2. Formatear disco:
+
+    ```sh
+    fdisk /dev/sdx
+    g
+    n
+    Enter
+    Enter
+    w
+    mkfs.ext4 /dev/sdx1
+    ```
+
+3. Crear montado:
+
+    ```sh
+    mkdir /mnt/dcm4chee
+    blkid # Copiar uuid de la partición
+    editor /etc/fstab
+    # Agregar la entrada:
+    # UUID=copiado  /mnt/dcm4chee  ext4 defaults  0  2
+    systemctl daemon-reload
+    mount -a
+    ```
+
+4. Cambiar storage en la interfaz:
+   1.
 
 ### Agregar visor DICOM web como contenedor
 
@@ -804,7 +848,6 @@ services:
     ```
 
 - Entrar a "<http://ip:80>" para oviyam:
-
    1. Loguearse como "admin" "adm1n".
 
       > Para modificar los usuarios locales de tomcat ejecutar:
