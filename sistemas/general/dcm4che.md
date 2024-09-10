@@ -40,173 +40,173 @@
    - [PostgreSQL 15](../../database/sql/postgres.md#instalar-postgresql-en-debian-12)
    - OpenLDAP 2.5.11
 
-    ```sh
-    apt install postgresql-15 openjdk-17-jre openjdk-17-jdk slapd ldap-utils maven unzip
-    # Recordar contraseña del administrador de ldap
-    wget https://github.com/wildfly/wildfly/releases/download/32.0.1.Final/wildfly-32.0.1.Final.zip
-    ```
+   ```sh
+   apt install postgresql-15 openjdk-17-jre openjdk-17-jdk slapd ldap-utils maven unzip
+   # Recordar contraseña del administrador de ldap
+   wget https://github.com/wildfly/wildfly/releases/download/32.0.1.Final/wildfly-32.0.1.Final.zip
+   ```
 
 2. Descargar el [archcive](https://sourceforge.net/projects/dcm4che/files/dcm4chee-arc-light5/):
 
-    ```sh
-    wget https://sourceforge.net/projects/dcm4che/files/dcm4chee-arc-light5/5.32.0/dcm4chee-arc-5.32.0-psql.zip/download -O dcm4chee-arc-5.32.0-psql.zip
-    unzip dcm4chee-arc-5.32.0-psql.zip
-    ```
+   ```sh
+   wget https://sourceforge.net/projects/dcm4che/files/dcm4chee-arc-light5/5.32.0/dcm4chee-arc-5.32.0-psql.zip/download -O dcm4chee-arc-5.32.0-psql.zip
+   unzip dcm4chee-arc-5.32.0-psql.zip
+   ```
 
 3. Crear base de datos:
 
-    ```sh
-    su postgres -c "createuser -U postgres -P -d dcm4chee"
-    su postgres -c "createdb -h localhost -U dcm4chee dcm4chee"
+   ```sh
+   su postgres -c "createuser -U postgres -P -d dcm4chee"
+   su postgres -c "createdb -h localhost -U dcm4chee dcm4chee"
 
-    psql -h localhost dcm4chee dcm4chee < $DCM4CHEE_ARC/sql/psql/create-psql.sql
-    psql -h localhost dcm4chee dcm4chee < $DCM4CHEE_ARC/sql/psql/create-fk-index.sql
-    psql -h localhost dcm4chee dcm4chee < $DCM4CHEE_ARC/sql/psql/create-case-insensitive-index.sql
-    ```
+   psql -h localhost dcm4chee dcm4chee < $DCM4CHEE_ARC/sql/psql/create-psql.sql
+   psql -h localhost dcm4chee dcm4chee < $DCM4CHEE_ARC/sql/psql/create-fk-index.sql
+   psql -h localhost dcm4chee dcm4chee < $DCM4CHEE_ARC/sql/psql/create-case-insensitive-index.sql
+   ```
 
 4. Configurar ldap:
 
-    ```sh
-    ldapadd -Y EXTERNAL -H ldapi:/// -f $DCM4CHEE_ARC/ldap/slapd/dicom.ldif
-    ldapadd -Y EXTERNAL -H ldapi:/// -f $DCM4CHEE_ARC/ldap/slapd/dcm4che.ldif
-    tr -d \\r < $DCM4CHEE_ARC/ldap/slapd/dcm4chee-archive.ldif | ldapadd -Y EXTERNAL -H ldapi:///
-    ldapadd -Y EXTERNAL -H ldapi:/// -f $DCM4CHEE_ARC/ldap/slapd/dcm4chee-archive-ui.ldif
+   ```sh
+   ldapadd -Y EXTERNAL -H ldapi:/// -f $DCM4CHEE_ARC/ldap/slapd/dicom.ldif
+   ldapadd -Y EXTERNAL -H ldapi:/// -f $DCM4CHEE_ARC/ldap/slapd/dcm4che.ldif
+   tr -d \\r < $DCM4CHEE_ARC/ldap/slapd/dcm4chee-archive.ldif | ldapadd -Y EXTERNAL -H ldapi:///
+   ldapadd -Y EXTERNAL -H ldapi:/// -f $DCM4CHEE_ARC/ldap/slapd/dcm4chee-archive-ui.ldif
 
-    slappasswd # Copiar resultado para dcm4che
-    ```
+   slappasswd # Copiar resultado para dcm4che
+   ```
 
    - Crear el archivo **_modify-baseDN.ldif_**:
 
-      ```ldif
-      dn: olcDatabase={1}mdb,cn=config
-      changetype: modify
-      replace: olcSuffix
-      olcSuffix: dc=dcm4che,dc=org
-      -
-      replace: olcRootDN
-      olcRootDN: cn=admin,dc=dcm4che,dc=org
-      -
-      replace: olcRootPW
-      olcRootPW: [Resultado slappasswd]
-      ```
+     ```ldif
+     dn: olcDatabase={1}mdb,cn=config
+     changetype: modify
+     replace: olcSuffix
+     olcSuffix: dc=dcm4che,dc=org
+     -
+     replace: olcRootDN
+     olcRootDN: cn=admin,dc=dcm4che,dc=org
+     -
+     replace: olcRootPW
+     olcRootPW: [Resultado slappasswd]
+     ```
 
    - Crear el archivo **_slapd_setup_basic.ldif_**:
 
-      ```ldif
-      dn: dc=dcm4che,dc=org
-      changetype: add
-      objectClass: top
-      objectClass: dcObject
-      objectClass: organization
-      o: Example org name
-      dc: dcm4che
+     ```ldif
+     dn: dc=dcm4che,dc=org
+     changetype: add
+     objectClass: top
+     objectClass: dcObject
+     objectClass: organization
+     o: Example org name
+     dc: dcm4che
 
-      dn: cn=admin,dc=dcm4che,dc=org
-      changetype: add
-      objectClass: simpleSecurityObject
-      objectClass: organizationalRole
-      cn: admin
-      description: LDAP administrator
-      userPassword: [Contraseña usada al instalar slapd]
-      ```
+     dn: cn=admin,dc=dcm4che,dc=org
+     changetype: add
+     objectClass: simpleSecurityObject
+     objectClass: organizationalRole
+     cn: admin
+     description: LDAP administrator
+     userPassword: [Contraseña usada al instalar slapd]
+     ```
 
-      ```sh
-      ldapmodify -Y EXTERNAL -H ldapi:/// -f modify-baseDN.ldif
-      ldapmodify -x -W -D "cn=admin,dc=dcm4che,dc=org" -H ldapi:/// -f slapd_setup_basic.ldif
+     ```sh
+     ldapmodify -Y EXTERNAL -H ldapi:/// -f modify-baseDN.ldif
+     ldapmodify -x -W -D "cn=admin,dc=dcm4che,dc=org" -H ldapi:/// -f slapd_setup_basic.ldif
 
-      ldapadd -x -W -D "cn=admin,dc=dcm4che,dc=org" -f $DCM4CHEE_ARC/ldap/init-baseDN.ldif
-      ldapadd -x -W -D "cn=admin,dc=dcm4che,dc=org" -f $DCM4CHEE_ARC/ldap/init-config.ldif
-      ldapadd -x -W -D "cn=admin,dc=dcm4che,dc=org" -f $DCM4CHEE_ARC/ldap/default-config.ldif
-      ldapadd -x -W -D "cn=admin,dc=dcm4che,dc=org" -f $DCM4CHEE_ARC/ldap/default-ui-config.ldif
+     ldapadd -x -W -D "cn=admin,dc=dcm4che,dc=org" -f $DCM4CHEE_ARC/ldap/init-baseDN.ldif
+     ldapadd -x -W -D "cn=admin,dc=dcm4che,dc=org" -f $DCM4CHEE_ARC/ldap/init-config.ldif
+     ldapadd -x -W -D "cn=admin,dc=dcm4che,dc=org" -f $DCM4CHEE_ARC/ldap/default-config.ldif
+     ldapadd -x -W -D "cn=admin,dc=dcm4che,dc=org" -f $DCM4CHEE_ARC/ldap/default-ui-config.ldif
 
-      cd $DCM4CHEE_ARC/ldap
-      ldapadd -x -W -Dcn=admin,dc=dcm4che,dc=org -f add-vendor-data.ldif
+     cd $DCM4CHEE_ARC/ldap
+     ldapadd -x -W -Dcn=admin,dc=dcm4che,dc=org -f add-vendor-data.ldif
 
-      # Verificar configuración. Tiene que devolver dicomVendotData:: Texto largo
-      ldapsearch -LLLsbase -x -W -Dcn=admin,dc=dcm4che,dc=org -b "dicomDeviceName=dcm4chee-arc,cn=Devices,cn=DICOM Configuration,dc=dcm4che,dc=org" dicomVendorData | head
-      ```
+     # Verificar configuración. Tiene que devolver dicomVendotData:: Texto largo
+     ldapsearch -LLLsbase -x -W -Dcn=admin,dc=dcm4che,dc=org -b "dicomDeviceName=dcm4chee-arc,cn=Devices,cn=DICOM Configuration,dc=dcm4che,dc=org" dicomVendorData | head
+     ```
 
 5. Configurar wildfly:
 
-    ```sh
-    cp -r $DCM4CHEE_ARC/configuration /root/wildfly-x.x.x.Final/standalone
-    cd /root/wildfly-x.x.x.Final/standalone/configuration/
-    cp standalone.xml dcm4chee-arc.xml
-    editor dcm4chee-arc/ldap.properties # Cambiar contraseña de ldap por la de dcm4chee
+   ```sh
+   cp -r $DCM4CHEE_ARC/configuration /root/wildfly-x.x.x.Final/standalone
+   cd /root/wildfly-x.x.x.Final/standalone/configuration/
+   cp standalone.xml dcm4chee-arc.xml
+   editor dcm4chee-arc/ldap.properties # Cambiar contraseña de ldap por la de dcm4chee
 
-    cd /root/wildfly-x.x.x.Final
-    unzip $DCM4CHEE_ARC/jboss-modules/dcm4che-jboss-modules-5.x.x.zip
-    unzip $DCM4CHEE_ARC/jboss-modules/jai_imageio-jboss-modules-1.2-pre-dr-b04.zip
-    unzip $DCM4CHEE_ARC/jboss-modules/jclouds-jboss-modules-2.2.1-noguava.zip
-    unzip $DCM4CHEE_ARC/jboss-modules/jdbc-jboss-modules-mysql-8.0.20.zip
+   cd /root/wildfly-x.x.x.Final
+   unzip $DCM4CHEE_ARC/jboss-modules/dcm4che-jboss-modules-5.x.x.zip
+   unzip $DCM4CHEE_ARC/jboss-modules/jai_imageio-jboss-modules-1.2-pre-dr-b04.zip
+   unzip $DCM4CHEE_ARC/jboss-modules/jclouds-jboss-modules-2.2.1-noguava.zip
+   unzip $DCM4CHEE_ARC/jboss-modules/jdbc-jboss-modules-mysql-8.0.20.zip
 
-    cd /root
-    wget https://github.com/dcm4che/ecs-object-client-jboss-modules/archive/refs/heads/master.zip
-    unzip master.zip
-    cd ecs-object-client-jboss-modules-master
-    mvn install
-    unzip target/ecs-object-client-jboss-modules-3.0.0.zip -d /root/wildfly-...
-    ```
+   cd /root
+   wget https://github.com/dcm4che/ecs-object-client-jboss-modules/archive/refs/heads/master.zip
+   unzip master.zip
+   cd ecs-object-client-jboss-modules-master
+   mvn install
+   unzip target/ecs-object-client-jboss-modules-3.0.0.zip -d /root/wildfly-...
+   ```
 
    - Correr wildfly en una terminal:
 
-      ```sh
-      $WILDFLY_HOME/bin/standalone.sh -c dcm4chee-arc.xml -b 0.0.0.0
-      # Si da error, revisar que en /etc/hosts esté el nombre de la maquina como local
-      ```
+     ```sh
+     $WILDFLY_HOME/bin/standalone.sh -c dcm4chee-arc.xml -b 0.0.0.0
+     # Si da error, revisar que en /etc/hosts esté el nombre de la maquina como local
+     ```
 
    - En otra terminal en simultaneo:
 
-      ```sh
-      $WILDFLY_HOME/bin/jboss-cli.sh -c
-      /subsystem=datasources/jdbc-driver=psql:add(driver-name=psql,driver-module-name=org.postgresql)
+     ```sh
+     $WILDFLY_HOME/bin/jboss-cli.sh -c
+     /subsystem=datasources/jdbc-driver=psql:add(driver-name=psql,driver-module-name=org.postgresql)
 
-      data-source add --name=PacsDS \
-        --driver-name=psql \
-        --connection-url=jdbc:postgresql://127.0.0.1:5432/dcm4chee \
-        --jndi-name=java:/PacsDS \
-        --user-name=dcm4chee \
-        --password=[contraseña]
+     data-source add --name=PacsDS \
+       --driver-name=psql \
+       --connection-url=jdbc:postgresql://127.0.0.1:5432/dcm4chee \
+       --jndi-name=java:/PacsDS \
+       --user-name=dcm4chee \
+       --password=[contraseña]
 
-      exit
+     exit
 
-      $WILDFLY_HOME/bin/jboss-cli.sh -c --file=$DCM4CHEE_ARC/cli/adjust-managed-executor.cli
+     $WILDFLY_HOME/bin/jboss-cli.sh -c --file=$DCM4CHEE_ARC/cli/adjust-managed-executor.cli
 
-      $WILDFLY_HOME/bin/jboss-cli.sh -c
-      reload
-      /subsystem=undertow/server=default-server/http-listener=default:write-attribute(name=max-post-size,value=10000000000)
-      /subsystem=undertow/server=default-server/https-listener=https:write-attribute(name=max-post-size,value=10000000000)
-      reload
+     $WILDFLY_HOME/bin/jboss-cli.sh -c
+     reload
+     /subsystem=undertow/server=default-server/http-listener=default:write-attribute(name=max-post-size,value=10000000000)
+     /subsystem=undertow/server=default-server/https-listener=https:write-attribute(name=max-post-size,value=10000000000)
+     reload
 
-      deploy /root/dcm4chee-arc-5.32.0-psql/deploy/dcm4chee-arc-ear-5.32.0-psql.ear
-      deploy /root/dcm4chee-arc-5.32.0-psql/deploy/dcm4chee-arc-ui2-5.32.0.war
-      ```
+     deploy /root/dcm4chee-arc-5.32.0-psql/deploy/dcm4chee-arc-ear-5.32.0-psql.ear
+     deploy /root/dcm4chee-arc-5.32.0-psql/deploy/dcm4chee-arc-ui2-5.32.0.war
+     ```
 
    - Probar que funcione <http://ip:8080/dcm4chee-arc/ui2>
    - Apagar wildfly.
 
 6. Crear archivo **_/etc/systemd/system/wildfly.service_**:
 
-    ```service
-    [Unit]
-    Description=Wildfly Application Server
-    After=network.target
+   ```service
+   [Unit]
+   Description=Wildfly Application Server
+   After=network.target
 
-    [Service]
-    Type=simple
-    User=root
-    Group=root
-    ExecStart=/root/wildfly-32.0.1.Final/bin/standalone.sh -b 0.0.0.0 -c dcm4chee-arc.xml
-    ExecStop=/root/wildfly-32.0.1.Final/bin/jboss-cli.sh --connect command=:shutdown
-    Restart=on-failure
+   [Service]
+   Type=simple
+   User=root
+   Group=root
+   ExecStart=/root/wildfly-32.0.1.Final/bin/standalone.sh -b 0.0.0.0 -c dcm4chee-arc.xml
+   ExecStop=/root/wildfly-32.0.1.Final/bin/jboss-cli.sh --connect command=:shutdown
+   Restart=on-failure
 
-    [Install]
-    WantedBy=multi-user.target
-    ```
+   [Install]
+   WantedBy=multi-user.target
+   ```
 
-    ```sh
-    systemctl enable --now wildfly.service
-    ```
+   ```sh
+   systemctl enable --now wildfly.service
+   ```
 
 - Extra:
 
@@ -253,91 +253,91 @@ by your Directory Base DN, e.g.:
 3. Crear y arrancar el stack reemplazando las contraseñas:
 
    ```yml
-    version: "3"
-    services:
-      ldap:
-        image: dcm4che/slapd-dcm4chee:2.6.5-31.2
-        logging:
-          driver: json-file
-          options:
-            max-size: "10m"
-        ports:
-          - "389:389"
-        environment:
-          STORAGE_DIR: /storage/fs1
-        volumes:
-          - /root/dcm4chee-arc/ldap:/var/lib/openldap/openldap-data
-          - /root/dcm4chee-arc/slapd.d:/etc/openldap/slapd.d
-        networks:
-          - dcm4chee_default
-        restart: always
+   version: "3"
+   services:
+     ldap:
+       image: dcm4che/slapd-dcm4chee:2.6.5-31.2
+       logging:
+         driver: json-file
+         options:
+           max-size: "10m"
+       ports:
+         - "389:389"
+       environment:
+         STORAGE_DIR: /storage/fs1
+       volumes:
+         - /root/dcm4chee-arc/ldap:/var/lib/openldap/openldap-data
+         - /root/dcm4chee-arc/slapd.d:/etc/openldap/slapd.d
+       networks:
+         - dcm4chee_default
+       restart: always
 
-      db:
-        image: dcm4che/postgres-dcm4chee:15.4-31
-        logging:
-          driver: json-file
-          options:
-            max-size: "10m"
-        ports:
-        - "5432:5432"
-        environment:
-          POSTGRES_DB: pacsdb
-          POSTGRES_USER: pacs
-          POSTGRES_PASSWORD: <contraseña db>
-        volumes:
-          - /etc/localtime:/etc/localtime:ro
-          - /etc/timezone:/etc/timezone:ro
-          - /root/dcm4chee-arc/db:/var/lib/postgresql/data
-        networks:
-          - dcm4chee_default
-        restart: always
+     db:
+       image: dcm4che/postgres-dcm4chee:15.4-31
+       logging:
+         driver: json-file
+         options:
+           max-size: "10m"
+       ports:
+         - "5432:5432"
+       environment:
+         POSTGRES_DB: pacsdb
+         POSTGRES_USER: pacs
+         POSTGRES_PASSWORD: <contraseña db>
+       volumes:
+         - /etc/localtime:/etc/localtime:ro
+         - /etc/timezone:/etc/timezone:ro
+         - /root/dcm4chee-arc/db:/var/lib/postgresql/data
+       networks:
+         - dcm4chee_default
+       restart: always
 
-      arc:
-        image: dcm4che/dcm4chee-arc-psql:5.31.2
-        logging:
-          driver: json-file
-          options:
-            max-size: "10m"
-        ports:
-          - "8080:8080"
-          - "8443:8443"
-          - "9990:9990"
-          - "9993:9993"
-          - "11112:11112"
-          - "2762:2762"
-          - "2575:2575"
-          - "12575:12575"
-        environment:
-          POSTGRES_DB: pacsdb
-          POSTGRES_USER: pacs
-          POSTGRES_PASSWORD: <contraseña db>
-          WILDFLY_CHOWN: /storage
-          WILDFLY_WAIT_FOR: "ldap:389 db:5432"
-        depends_on:
-          - ldap
-          - db
-        volumes:
-          - /etc/localtime:/etc/localtime:ro
-          - /etc/timezone:/etc/timezone:ro
-          - /root/dcm4chee-arc/wildfly:/opt/wildfly/standalone
-          - /root/dcm4chee-arc/storage:/storage
-        networks:
-          - dcm4chee_default
-        restart: always
+     arc:
+       image: dcm4che/dcm4chee-arc-psql:5.31.2
+       logging:
+         driver: json-file
+         options:
+           max-size: "10m"
+       ports:
+         - "8080:8080"
+         - "8443:8443"
+         - "9990:9990"
+         - "9993:9993"
+         - "11112:11112"
+         - "2762:2762"
+         - "2575:2575"
+         - "12575:12575"
+       environment:
+         POSTGRES_DB: pacsdb
+         POSTGRES_USER: pacs
+         POSTGRES_PASSWORD: <contraseña db>
+         WILDFLY_CHOWN: /storage
+         WILDFLY_WAIT_FOR: "ldap:389 db:5432"
+       depends_on:
+         - ldap
+         - db
+       volumes:
+         - /etc/localtime:/etc/localtime:ro
+         - /etc/timezone:/etc/timezone:ro
+         - /root/dcm4chee-arc/wildfly:/opt/wildfly/standalone
+         - /root/dcm4chee-arc/storage:/storage
+       networks:
+         - dcm4chee_default
+       restart: always
 
-    networks:
-      dcm4chee_default:
+   networks:
+     dcm4chee_default:
    ```
 
-    > Puertos:
-    >
-    > 8080/8443 = http/https web server
-    >
-    > 9990/9993 = http/https wildfly console
-    >
-    > 11112/2762 = DICOM/DICOM-TLS
-    >
-    > 2575/12575 = HL7/HL7-TLS
+   > Puertos:
+   >
+   > 8080/8443 = http/https web server
+   >
+   > 9990/9993 = http/https wildfly console
+   >
+   > 11112/2762 = DICOM/DICOM-TLS
+   >
+   > 2575/12575 = HL7/HL7-TLS
 
 4. Entrar a "<https://ip:8443/dcm4chee-arc/ui2>" para arc.
 
@@ -785,13 +785,13 @@ services:
 
 - Descargar [dcm4chee completo](https://sourceforge.net/projects/dcm4che/files/dcm4che3/) para las tools:
 
-    ```sh
-    wget version.tar.gz -O dcm.tar.gz
-    tar xvzf dcm.tar.gz
+  ```sh
+  wget version.tar.gz -O dcm.tar.gz
+  tar xvzf dcm.tar.gz
 
-    cd dcm4chee.../bin/
-    ./storescu -c [aet]@[ip]:[puerto] [storage]
-    ```
+  cd dcm4chee.../bin/
+  ./storescu -c [aet]@[ip]:[puerto] [storage]
+  ```
 
   - aet: AET destino. DCM4CHEE u ORTHANC son default.
   - ip: ip del servidor destino.
@@ -803,30 +803,41 @@ services:
 1. Crear y agregar disco en proxmox.
 2. Formatear disco:
 
-    ```sh
-    fdisk /dev/sdx
-    g
-    n
-    Enter
-    Enter
-    w
-    mkfs.ext4 /dev/sdx1
-    ```
+   ```sh
+   fdisk /dev/sdx
+   g
+   n
+   Enter
+   Enter
+   w
+   mkfs.ext4 /dev/sdx1
+   ```
 
 3. Crear montado:
 
-    ```sh
-    mkdir /mnt/dcm4chee
-    blkid # Copiar uuid de la partición
-    editor /etc/fstab
-    # Agregar la entrada:
-    # UUID=copiado  /mnt/dcm4chee  ext4 defaults  0  2
-    systemctl daemon-reload
-    mount -a
-    ```
+   ```sh
+   mkdir /mnt/dcm4chee
+   blkid # Copiar uuid de la partición
+   editor /etc/fstab
+   # Agregar la entrada:
+   # UUID=copiado  /mnt/dcm4chee  ext4 defaults  0  2
+   systemctl daemon-reload
+   mount -a
+   ```
 
-4. Cambiar storage en la interfaz:
-   1.
+4. Cambiar storage con ldap:
+
+   - Crear el archivo fs2.ldif:
+
+     ```sh
+
+     ```
+
+   - Crear el archivo fs2_2.ldif:
+
+     ```sh
+
+     ```
 
 ### Agregar visor DICOM web como contenedor
 
@@ -834,21 +845,22 @@ services:
 
 - Composer:
 
-    ```yml
-     oviyam:
-        image: informaticamedica/oviyam:2.8
-        networks:
-          - dcm4chee_default
-        ports:
-          - "80:8080"
-          - "1025:1025"
-        volumes:
-          - /root/dcm4chee-arc/oviyam:/usr/local/tomcat/work
-        restart: always
-    ```
+  ```yml
+  oviyam:
+    image: informaticamedica/oviyam:2.8
+    networks:
+      - dcm4chee_default
+    ports:
+      - "80:8080"
+      - "1025:1025"
+    volumes:
+      - /root/dcm4chee-arc/oviyam:/usr/local/tomcat/work
+    restart: always
+  ```
 
 - Entrar a "<http://ip:80>" para oviyam:
-   1. Loguearse como "admin" "adm1n".
+
+  1.  Loguearse como "admin" "adm1n".
 
       > Para modificar los usuarios locales de tomcat ejecutar:
       >
@@ -856,56 +868,56 @@ services:
       >
       > Modificar /usr/local/tomcat/conf/tomcat-users.xml
 
-   2. Agregar un servidor dicom: "DCM4CHEE", "DCM4CHEE", "arc", "11112", "WADO, "dcm4chee-arc/aets/DCM4CHEE/wado", "8080", "JPEG".
+  2.  Agregar un servidor dicom: "DCM4CHEE", "DCM4CHEE", "arc", "11112", "WADO, "dcm4chee-arc/aets/DCM4CHEE/wado", "8080", "JPEG".
 
 #### OHIF
 
 - Composer:
 
-    ```yml
-    ohif:
-        image: ohif/app:latest
-        networks:
-          - dcm4chee_default
-        ports:
-          - "3000:80"
-        volumes:
-          - /root/dcm4chee-arc/ohif.js:/usr/share/nginx/html/app-config.js
-        restart: always
-    ```
+  ```yml
+  ohif:
+    image: ohif/app:latest
+    networks:
+      - dcm4chee_default
+    ports:
+      - "3000:80"
+    volumes:
+      - /root/dcm4chee-arc/ohif.js:/usr/share/nginx/html/app-config.js
+    restart: always
+  ```
 
 - _**/root/dcm4chee-arc/ohif.js**_:
 
-    ```js
-    window.config = {
-      routerBasename: '/',
-      extensions: [],
-      modes: [],
-      showStudyList: true,
-      dataSources: [
-        {
-          namespace: '@ohif/extension-default.dataSourcesModule.dicomweb',
-          sourceName: 'dicomweb',
-          configuration: {
-            friendlyName: 'dcmjs DICOMWeb Server',
-            name: 'DCM4CHEE',
-            wadoUriRoot: 'https://<ip>:8443/dcm4chee-arc/aets/DCM4CHEE/wado',
-            qidoRoot: 'https://<ip>:8443/dcm4chee-arc/aets/DCM4CHEE/rs',
-            wadoRoot: 'https://<ip>:8443/dcm4chee-arc/aets/DCM4CHEE/rs',
-            qidoSupportsIncludeField: true,
-            supportsReject: true,
-            imageRendering: 'wadors',
-            thumbnailRendering: 'wadors',
-            enableStudyLazyLoad: true,
-            supportsFuzzyMatching: true,
-            supportsWildcard: true,
-            omitQuotationForMultipartRequest: true,
-          },
+  ```js
+  window.config = {
+    routerBasename: "/",
+    extensions: [],
+    modes: [],
+    showStudyList: true,
+    dataSources: [
+      {
+        namespace: "@ohif/extension-default.dataSourcesModule.dicomweb",
+        sourceName: "dicomweb",
+        configuration: {
+          friendlyName: "dcmjs DICOMWeb Server",
+          name: "DCM4CHEE",
+          wadoUriRoot: "https://<ip>:8443/dcm4chee-arc/aets/DCM4CHEE/wado",
+          qidoRoot: "https://<ip>:8443/dcm4chee-arc/aets/DCM4CHEE/rs",
+          wadoRoot: "https://<ip>:8443/dcm4chee-arc/aets/DCM4CHEE/rs",
+          qidoSupportsIncludeField: true,
+          supportsReject: true,
+          imageRendering: "wadors",
+          thumbnailRendering: "wadors",
+          enableStudyLazyLoad: true,
+          supportsFuzzyMatching: true,
+          supportsWildcard: true,
+          omitQuotationForMultipartRequest: true,
         },
-      ],
-      defaultDataSourceName: 'dicomweb',
-    };
-    ```
+      },
+    ],
+    defaultDataSourceName: "dicomweb",
+  };
+  ```
 
 ## Keycloak
 
