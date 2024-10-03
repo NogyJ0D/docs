@@ -36,21 +36,21 @@
 1. Requisitos:
 
    - Java SE 11 o superior
-   - Wildfly 32.0.1
+   - Wildfly 33.0.2
    - [PostgreSQL 15](../../database/sql/postgres.md#instalar-postgresql-en-debian-12)
    - OpenLDAP 2.5.11
 
    ```sh
    apt install postgresql-15 openjdk-17-jre openjdk-17-jdk slapd ldap-utils maven unzip
    # Recordar contraseña del administrador de ldap
-   wget https://github.com/wildfly/wildfly/releases/download/32.0.1.Final/wildfly-32.0.1.Final.zip
+   wget https://github.com/wildfly/wildfly/releases/download/33.0.2.Final/wildfly-33.0.2.Final.zip
    ```
 
 2. Descargar el [archcive](https://sourceforge.net/projects/dcm4che/files/dcm4chee-arc-light5/):
 
    ```sh
-   wget https://sourceforge.net/projects/dcm4che/files/dcm4chee-arc-light5/5.32.0/dcm4chee-arc-5.32.0-psql.zip/download -O dcm4chee-arc-5.32.0-psql.zip
-   unzip dcm4chee-arc-5.32.0-psql.zip
+   wget https://sourceforge.net/projects/dcm4che/files/dcm4chee-arc-light5/5.33.0/dcm4chee-arc-5.33.0-psql.zip/download -O dcm4chee-arc-5.33.0-psql.zip
+   unzip dcm4chee-arc-5.33.0-psql.zip
    ```
 
 3. Crear base de datos:
