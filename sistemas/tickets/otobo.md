@@ -29,72 +29,73 @@
 
 2. Descargar Otobo:
 
-   - [Buscar la última versión](https://ftp.otobo.org/pub/otobo/).
+   - [Buscar la última versión](https://ftp.otobo.org/pub/otobo/)
+     - Si se va a descargar para migrar OTRS, descargar la latest-10.1
 
-    ```sh
-    mkdir /opt/otobo-install /opt/otobo
-    cd /opt/otobo-install
-    wget https://ftp.otobo.org/pub/otobo/otobo-latest-...
-    tar -xvzf otobo-latest-...
-    # REVISAR cp -r otobo-.../* /opt/otobo
-    ```
+   ```sh
+   mkdir /opt/otobo-install /opt/otobo
+   cd /opt/otobo-install
+   wget https://ftp.otobo.org/pub/otobo/otobo-latest-...
+   tar -xvzf otobo-latest-...
+   cp -r otobo-.../* /opt/otobo
+   ```
 
 3. Instalar adicionales:
 
-    ```sh
-    apt install -y libarchive-zip-perl libtimedate-perl libdatetime-perl libconvert-binhex-perl libcgi-psgi-perl libdbi-perl libdbix-connector-perl libfile-chmod-perl liblist-allutils-perl libmoo-perl libnamespace-autoclean-perl libnet-dns-perl libnet-smtp-ssl-perl libpath-class-perl libsub-exporter-perl libtemplate-perl libtext-trim-perl libtry-tiny-perl libxml-libxml-perl libyaml-libyaml-perl libdbd-mysql-perl libapache2-mod-perl2 libmail-imapclient-perl libauthen-sasl-perl libauthen-ntlm-perl libjson-xs-perl libtext-csv-xs-perl libpath-class-perl libplack-perl libplack-middleware-header-perl libplack-middleware-reverseproxy-perl libencode-hanextra-perl libio-socket-ssl-perl libnet-ldap-perl libcrypt-eksblowfish-perl libxml-libxslt-perl libxml-parser-perl libconst-fast-perl libtext-csv-perl libjavascript-minifier-xs-perl libcss-minifier-xs-perl libcapture-tiny-perl libdbd-pg-perl
-    perl /opt/otobo/bin/otobo.CheckModules.pl -list
-    ```
+   ```sh
+   apt install -y libarchive-zip-perl libtimedate-perl libdatetime-perl libconvert-binhex-perl libcgi-psgi-perl libdbi-perl libdbix-connector-perl libfile-chmod-perl liblist-allutils-perl libmoo-perl libnamespace-autoclean-perl libnet-dns-perl libnet-smtp-ssl-perl libpath-class-perl libsub-exporter-perl libtemplate-perl libtext-trim-perl libtry-tiny-perl libxml-libxml-perl libyaml-libyaml-perl libdbd-mysql-perl libapache2-mod-perl2 libmail-imapclient-perl libauthen-sasl-perl libauthen-ntlm-perl libjson-xs-perl libtext-csv-xs-perl libpath-class-perl libplack-perl libplack-middleware-header-perl libplack-middleware-reverseproxy-perl libencode-hanextra-perl libio-socket-ssl-perl libnet-ldap-perl libcrypt-eksblowfish-perl libxml-libxslt-perl libxml-parser-perl libconst-fast-perl libtext-csv-perl libjavascript-minifier-xs-perl libcss-minifier-xs-perl libcapture-tiny-perl libdbd-pg-perl
+   perl /opt/otobo/bin/otobo.CheckModules.pl -list
+   ```
 
 4. Crear el usuario de Otobo:
 
-    ```sh
-    useradd -r -U -d /opt/otobo -c 'OTOBO user' otobo -s /bin/bash
-    usermod -G www-data otobo
-    ```
+   ```sh
+   useradd -r -U -d /opt/otobo -c 'OTOBO user' otobo -s /bin/bash
+   usermod -G www-data otobo
+   ```
 
 5. Activar la configuración por defecto:
 
-    ```sh
-    cp /opt/otobo/Kernel/Config.pm.dist /opt/otobo/Kernel/Config.pm
-    ```
+   ```sh
+   cp /opt/otobo/Kernel/Config.pm.dist /opt/otobo/Kernel/Config.pm
+   ```
 
 6. Configurar Apache:
 
-    ```sh
-    apt install apache2 libapache2-mod-perl2 -y
+   ```sh
+   apt install apache2 libapache2-mod-perl2 -y
 
-    a2dismod mpm_event mpm_worker
-    a2enmod mpm_prefork perl deflate filter headers
-    ```
+   a2dismod mpm_event mpm_worker
+   a2enmod mpm_prefork perl deflate filter headers
+   ```
 
    - Configurar sin SSL:
 
-      ```sh
-      cp /opt/otobo/scripts/apache2-httpd.include.conf /etc/apache2/sites-available/zzz_otobo.conf
+     ```sh
+     cp /opt/otobo/scripts/apache2-httpd.include.conf /etc/apache2/sites-available/zzz_otobo.conf
 
-      a2ensite zzz_otobo.conf
-      ```
+     a2ensite zzz_otobo.conf
+     ```
 
    - Configurar con SSL:
 
-      ```sh
-      cp /opt/otobo/scripts/apache2-httpd-vhost-80.include.conf /etc/apache2/sites-available/zzz_otobo-80.conf
-      cp /opt/otobo/scripts/apache2-httpd-vhost-443.include.conf /etc/apache2/sites-available/zzz_otobo-443.conf
+     ```sh
+     cp /opt/otobo/scripts/apache2-httpd-vhost-80.include.conf /etc/apache2/sites-available/zzz_otobo-80.conf
+     cp /opt/otobo/scripts/apache2-httpd-vhost-443.include.conf /etc/apache2/sites-available/zzz_otobo-443.conf
 
-      a2ensite zzz_otobo-80.conf
-      a2ensite zzz_otobo-443.conf
-      ```
+     a2ensite zzz_otobo-80.conf
+     a2ensite zzz_otobo-443.conf
+     ```
 
-    ```sh
-    systemctl restart apache2
-    ```
+   ```sh
+   systemctl restart apache2
+   ```
 
 7. Otorgar permisos:
 
-    ```sh
-    /opt/otobo/bin/otobo.SetPermissions.pl
-    ```
+   ```sh
+   /opt/otobo/bin/otobo.SetPermissions.pl
+   ```
 
 8. Instalar base de datos:
 
@@ -112,7 +113,7 @@
           EXIT;
           ```
 
-       2. Agregar en ***/etc/mysql/my.cnf***:
+       2. Agregar en **_/etc/mysql/my.cnf_**:
 
           ```conf
           [mysqld]
@@ -146,17 +147,17 @@
 
     1. Iniciar el daemon como otobo:
 
-        ```sh
-        su otobo
-        
-        /opt/otobo/bin/otobo.Daemon.pl start
+       ```sh
+       su otobo
 
-        cd /opt/otobo/var/cron/
-        for foo in *.dist; do cp $foo `basename $foo .dist`; done
+       /opt/otobo/bin/otobo.Daemon.pl start
 
-        cd /opt/otobo/
-        bin/Cron.sh start
-        ```
+       cd /opt/otobo/var/cron/
+       for foo in *.dist; do cp $foo `basename $foo .dist`; done
+
+       cd /opt/otobo/
+       bin/Cron.sh start
+       ```
 
 ---
 
@@ -178,85 +179,134 @@ su -c "/opt/otobo/bin/otobo.Console.pl Admin::User::Add --user-name <> --first-n
 
 1. Parar servicios:
 
-    ```sh
-    systemctl stop postfix apache2 cron
-    su otobo
-    cd /opt/otobo
-    bin/Cron.sh stop
-    bin/otobo.Daemon.pl stop
-    ```
+   ```sh
+   systemctl stop apache2 cron
+   su otobo
+   cd /opt/otobo
+   bin/Cron.sh stop
+   bin/otobo.Daemon.pl stop
+   ```
 
 2. Respaldar:
 
-    ```sh
-    # como root
-    mkdir /root/otobo-update
-    cd /root/otobo-update
-    cp -pr /opt/otobo otobo-prod-old
-    mysqldump -u otobo -p otobo -r otobodump.sql
+   ```sh
+   # como root
+   cd /opt
+   mkdir otobo-update
+   cp -pr otobo otobo-update/otobo-1x.x-old
+   mysqldump -u otobo -p otobo -r otobodump.sql
 
-    # Apache y certs
-    ```
+   # Apache y certs
+   ```
 
-    - /etc/apache2/sites-enabled/zzz_otobo-443.conf
-    - /etc/apache2/sites-enabled/zzz_otobo-80.conf
-    - /opt/otobo/Kernel/Config.pm
-    - /opt/otobo/var/cron/
-    - /opt/otobo/var/article/*
-    - /opt/otobo/var/stats/*.installed
-    - [Base de datos](../../database/sql/mysql_mariadb.md#backup-y-restore)
+   - /etc/apache2/sites-enabled/zzz_otobo-443.conf
+   - /etc/apache2/sites-enabled/zzz_otobo-80.conf
+   - [Base de datos](../../database/sql/mysql_mariadb.md#backup-y-restore)
 
-3. Descargar nueva versión:
+3. Si se actualiza de la 10.1 a la 11 borrar esto:
 
-    ```sh
-    wget https://ftp.otobo.org/pub/otobo/otobo-latest-...
-    tar -xvzf otobo-latest-...
-    cp -r otobo-x.x/* /opt/otobo
-    ```
+   ```sh
+   rm -rf /opt/otobo/Kernel/cpan-lib/*
+   ```
 
-4. Poner respaldos:
+4. Descargar nueva versión:
 
-      ```sh
-      cd /root/otobo-update
+   ```sh
+   wget https://ftp.otobo.org/pub/otobo/otobo-latest-...
+   tar -xvzf otobo-latest-...
+   cp -r otobo-x.x/* /opt/otobo
+   ```
 
-      cp -p otobo-prod-old/Kernel/Config.pm /opt/otobo/Kernel
-      cp -p otobo-prod-old/var/cron/* /opt/otobo/var/cron/
+5. Poner respaldos:
 
-      cp -pr otobo-prod-old/var/article/* /opt/otobo/var/article/
+   ```sh
+   cd /root/otobo-update
 
-      cd otobo-prod-old/var/stats
-      cp *.installed /opt/otobo/var/stats
-      ```
+   cp -p otobo-prod-old/Kernel/Config.pm /opt/otobo/Kernel
+   cp -p otobo-prod-old/var/cron/* /opt/otobo/var/cron/
 
-5. Actualizar e iniciar:
+   cp -pr otobo-prod-old/var/article/* /opt/otobo/var/article/
 
-    ```sh
-    /opt/otobo/bin/otobo.SetPermissions.pl
+   cd otobo-prod-old/var/stats
+   cp *.installed /opt/otobo/var/stats
+   ```
 
-    su otobo
-    /opt/otobo/bin/otobo.Console.pl Admin::Package::ReinstallAll
-    /opt/otobo/bin/otobo.Console.pl Admin::Package::UpgradeAll
-    exit
+6. Actualizar e iniciar:
 
-    systemctl start postfix apache2 cron
-    ```
+   ```sh
+   /opt/otobo/bin/otobo.SetPermissions.pl
+
+   su - otobo
+   /opt/otobo/bin/otobo.Console.pl Admin::Package::ReinstallAll
+   /opt/otobo/bin/otobo.Console.pl Admin::Package::UpgradeAll
+   /opt/otobo/bin/otobo.Console.pl Maint::Config::Rebuild
+
+   # Si se actualiza a una versión mayor (10.1 a 11):
+   /opt/otobo/scripts/DBUpdate-to-11.0.pl
+   exit
+
+   systemctl start apache2 cron
+   ```
 
 ### Migrar de OTRS a Otobo
 
 > Otobo tiene que ser versión 10, no sirve 11 o superior.
 
-1. Detener el daemon de OTRS.
-2. Empaquetar la carpeta ***/opt/otrs*** y enviarla al servidor de otobo.
-3. Asignar permisos a otrs:
+1. Desactivar "SecureMode" en la administración de OTOBO.
 
-    ```sh
-    chown otobo:www-data /opt/otrs -R
-    ```
+2. Detener el daemon de OTOBO:
 
-4. Meterse a https://[ip]/otobo/migration.pl y seguir los pasos.
-   - Si se usa Postgres, hay que darle permiso de superusuario a otobo:
+   ```sh
+   su - otobo
+   /opt/otobo/bin/Cron.sh stop
+   /opt/otobo/bin/otobo.Daemon.pl stop --force
+   ```
 
-      ```psql
-      ALTER USER otobo WITH SUPERUSER;
-      ALTER USER otobo WITH NOSUPERUSER; # Despues de migrar hay que quitarlo
-      ```
+3. Empaquetar la carpeta **_/opt/otrs_** y enviarla al servidor de otobo:
+
+   ```sh
+   su otrs -c "/opt/otrs/bin/Cron.pl stop"
+   su otrs -c "/opt/otrs/bin/otrs.Daemon.pl stop"
+   cd /opt
+   tar cvf otrs.otobo.tar otrs
+   su otrs -c "/opt/otrs/bin/Cron.pl start"
+   su otrs -c "/opt/otrs/bin/otrs.Daemon.pl start"
+
+   scp /opt/otrs.otobo.tar usuario@ip:/opt/
+
+   tar vxf otrs.otobo.tar
+   ```
+
+4. Migrar la base de datos:
+
+   - Si OTOBO no se puede conectar a la DB de OTRS: crear el dump, importarlo en OTOBO y crear la DB con el dump.
+     - Crear db otrs con owner otrs, "psql -U otrs otrs < otrs.sql"
+
+5. Asignar permisos a otrs:
+
+   ```sh
+   chown otobo:www-data /opt/otrs -R
+   ```
+
+6. Meterse a https://[ip]/otobo/migration.pl y seguir los pasos.
+
+   - Si dice que SecureMode está activado, desactivarlo por consola:
+
+     ```sh
+     su - otobo
+     /opt/otobo/bin/otobo.Console.pl Admin::Config::Update --setting-name SecureMode --value 0
+     ```
+
+   - Si se usa Postgres, hay que darle permiso de superusuario a otobo antes de iniciar la migración:
+
+     ```psql
+     ALTER USER otobo WITH SUPERUSER;
+     ALTER USER otobo WITH NOSUPERUSER; # Despues de migrar hay que quitarlo
+     ```
+
+7. Reactivar el daemon:
+
+   ```sh
+   su otobo -c "/opt/otobo/bin/Cron.pl start"
+   su otobo -c "/opt/otobo/bin/otobo.Daemon.pl start"
+   ```
