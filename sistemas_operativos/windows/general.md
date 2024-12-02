@@ -14,9 +14,10 @@
     - [Descargar idioma](#descargar-idioma)
     - [Habilitar usuario administrador con cmd](#habilitar-usuario-administrador-con-cmd)
     - [Eliminar usuario](#eliminar-usuario)
-    - [Borrar entrada ssh en known\_hosts](#borrar-entrada-ssh-en-known_hosts)
+    - [Borrar entrada ssh en known_hosts](#borrar-entrada-ssh-en-known_hosts)
     - [Desinstalar Edge](#desinstalar-edge)
     - [Habilitar autologon](#habilitar-autologon)
+    - [Instalar Microsoft Store](#instalar-microsoft-store)
   - [Extras](#extras)
     - [Actualizar windows con powershell](#actualizar-windows-con-powershell)
 
@@ -32,61 +33,61 @@
 
 3. Particionar disco:
 
-    ```cmd
-    DISKPART
-    LIST DISK
-    SEL DISK [disco a usar]
-    CLEAN
-    ```
+   ```cmd
+   DISKPART
+   LIST DISK
+   SEL DISK [disco a usar]
+   CLEAN
+   ```
 
    - Para BIOS:
 
-      ```cmd
-      CONVERT MBR
-      CREATE PARTITION PRIMARY SIZE=100
-      FORMAT FS=ntfs QUICK LABEL="System"
-      ASSIGN LETTER=G
-      ACTIVE
-      CREATE PARTITION PRIMARY
-      FORMAT FS=ntfs QUICK LABEL="Windows"
-      ASSIGN LETTER=W
-      EXIT
-      ```
+     ```cmd
+     CONVERT MBR
+     CREATE PARTITION PRIMARY SIZE=100
+     FORMAT FS=ntfs QUICK LABEL="System"
+     ASSIGN LETTER=G
+     ACTIVE
+     CREATE PARTITION PRIMARY
+     FORMAT FS=ntfs QUICK LABEL="Windows"
+     ASSIGN LETTER=W
+     EXIT
+     ```
 
    - Para UEFI:
 
-      ```cmd
-      CONVERT GPT
-      CREATE PARTITION EFI SIZE=100
-      FORMAT FS=FAT32 QUICK
-      ASSIGN LETTER=G
-      CREATE PARTITION PRIMARY
-      FORMAT FS=ntfs QUICK
-      ASSIGN LETTER=W
-      EXIT
-      ```
+     ```cmd
+     CONVERT GPT
+     CREATE PARTITION EFI SIZE=100
+     FORMAT FS=FAT32 QUICK
+     ASSIGN LETTER=G
+     CREATE PARTITION PRIMARY
+     FORMAT FS=ntfs QUICK
+     ASSIGN LETTER=W
+     EXIT
+     ```
 
 4. Seleccionar el windows a instalar:
 
-    ```cmd
-    DISM /Get-ImageInfo /imagefile:[x/e/f]:\sources\install.wim
-    ```
+   ```cmd
+   DISM /Get-ImageInfo /imagefile:[x/e/f]:\sources\install.wim
+   ```
 
    - Si no es el disco x el que contiene windows, probar con el que funcione.
 
 5. Instalar windows:
 
-    ```cmd
-    DISM /apply-image /imagefile:[x/e/f]:\sources\install.wim /index:2 /applydir:w:
-    ```
+   ```cmd
+   DISM /apply-image /imagefile:[x/e/f]:\sources\install.wim /index:2 /applydir:w:
+   ```
 
 6. Copiar archivos de boot:
 
-    ```cmd
-    bcdboot w:\Windows /s G: /f ALL
-    ```
+   ```cmd
+   bcdboot w:\Windows /s G: /f ALL
+   ```
 
-    - Se puede reemplazar ALL por BIOS o UEFI si se quiere.
+   - Se puede reemplazar ALL por BIOS o UEFI si se quiere.
 
 7. Esperar a que reinicie y completar instalación.
 
@@ -122,7 +123,7 @@ net user [usuario o administrator] [poner contraseña, * para que la pida o no p
 ### Eliminar usuario
 
 1. Ejecutar "SystemPropertiesAdvanced".
-2. Ir a *Advanced* > *User Profiles* y borrar.
+2. Ir a _Advanced_ > _User Profiles_ y borrar.
 
 ### Borrar entrada ssh en known_hosts
 
@@ -142,6 +143,15 @@ setup --uninstall --force-uninstall --system-level
 1. Modificar clave de registro **HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\PasswordLess\Device\DevicePasswordLessBuildVersion** y poner valor en "**0**".
 
 2. Abrir **netplwiz**, seleccionar el usuario a habilitar el autologon y desmarcar la casilla de arriba.
+
+### Instalar Microsoft Store
+
+- Útil para Windows LTSC
+- Ejecutar en CMD:
+
+  ```cmd
+  wsreset -i
+  ```
 
 ---
 
