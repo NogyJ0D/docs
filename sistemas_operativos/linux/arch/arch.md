@@ -66,13 +66,13 @@
 
       ```sh
       lsblk
-      gdisk /dev/sda
+      fdisk /dev/sda
       ```
 
        - Limpiar tabla:
 
          ```sh
-         o
+         g # GPT
          ```
 
        - /
@@ -82,7 +82,8 @@
          1
          Enter
          +128M
-         EF00
+         t
+         1
          ```
 
        - swap
@@ -92,7 +93,9 @@
          2
          Enter
          +4G
-         8200
+         t
+         2
+         19
          ```
 
        - /home
@@ -102,7 +105,6 @@
          3
          Enter
          Enter
-         8300
          ```
 
        ```sh
