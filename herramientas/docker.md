@@ -6,6 +6,7 @@
     - [Instalar Docker en Alpine](#instalar-docker-en-alpine)
   - [Comandos](#comandos)
   - [Extras](#extras)
+    - [Mi entorno](#mi-entorno)
 
 ---
 
@@ -20,9 +21,9 @@
 ### Instalar Docker en Alpine
 
 ```sh
-apk add --update docker docker-cli-compose openrc
+apk add --update docker docker-cli-compose
+rc-service docker start
 rc-update add docker boot
-service docker start
 ```
 
 ---
@@ -44,3 +45,14 @@ service docker start
 ---
 
 ## Extras
+
+### Mi entorno
+
+Cosas que podría tener en una VM para contenedores.
+
+- Sistema operativo: Alpine o Debian.
+- Docker engine, sin portainer ni interfaces.
+- Docker-compose para organización.
+- Un dashboard para organizar todo: [Homepage](https://gethomepage.dev/).
+- [Taiga](https://taiga.io/) para organización de tareas.
+- [FreshRSS](https://github.com/FreshRSS/FreshRSS) para RSS.
