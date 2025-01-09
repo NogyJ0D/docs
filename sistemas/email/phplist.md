@@ -61,6 +61,9 @@
    $pageroot = '';
    $default_system_language = 'es';
 
+   define('PUBLIC_PROTOCOL', 'https');
+   # La Base Url se define en la interfaz
+
    # Para configurar el servidor SMTP:
    define('PHPMAILERHOST', 'mail.server.hostname');
    $phpmailer_smtpuser = 'user@login.com';
