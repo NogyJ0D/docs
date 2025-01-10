@@ -58,19 +58,55 @@
    $database_user = 'phplist';
    $database_password = 'phplist';
 
+   define('VERBOSE', true); // Para ver más en System -> Log of Events
+
    $pageroot = '';
    $default_system_language = 'es';
-
    define('PUBLIC_PROTOCOL', 'https');
-   # La Base Url se define en la interfaz
+   // La Base Url se define en la interfaz
 
-   # Para configurar el servidor SMTP:
+   // Velocidad de envio (https://www.phplist.org/manual/books/phplist-manual/page/setting-the-send-speed-%28rate%29):
+   //      Enviar no más de N correos cada T segundos.
+   //      N = Cantidad de correos
+   //define('MAILQUEUE_BATCH_SIZE', 360);
+   //      T = Cada cuantos segundos
+   //define('MAILQUEUE_BATCH_PERIOD', 3600);
+   //      Pausa entre mensajes (segundos)
+   //define('MAILQUEUE_THROTTLE', 1);
+   //      Ejemplo: enviar 360 correos por hora, esperando 1 segundo entre cada uno
+
+   // Para configurar el servidor SMTP:
    define('PHPMAILERHOST', 'mail.server.hostname');
    $phpmailer_smtpuser = 'user@login.com';
    $phpmailer_smtppassword = 'user_password';
    define("PHPMAILERPORT", '587');
    define("PHPMAILER_SECURE", 'tls');
    ```
+
+   - Configurar cron:
+
+     1. Editar **_/var/www/phplist/bin/phplist_** y dar permisos 755:
+
+        ```sh
+        #!/bin/bash
+
+        /usr/bin/php /var/www/phplist/public_html/lists/admin/index.php -c /var/www/phplist/public_html/lists/config/config.php $*
+        ```
+
+     2. Agregar al crontab (como root):
+
+        ```cron
+        0-59/5 * * * * /var/www/phplist/bin/phplist -pprocessqueue > /dev/null 2>&1
+        0 3 * * * /var/www/phplist/bin/phplist -pprocessbounces > /dev/null 2>&1
+        ```
+
+     3. Agregar al **_config.php_**:
+
+        ```php
+        // Para habilitar el cron de las campañas
+        define('MANUALLY_PROCESS_BOUNCES', 0);
+        define('MANUALLY_PROCESS_QUEUE', 0);
+        ```
 
 5. Configurar nginx:
 
