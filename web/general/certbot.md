@@ -11,6 +11,7 @@
     - [Instalar Certbot en Debian y Ubuntu](#instalar-certbot-en-debian-y-ubuntu)
   - [Extras](#extras)
     - [Generar certificados](#generar-certificados)
+      - [Wildcard con Cloudflare](#wildcard-con-cloudflare)
       - [Nginx](#nginx)
 
 ---
@@ -28,7 +29,7 @@
 - Con apt
 
   ```sh
-  apt install certbot python3-certbot-nginx
+  apt install certbot
   ```
 
 - Con snap
@@ -37,12 +38,12 @@
 
   2. Instalar Certbot:
 
-      ```sh
-      snap install --classic certbot
-      ln -s /snap/bin/certbot /usr/bin/certbot
-      snap set certbot trust-plugin-with-root=ok
-      snap install certbot-dns-<PLUGIN> # google, cloudflare
-      ```
+     ```sh
+     snap install --classic certbot
+     ln -s /snap/bin/certbot /usr/bin/certbot
+     snap set certbot trust-plugin-with-root=ok
+     snap install certbot-dns-<PLUGIN> # google, cloudflare
+     ```
 
 - Probar renovación:
 
@@ -56,8 +57,29 @@
 
 ### Generar certificados
 
+#### Wildcard con Cloudflare
+
+1. Instalar el paquete **python3-certbot-dns-cloudflare**.
+2. Crear Token API en Cloudflare para el dominio con _permiso para edición_.
+3. Crear archivo **_/etc/letsencrypt/cloudflare.ini_**:
+
+   ```ini
+   dns_cloudflare_api_token = <Token API>
+   ```
+
+4. Crear certificado con certbot:
+
+   ```sh
+   certbot certonly --dns-cloudflare --dns-cloudflare-credentials /etc/letsencrypt/cloudflare.ini --dns-cloudflare-propagation-seconds 60 -d "example.com" -d "*.example.com"
+   # Para probar la renovación: certbot renew --dry-run
+   ```
+
 #### Nginx
 
-```sh
-certbot --nginx -d example.com -d www.example.com
-```
+1. Instalar el paquete **python3-certbot-nginx**.
+2. Crear dominio/subdominio.
+3. Crear certificado con certbot:
+
+   ```sh
+   certbot certonly --nginx --agree-tos -d example.com
+   ```
