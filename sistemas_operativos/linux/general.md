@@ -29,6 +29,8 @@
     - [Crontab](#crontab)
     - [TRIM para SSD](#trim-para-ssd)
     - [Colores para la terminal](#colores-para-la-terminal)
+    - [Agregar linux a Samba AD](#agregar-linux-a-samba-ad)
+      - [Agregar auto montado de carpetas compartidas](#agregar-auto-montado-de-carpetas-compartidas)
 
 ---
 
@@ -320,3 +322,114 @@ nmcli con # Ver cambios
   ```sh
   alias less='less -R --use-color -Dd+r -Du+b'
   ```
+
+### Agregar linux a Samba AD
+
+1. Instalar Debian 12 con Gnome o KDE.
+2. Instalar paquetes:
+
+   ```sh
+   apt install realmd sssd oddjob oddjob-mkhomedir adcli samba-common packagekit sssd-tools
+   ```
+
+3. Agregar dominio:
+
+   ```sh
+   realm join --user=administrator DOMINIO.LOCAL
+   ```
+
+4. Editar **_/etc/sssd/sssd.conf_**:
+
+   ```conf
+   [sssd]
+   domains = DOMINIO.LOCAL
+   config_file_version = 2
+   services = nss, pam
+
+   [domain/dominio.local]
+   default_shell = /bin/bash
+   krb5_store_password_if_offline = False
+   cache_credentials = False
+   krb5_realm = DOMINIO.LOCAL
+   realmd_tags = manages-system joined-with-adcli
+   id_provider = ad
+   fallback_homedir = /home/%u
+   ad_domain = dominio.local
+   use_fully_qualified_names = False
+   ldap_id_mapping = True
+   access_provider = ad
+   enumerate = True
+   auth_provider = ad
+   ad_gpo_access_control = disabled
+   ```
+
+5. Editar **_/etc/samba/smb.conf_**:
+
+   ```conf
+   [global]
+   workgroup = GRUPO # Cambiar grupo si se necesita
+   ```
+
+6. Elegir session manager:
+
+   - Con GNOME y GDM:
+
+     1. Editar **_/etc/gdm3/greeter.dconf-defaults_**:
+
+        ```conf
+        disable-user-list=true
+        sleep-inactive-ac-timeout=0
+        sleep-inactive-ac-type='nothing'
+        sleep-inactive-battery-timeout=0
+        sleep-inactive-battery-type='nothing'
+        ```
+
+   - Con KDE y Lightdm:
+
+     1. Instalar ligthdm:
+
+        ```sh
+        apt install lightdm lightdm-gtk-greeter
+        systemctl disable sddm
+        systemctl enable lightdm
+        ```
+
+7. Ejecutar:
+
+   ```sh
+   rm -f /var/lib/sss/db/cache_DOMINIO.ldb
+   pam-auth-update # Activar "Create home directory on login"
+   reboot # Entrar como usuario de dominio
+   ```
+
+- Borrar usuario por defecto de Debian:
+
+  ```sh
+  userdel -r usuario
+  ```
+
+#### Agregar auto montado de carpetas compartidas
+
+1. Instalar pam-mount y cifs:
+
+   ```sh
+   apt install libpam-mount cifs-utils
+   ```
+
+2. Editar **_/etc/security/pam_mount.conf.xml_**:
+
+   ```xml
+   <pam_mount>
+     <debug enable="0" />
+
+     <volume user="usuario" fstype="cifs" server="servidor" path="carpeta compartida" mountpoint="/mnt/carpeta" />
+     <!-- Agregar esta linea por cada usuario y carpeta a mostrar -->
+
+     <mntoptions allow="nosuid,nodev,loop,encryption,fsck,nonempty,allow_root,allow_other" />
+     <mntoptions require="nosuid,nodev" />
+
+     <logout wait="0" hup="no" term="no" kill="no" />
+
+     <mkmountpoint enable="1" remove="true" />
+   </pam_mount>
+   ```
