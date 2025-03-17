@@ -199,6 +199,7 @@
    ExecStart=/root/wildfly-32.0.1.Final/bin/standalone.sh -b 0.0.0.0 -c dcm4chee-arc.xml
    ExecStop=/root/wildfly-32.0.1.Final/bin/jboss-cli.sh --connect command=:shutdown
    Restart=on-failure
+   RestartSec=5s
 
    [Install]
    WantedBy=multi-user.target

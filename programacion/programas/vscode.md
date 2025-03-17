@@ -39,6 +39,29 @@ code --install-extension [id]
 
 ## Extras
 
+### Agregar a menú contextual "Abrir con VS Code"
+
+- Crear un archivo ***.reg*** con el siguiente contenido (reemplazar "usuario" por el usuario):
+
+  ```reg
+  Windows Registry Editor Version 5.00
+  [HKEY_CLASSES_ROOT\*\shell\Open with VS Code]
+  @="Editar con VS Code"
+  "Icon"="C:\\Users\\usuario\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe,0"
+  [HKEY_CLASSES_ROOT\*\shell\Open with VS Code\command]
+  @="\"C:\\Users\\usuario\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe\" \"%1\""
+  [HKEY_CLASSES_ROOT\Directory\shell\vscode]
+  @="Abrir carpeta con VS Code"
+  "Icon"="\"C:\\Users\\usuario\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe\",0"
+  [HKEY_CLASSES_ROOT\Directory\shell\vscode\command]
+  @="\"C:\\Users\\usuario\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe\" \"%1\""
+  [HKEY_CLASSES_ROOT\Directory\Background\shell\vscode]
+  @="Abrir carpeta con VS Code"
+  "Icon"="\"C:\\Users\\usuario\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe\",0"
+  [HKEY_CLASSES_ROOT\Directory\Background\shell\vscode\command]
+  @="\"C:\\Users\\usuario\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe\" \"%V\""
+  ```
+
 ### Sincronización
 
 - Instalar extensiones teniendo las id en un archivo:
