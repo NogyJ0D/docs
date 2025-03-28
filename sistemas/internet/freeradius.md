@@ -10,28 +10,42 @@
 
 1. Instalar freeradius:
 
-    ```sh
-    apt install freeradius freeradius-utils freeradius-postgresql postgresql-15
-    ```
+   ```sh
+   apt install freeradius freeradius-utils freeradius-postgresql postgresql-15
+   ```
 
-    > Cambiar "MemoryLimit" por "MemoryMax" en /lib/systemd/system/freeradius.service
+   > Cambiar "MemoryLimit" por "MemoryMax" en /lib/systemd/system/freeradius.service
 
-2. Crear base de datos:
+2. Configurar clientes:
 
-    ```sh
-    su - postgres
-    createuser radius --no-superuser --no-createdb --no-createrole -P
-    createdb radius --owner=radius
-    exit
+   - Agregar al comienzo de **_/etc/freeradius/3.0/clients.conf_**:
 
-    editor /etc/postgresql/15/main/pg_hba.conf
-    # Editar local  all  all  md5
-    systemctl restart postgresql
+     ```conf
+     client unifi {
+       ipaddr = x.x.x.x/x # Rango de DHCP
+       secret = secreto # Secreto a usar
+       proto = *
+       shortname = 'Nombre'
+       require_message_authenticator = yes
+     }
+     ```
 
-    psql -U radius radius < /etc/freeradius/3.0/mods-config/sql/main/postgresql/schema.sql
-    ```
+3. Crear base de datos:
 
-3. Habilitar sql:
+   ```sh
+   su - postgres
+   createuser radius --no-superuser --no-createdb --no-createrole -P
+   createdb radius --owner=radius
+   exit
+
+   editor /etc/postgresql/15/main/pg_hba.conf
+   # Editar local  all  all  md5
+   systemctl restart postgresql
+
+   psql -U radius radius < /etc/freeradius/3.0/mods-config/sql/main/postgresql/schema.sql
+   ```
+
+4. Habilitar sql:
 
    1. Habilitar:
 
@@ -46,44 +60,44 @@
       ```conf
       dialect = "postgresql"
       driver = "rlm_sql_postgresql"
-      
+
       server = "localhost"
       port = 5432
       login = "radius"
       password = "radpass"
-      
+
       radius_db = "radius"
-      
+
       read_clients = yes
       client_table = "nas"
       ```
 
    3. Cambiar "-sql" por "sql" en las secciones "authorize{}" "accounting{}", "post-auth{}" y "session {}" en los archivos **_/etc/freeradius/3.0/sites-available/default_** y **_/etc/freeradius/3.0/sites-available/inner-tunnel_**
 
-4. Modo testing:
+5. Modo testing:
 
-    ```sh
-    systemctl stop freeradius
-    systemctl daemon-reload
-    ```
+   ```sh
+   systemctl stop freeradius
+   systemctl daemon-reload
+   ```
 
    - En una terminal:
 
-      ```sh
-      freeradius -X
-      ```
+     ```sh
+     freeradius -X
+     ```
 
    - En otra terminal:
 
-      ```sh
-      psql -U radius radius
+     ```sh
+     psql -U radius radius
 
-      INSERT INTO radcheck (username, attribute, op, value) VALUES ('user', 'Cleartext-Password', ':=' 'pass');
-      exit
+     INSERT INTO radcheck (username, attribute, op, value) VALUES ('user', 'Cleartext-Password', ':=' 'pass');
+     exit
 
-      radtest user pass localhost 10 testing123
-      # Debe responder "Access-Accept"
-      ```
+     radtest user pass localhost 10 testing123
+     # Debe responder "Access-Accept"
+     ```
 
 ---
 
@@ -104,58 +118,58 @@ INSERT INTO radcheck (username, attribute, op, value) VALUES ('usuario', 'Expira
 
 2. Modificar esquema en **_/etc/freeradius/3.0/mods-config/sql/main/postgresql/schema.sql_**:
 
-    ```sql
-    CREATE TABLE IF NOT EXISTS usuarios1 (
-        id                      serial PRIMARY KEY,
-        UserName                text NOT NULL DEFAULT '',
-        Attribute               text NOT NULL DEFAULT '',
-        op                      VARCHAR(2) NOT NULL DEFAULT '==',
-        Value                   text NOT NULL DEFAULT ''
-    );
-    create index usuarios1_UserName_lower on usuarios1 (lower(UserName),Attribute);
-      
-    CREATE TABLE IF NOT EXISTS usuarios2 (
-            id                      serial PRIMARY KEY,
-            UserName                text NOT NULL DEFAULT '',
-            Attribute               text NOT NULL DEFAULT '',
-            op                      VARCHAR(2) NOT NULL DEFAULT '==',
-            Value                   text NOT NULL DEFAULT ''
-    );
-    create index usuarios2_UserName_lower on usuarios2 (lower(UserName),Attribute);
+   ```sql
+   CREATE TABLE IF NOT EXISTS usuarios1 (
+       id                      serial PRIMARY KEY,
+       UserName                text NOT NULL DEFAULT '',
+       Attribute               text NOT NULL DEFAULT '',
+       op                      VARCHAR(2) NOT NULL DEFAULT '==',
+       Value                   text NOT NULL DEFAULT ''
+   );
+   create index usuarios1_UserName_lower on usuarios1 (lower(UserName),Attribute);
 
-    -- Para grupos
-    create index radusergroup_UserName_lower on radusergroup (lower(UserName));
-    ```
+   CREATE TABLE IF NOT EXISTS usuarios2 (
+           id                      serial PRIMARY KEY,
+           UserName                text NOT NULL DEFAULT '',
+           Attribute               text NOT NULL DEFAULT '',
+           op                      VARCHAR(2) NOT NULL DEFAULT '==',
+           Value                   text NOT NULL DEFAULT ''
+   );
+   create index usuarios2_UserName_lower on usuarios2 (lower(UserName),Attribute);
+
+   -- Para grupos
+   create index radusergroup_UserName_lower on radusergroup (lower(UserName));
+   ```
 
 3. Importar nueva base de datos:
 
-    ```sh
-    psql -U radius radius < /etc/freeradius/3.0/mods-config/sql/main/postgresql/schema.sql
-    ```
+   ```sh
+   psql -U radius radius < /etc/freeradius/3.0/mods-config/sql/main/postgresql/schema.sql
+   ```
 
 4. Modificar variables en **_/etc/freeradius/3.0/mods-available/sql_**:
 
-    ```conf
-    authcheck_table1 = "usuarios1"
-    authcheck_table2 = "usuarios2"
-    ```
+   ```conf
+   authcheck_table1 = "usuarios1"
+   authcheck_table2 = "usuarios2"
+   ```
 
 5. Modificar consultas en **_/etc/freeradius/3.0/mods-config/sql/main/postgresql/queries.conf_**:
 
-    ```conf
-    authorize_check_query = "\
-        SELECT id, UserName, Attribute, Value, Op \
-        FROM ${authcheck_table1} \
-        WHERE LOWER(Username) = LOWER('%{SQL-User-Name}') \
-        UNION ALL \
-        SELECT id, UserName, Attribute, Value, Op \
-        FROM ${authcheck_table2} \
-        WHERE LOWER(Username) = LOWER('%{SQL-User-Name}') \
-        ORDER BY id"
+   ```conf
+   authorize_check_query = "\
+       SELECT id, UserName, Attribute, Value, Op \
+       FROM ${authcheck_table1} \
+       WHERE LOWER(Username) = LOWER('%{SQL-User-Name}') \
+       UNION ALL \
+       SELECT id, UserName, Attribute, Value, Op \
+       FROM ${authcheck_table2} \
+       WHERE LOWER(Username) = LOWER('%{SQL-User-Name}') \
+       ORDER BY id"
 
-    group_membership_query = "\
-        SELECT GroupName \
-        FROM ${usergroup_table} \
-        WHERE LOWER(UserName) = LOWER('%{SQL-User-Name}') \
-        ORDER BY priority"
-    ```
+   group_membership_query = "\
+       SELECT GroupName \
+       FROM ${usergroup_table} \
+       WHERE LOWER(UserName) = LOWER('%{SQL-User-Name}') \
+       ORDER BY priority"
+   ```
