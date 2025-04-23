@@ -132,7 +132,7 @@
 1. Agregar repositorio a **_/etc/apt/sources.list_**:
 
    ```sh
-   deb http://hwraid.le-vert.net/debian version-de-debian main
+   deb http://hwraid.le-vert.net/debian jessie main # No está para bookworm
    ```
 
 2. Ejecutar:
