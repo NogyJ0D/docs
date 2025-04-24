@@ -22,11 +22,15 @@
 
 ### Instalar Meshcentral en Ubuntu 22.04
 
-1. [Instalar Node LTS](../../programacion/frameworks/fullstack/nodejs.md#instalar-nodejs-en-ubuntu-2204-usando-nvm).
+1. Instalar node y npm:
 
-2. [Instalar MongoDB 7](../../database/nosql/mongodb.md#instalar-mongodb-7-en-ubuntu-2204).
+   ```sh
+   apt install nodejs npm -y
+   ```
 
-3. Dar permisos de puerto a node:
+3. [Instalar MongoDB 7](../../database/nosql/mongodb.md#instalar-mongodb-7-en-ubuntu-2204).
+
+4. Dar permisos de puerto a node:
 
    ```sh
    whereis node
@@ -35,17 +39,16 @@
    sudo setcap cap_net_bind_service=+ep /root/.nvm/versions/node/v20.11.0/bin/node
    ```
 
-4. Instalar MeshCentral:
+5. Instalar MeshCentral:
 
    ```sh
    mkdir meshcentral && cd meshcentral && npm i meshcentral
-
-   node ./node_modules/meshcentral
+   node node_modules/meshcentral
    ```
 
    - Ahora entrar a la url del mesh.
 
-5. Configurar MeshCentral:
+6. Configurar MeshCentral:
 
    - Editar en **_meshcentral-data/config.json_**:
 
@@ -61,12 +64,11 @@
              "_WebRTC": false,
              "_ClickOnce": false,
              "_UserAllowedIP" : "127.0.0.1,::1,192.168.0.100"
-         },
-     …
+         }
      }
      ```
 
-6. Crear servicio:
+7. Crear servicio:
 
    ```sh
    nano /etc/systemd/system/meshcentral.service
