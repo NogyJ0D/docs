@@ -13,9 +13,6 @@
       - [Generales](#generales)
   - [Notas](#notas)
   - [Comandos](#comandos)
-    - [Listar cuentas y contraseñas](#listar-cuentas-y-contraseñas)
-    - [Cambiar contraseña de cuenta](#cambiar-contraseña-de-cuenta)
-    - [Agregar usuario a qmail](#agregar-usuario-a-qmail)
   - [Extras](#extras)
 
 ---
@@ -75,29 +72,53 @@
 
 ## Comandos
 
-### Listar cuentas y contraseñas
+- Colas:
 
-```sh
-cat /home/vpopmail/domains/dominio/vpasswd
-```
+  ```sh
+  # Cantidad de correos en cola
+  /var/qmail/bin/qmail-qstat
 
-### Cambiar contraseña de cuenta
+  # Listar correos en cola
+  /var/qmail/bin/qmail-qread
+  ```
 
-```sh
-/home/vpopmail/bin/vpasswd correo@dominio contraseña
-```
+- Leer contenido de un correo:
 
-### Agregar usuario a qmail
+  ```sh
+  # MAIL_ID sale de qmail-qread
+  find /var/qmail/queue --name MAIL_ID | xargs cat | less
+  ```
 
-1. Copiar el archivo _**INSTALL.ids**_ del código fuente a _**/tmp/mu**_.
+- Listar log de correos recibidos y enviados:
 
-2. Modificar archivo según sistema.
+  ```sh
+  # tai64nlocal convierte el tiempo (primera columna)
+  tail /var/log/qmail/send/current -f | tai64nlocal | grep x -b 2
+  ```
 
-3. Ejecutar archivo:
+- Listar cuentas y contraseñas
 
-   ```sh
-   sh /tmp/mu
-   ```
+  ```sh
+  cat /home/vpopmail/domains/dominio/vpasswd
+  ```
+
+- Cambiar contraseña de cuenta
+
+  ```sh
+  /home/vpopmail/bin/vpasswd correo@dominio contraseña
+  ```
+
+- Agregar usuario a qmail
+
+  1. Copiar el archivo _**INSTALL.ids**_ del código fuente a _**/tmp/mu**_.
+
+  2. Modificar archivo según sistema.
+
+  3. Ejecutar archivo:
+
+     ```sh
+     sh /tmp/mu
+     ```
 
 ---
 
