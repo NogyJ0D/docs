@@ -47,16 +47,13 @@
 ### Instalar KDE en modo servidor
 
 ```sh
-zypper in plasma6-workspace plasma6-session plasma6-desktop konsole sddm xorg-x11-server xinit xorg-x11-driver-input xorg-x11-driver-video
+zypper in plasma6-workspace plasma6-session plasma6-desktop konsole yakuake sddm xorg-x11-server xinit xorg-x11-driver-input xorg-x11-driver-video install dolphin dolphin-plugins MozillaFirefox-branding-upstream udisks2 zsh yast2-control-center-qt
 
 systemctl disable display-manager-legacy.service
 systemctl enable sddm
 systemctl set-default graphical.target
 
 reboot
-
-# Programas
-zypper install dolphin dolphin-plugins MozillaFirefox-branding-upstream
 ```
 
 ---

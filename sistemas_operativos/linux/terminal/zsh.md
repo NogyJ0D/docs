@@ -33,15 +33,15 @@ sh -c "$(wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/ins
 
 ## Plugins
 
+- Agregar a **_~/.zshrc_**
+
 ### zsh-syntax-highlighting
 
 ```sh
 git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
-
-# Agregar a .zshrc
 ```
 
-### ZSH-AutoSuggestion
+### zsh-autosuggestions
 
 ```sh
 git clone https://github.com/zsh-users/zsh-autosuggestions $ZSH_CUSTOM/plugins/zsh-autosuggestions
