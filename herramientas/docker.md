@@ -5,6 +5,7 @@
   - [Instalación](#instalación)
     - [Instalar Docker en Alpine](#instalar-docker-en-alpine)
   - [Comandos](#comandos)
+  - [Configuración](#configuración)
   - [Extras](#extras)
     - [Mi entorno](#mi-entorno)
 
@@ -40,6 +41,20 @@ rc-update add docker boot
 
   ```sh
   docker-compose -p prefijo up
+  ```
+
+---
+
+## Configuración
+
+- Configuración del daemon en **_/etc/docker/daemon.json_**:
+
+- Cambiar pool de ips:
+
+  ```json
+  {
+    "default-address-pools": [{ "base": "10.10.0.0/16", "size": 24 }]
+  }
   ```
 
 ---

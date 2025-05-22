@@ -47,7 +47,14 @@
 ### Instalar KDE en modo servidor
 
 ```sh
-zypper in plasma6-workspace plasma6-session plasma6-desktop konsole yakuake sddm xorg-x11-server xinit xorg-x11-driver-input xorg-x11-driver-video install dolphin dolphin-plugins MozillaFirefox-branding-upstream udisks2 zsh yast2-control-center-qt
+# Entorno gráfico
+zypper in plasma6-workspace plasma6-session plasma6-desktop sddm xorg-x11-server xinit xorg-x11-driver-input xorg-x11-driver-video
+
+# Programas
+zypper in konsole yakuake dolphin dolphin-plugins MozillaFirefox-branding-upstream udisks2 zsh yast2-control-center-qt spectacle
+
+# Audio
+zypper in plasma6-pa pipewire-pulseaudio pipewire-libjack-0_3 pipewire-alsa wireplumber-audio
 
 systemctl disable display-manager-legacy.service
 systemctl enable sddm
@@ -83,4 +90,23 @@ reboot
     ```
 
 - Programas:
+
   - [VSCode](https://code.visualstudio.com/docs/setup/linux#_opensuse-and-slebased-distributions)
+  - [Docker](https://en.opensuse.org/Docker):
+
+    ```sh
+    sudo zypper in docker docker-compose docker-compose-switch
+    sudo systemctl enable docker
+    sudo usermod -aG docker $USER
+    newgrp docker
+    sudo systemctl restart docker
+    docker version
+    docker run --rm hello-world
+    ```
+
+  - Libreoffice:
+
+    ```sh
+    sudo zypper in libreoffice libreoffice-qt6 libreoffice-writer libreoffice-calc libreoffice-impress
+    # libreoffice-draw libreoffice-base libreoffice-math
+    ```
