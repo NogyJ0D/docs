@@ -49,9 +49,10 @@
 ```sh
 # Entorno gráfico
 zypper in plasma6-workspace plasma6-session plasma6-desktop sddm xorg-x11-server xinit xorg-x11-driver-input xorg-x11-driver-video
+# Eso usa wayland, para tener xorg agregar: kwin6-x11 plasma6-session-x11
 
 # Programas
-zypper in konsole yakuake dolphin dolphin-plugins MozillaFirefox-branding-upstream udisks2 zsh yast2-control-center-qt spectacle
+zypper in konsole yakuake dolphin dolphin-plugins MozillaFirefox-branding-upstream udisks2 zsh yast2-control-center-qt spectacle gwenview
 
 # Audio
 zypper in plasma6-pa pipewire-pulseaudio pipewire-libjack-0_3 pipewire-alsa wireplumber-audio
