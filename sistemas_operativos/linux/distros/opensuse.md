@@ -80,8 +80,7 @@ reboot
   - [Drivers propietarios NVIDIA](https://en.opensuse.org/SDB:NVIDIA_drivers):
 
     ```sh
-    sudo zypper addrepo --refresh https://download.nvidia.com/opensuse/tumbleweed NVIDIA
-    sudo zypper install-new-recommends --repo NVIDIA
+    sudo zypper install openSUSE-repos-Tumbleweed-NVIDIA
     ```
 
   - Fuentes Microsoft:
