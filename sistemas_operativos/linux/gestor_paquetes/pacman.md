@@ -6,13 +6,8 @@
 
 - [Pacman](#pacman)
   - [Contenido](#contenido)
-  - [Documentación](#documentación)
   - [Comandos](#comandos)
   - [Extras](#extras)
-
----
-
-## Documentación
 
 ---
 
@@ -57,3 +52,13 @@
 ---
 
 ## Extras
+
+### yay
+
+- Configuración:
+
+    ```sh
+    yay --save
+    vim ~/.config/yay/config.json
+    # Poner sudoloop en true
+    ```
