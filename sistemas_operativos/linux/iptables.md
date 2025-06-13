@@ -52,60 +52,45 @@ Modifica los paquetes.
    #!/bin/bash
 
    PATH="/sbin:/usr/sbin:/bin:/usr/bin"
-   IPTABLES="/usr/sbin/iptables"
-
+   IPT="/usr/sbin/iptables"
+    
    firewall_start() {
-    # Rechazar paquetes inválidos
-    $IPTABLES -A INPUT -m conntrack --ctstate INVALID -J DROP
-
-    # Aceptar todo en loopback
-    $IPTABLES -A INPUT -i lo -j ACCEPT
-    $IPTABLES -A OUTPUT -o lo -J ACCEPT
-
-    # ----------------------------------------------
-    # Aceptar entrada de relacionados y establecidos
-    $IPTABLES -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-
-    # Aceptar entrada ICMP y SSH
-    $IPTABLES -A INPUT -p icmp -j ACCEPT
-    $IPTABLES -A INPUT -p tcp --dport 22 -j ACCEPT
-
-    # ---------------------------------------------
-    # Aceptar salida de relacionados y establecidos
-    $IPTABLES -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-
-    # Aceptar salida HTTP/S
-    $IPTABLES -A OUTPUT -p tcp --dport 80 -j ACCEPT
-    $IPTABLES -A OUTPUT -p tcp --dport 443 -j ACCEPT
-
-    # Aceptar salida DNS
-    $IPTABLES -A OUTPUT -p tcp --dport 53 -j ACCEPT
-    $IPTABLES -A OUTPUT -p udp --dport 53 -j ACCEPT
-
-    # Aceptar salida NTP
-    $IPTABLES -A OUTPUT -p tcp --dport 123 -j ACCEPT
-    $IPTABLES -A OUTPUT -p udp --dport 123 -j ACCEPT
-
-    # Aceptar salida ICMP y SSH
-    $IPTABLES -A OUTPUT -p icmp -j ACCEPT
-    $IPTABLES -A OUTPUT -p tcp --dport 22 -j ACCEPT
-
-    $IPTABLES -A OUTPUT -p tcp --sport 3000 -j ACCEPT
-
-    # Rechazar todo el resto
-    $IPTABLES -P INPUT DROP
-    $IPTABLES -P FORWARD DROP
-    $IPTABLES -P OUTPUT DROP
+     $IPT -P INPUT DROP -m comment --comment "Rechazar entradas"
+     $IPT -P FORWARD DROP -m comment --comment "Rechazar redirecciones"
+     $IPT -P OUTPUT ACCEPT -m comment --comment "Aceptar todo saliente"
+    
+     $IPT -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT -m comment --comment "Aceptar relacionados"
+    
+     $IPT -A INPUT -m conntrack --ctstate INVALID -j DROP -m comment --comment "Rechazar inválidos entrantes"
+    
+     $IPT -A INPUT -i lo -j ACCEPT -m comment --comment "Aceptar loopback in"
+     $IPT -A OUTPUT -o lo -j ACCEPT -m comment --comment "Aceptar loopback out"
+    
+     # --------------------------------------------------
+    
+     $IPT -A INPUT -p icmp -j ACCEPT -m comment --comment "Aceptar ICMP (ping)"
+     $IPT -A INPUT -p tcp --dport 22 -j ACCEPT -m comment --comment "Aceptar ssh"
+    
+     $IPT -A INPUT -p tcp --dport 80 -j ACCEPT -m comment --comment "Aceptar web 80"
+     $IPT -A INPUT -p tcp --dport 443 -j ACCEPT -m comment --comment "Aceptar web 443"
+    
    }
 
    firewall_stop() {
-     $IPTABLES -F
-     $IPTABLES -X
-     $IPTABLES -P INPUT    ACCEPT
-     $IPTABLES -P FORWARD  ACCEPT
-     $IPTABLES -P OUTPUT   ACCEPT
+     # Limpiar INPUT OUTPUT y FORWARD para no borrar entradas de Docker o fail2ban
+     $IPT -F INPUT
+     $IPT -F OUTPUT
+     $IPT -F FORWARD
+    
+     $IPT -X INPUT
+     $IPT -X OUTPUT
+     $IPT -X FORWARD
+    
+     $IPT -P INPUT ACCEPT
+     $IPT -P FORWARD ACCEPT
+     $IPT -P OUTPUT ACCEPT
    }
-
+    
    case "$1" in
      start|restart)
        echo "Iniciando Firewall"
