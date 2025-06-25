@@ -27,6 +27,8 @@
       - [Configuración ssh](#configuración-ssh)
       - [Claves ssh](#claves-ssh)
     - [Crontab](#crontab)
+    - [Poner en hora con ntp](#poner-en-hora-con-ntp)
+    - [Poner en hora con chrony](#poner-en-hora-con-chrony)
     - [TRIM para SSD](#trim-para-ssd)
     - [Colores para la terminal](#colores-para-la-terminal)
     - [Agregar linux a Samba AD](#agregar-linux-a-samba-ad)
@@ -293,6 +295,35 @@ nmcli con # Ver cambios
     export EDITOR=nano
     crontab -e
     ```
+
+### Poner en hora con ntp
+
+1. Desinstalar `systemd-timesyncd` si existe e instalar `ntp`.
+2. (Opcional, agregar servidor) Agregar en **_/etc/ntpsec/ntp.conf_** y reiniciar `ntp.service`:
+
+   ```sh
+   server [ip] [prefer] # Agregar prefer para que use ese primero
+   ```
+
+3. Probar sync con `ntpq -p` y ver hora con `date`.
+4. Si no sincroniza:
+   - Ejecutar `ntpq -c as` y ver si los servidores salen como _reject_.
+   - Ejecutar `hwclock -r` y ver la hora de la bios, poner manualmente la fecha con `date -s "2 OCT 2006 18:00:00"` y sincronizar a la bios con `hwclock --systohc`.
+   - Reiniciar y volver a ver `ntpq -c as` si alguno sale como _candidate_.
+
+### Poner en hora con chrony
+
+1. Desinstalar `systemd-timesyncd` si existe e instalar `chrony`.
+2. (Opcional, agregar servidor) Agregar en **_/etc/chrony/chrony.conf_**:
+
+   ```sh
+   server [ip]
+   ```
+
+3. Activar ntp en timedatectl con `timedatectl set-ntp true`.
+4. Reiniciar servicio con `systemctl restart chronyd`.
+5. Probar fuentes con `chronyc sources [-v]`.
+6. Darle unos minutos para que sincronize y revisar con `date`.
 
 ### TRIM para SSD
 
