@@ -143,8 +143,7 @@
    unzip $DCM4CHEE_ARC/jboss-modules/jdbc-jboss-modules-mysql-8.0.20.zip
 
    cd /root
-   wget https://github.com/dcm4che/ecs-object-client-jboss-modules/archive/refs/heads/master.zip
-   unzip master.zip
+   git clone https://github.com/dcm4che/ecs-object-client-jboss-modules.git
    cd ecs-object-client-jboss-modules-master
    mvn install
    unzip target/ecs-object-client-jboss-modules-3.0.0.zip -d /root/wildfly-...
