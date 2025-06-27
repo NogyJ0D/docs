@@ -119,8 +119,10 @@
      ldapadd -x -W -D "cn=admin,dc=dcm4che,dc=org" -f $DCM4CHEE_ARC/ldap/default-config.ldif
      ldapadd -x -W -D "cn=admin,dc=dcm4che,dc=org" -f $DCM4CHEE_ARC/ldap/default-ui-config.ldif
 
+     # -- Es así, no deja de la otra forma
      cd $DCM4CHEE_ARC/ldap
      ldapadd -x -W -Dcn=admin,dc=dcm4che,dc=org -f add-vendor-data.ldif
+     # --
 
      # Verificar configuración. Tiene que devolver dicomVendotData:: Texto largo
      ldapsearch -LLLsbase -x -W -Dcn=admin,dc=dcm4che,dc=org -b "dicomDeviceName=dcm4chee-arc,cn=Devices,cn=DICOM Configuration,dc=dcm4che,dc=org" dicomVendorData | head
