@@ -350,14 +350,27 @@ services:
       - extra_params=
         --o:ssl.enable=false
         --o:ssl.termination=true
-        --o:user_interface.mode=compact
         --o:net.frame_ancestors=nextcloud.dominio.com:443
         --o:storage.wopi.host[0]=nextcloud.dominio.com
+        # --o:languagetool.base_url=http://nextcloud-languagetool:8010/v2
+        # --o:languagetool.enabled=true
+        # Estos extra_params reemplazan los valores de /etc/coolwsd/coolwsd.xml
     ports:
       - 9980:9980
     extra_hosts:
       - 'office.dominio.com:<IP privada del proxy reverso>'
       - 'nextcloud.dominio.com:<IP privada del proxy reverso>'
+
+  # Opcional languagetool para correcciones ortográficas, descomentar tambien arriba en collabora
+  # nextcloud-languagetool:
+  #   image: erikvl87/languagetool
+  #   container_name: nextcloud-languagetool
+  #   restart: unless-stopped
+  #   networks:
+  #     - nextcloud
+  #   environment:
+  #     - Java_Xms=512m
+  #     - Java_Xmx=1g
 
 networks:
   nextcloud:

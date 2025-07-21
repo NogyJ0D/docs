@@ -11,6 +11,7 @@
     - [Instalar Nextcloud en Debian 12](#instalar-nextcloud-en-debian-12)
     - [Instalar Nextcloud con docker](#instalar-nextcloud-con-docker)
   - [Extras](#extras)
+    - [Activar directorios virtuales en el cliente](#activar-directorios-virtuales-en-el-cliente)
     - [Activar LDAP](#activar-ldap)
 
 ---
@@ -473,59 +474,16 @@
 
     - Corregir el error del teléfono: agregar en **_/var/www/nextcloud/config/config.php_** "'default_phone_region' => 'AR',".
 
-### [Instalar Nextcloud con docker](https://github.com/nextcloud/docker)
-
-- Docker Compose
-
-  ```yml
-  version: '2'
-
-  volumes:
-    nextcloud:
-    db:
-
-  services:
-    db:
-      image: mariadb:10.6
-      restart: always
-      command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
-      volumes:
-        - db:/var/lib/mysql
-      environment:
-        - MYSQL_ROOT_PASSWORD=<SETEAR>
-        - MYSQL_PASSWORD=<SETEAR>
-        - MYSQL_DATABASE=nextcloud
-        - MYSQL_USER=nextcloud
-
-    app:
-      image: nextcloud:fpm
-      restart: always
-      links:
-        - db
-      volumes:
-        - nextcloud:/var/www/html
-      environment:
-        - MYSQL_PASSWORD=<SETEAR>
-        - MYSQL_DATABASE=nextcloud
-        - MYSQL_USER=nextcloud
-        - MYSQL_HOST=db
-
-    web:
-      image: nginx
-      restart: always
-      ports:
-        - 8080:80
-      links:
-        - app
-      volumes:
-        - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      volumes_from:
-        - app
-  ```
+### [Instalar Nextcloud con docker](../../contenedores/nextcloud.md#instalación)
 
 ---
 
 ## Extras
+
+### Activar directorios virtuales en el cliente
+
+- En linux los directorios virtuales no vienen activables por defecto.
+- Ir al archivo **_~/.config/Nextcloud/nextcloud.cfg_** y agregar `showExperimentalOptions=true`, luego reiniciar el cliente y activar la opción de discos virtuales en la configuración de la carpeta (en la interfaz).
 
 ### Activar LDAP
 
