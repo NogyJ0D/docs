@@ -14,7 +14,7 @@
 2. Instalar paquetes:
 
    ```sh
-   apt install xorg openbox lightdm xdotool chromium
+   apt install xorg openbox lightdm xdotool chromium-l10n
    ```
 
 3. Configurar autologon:
