@@ -271,6 +271,18 @@
    git branch -d feature/feature-2
    ```
 
+### Checkpoints
+
+Cuando estamos trabajando en un proyecto grande es posible que querramos crear puntos de restauración, ya sea para trabajar desde otro lado o para volver en el tiempo. Un commit puede representar un estado compilable de la aplicación y un checkpoint un punto donde estamos satisfechos con lo trabajado, que no necesariamente está listo.
+
+```sh
+git add -A
+git commit -m "Checkpoint at $(date '+%Y-%m-%dT%H:%M:%S%z')" # Crear un checkpoint
+git commit --amend -m "Funcionando" # Corregir el commit anterior agregando el resto de cosas y cambiando el mensaje
+git push
+
+```
+
 ---
 
 ## Extras
