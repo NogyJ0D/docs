@@ -11,17 +11,15 @@
 1. Instalar freeradius:
 
    ```sh
-   apt install freeradius freeradius-utils freeradius-postgresql postgresql-15
+   apt install freeradius freeradius-utils freeradius-postgresql postgresql
    ```
-
-   > Cambiar "MemoryLimit" por "MemoryMax" en /lib/systemd/system/freeradius.service
 
 2. Configurar clientes:
 
-   - Agregar al comienzo de **_/etc/freeradius/3.0/clients.conf_**:
+   - Agregar al comienzo de `/etc/freeradius/3.0/clients.conf`:
 
      ```conf
-     client unifi {
+     client unifi { # Si el cliente está en localhost, poner localhost
        ipaddr = x.x.x.x/x # Rango de DHCP
        secret = secreto # Secreto a usar
        proto = *
@@ -29,6 +27,8 @@
        require_message_authenticator = yes
      }
      ```
+
+   - Si el controlador está en la misma máquina, comentar el cliente localhost.
 
 3. Crear base de datos:
 
@@ -42,12 +42,13 @@
    # Editar local  all  all  md5
    systemctl restart postgresql
 
+   # Modificar script si hace falta cambiar la base de datos
    psql -U radius radius < /etc/freeradius/3.0/mods-config/sql/main/postgresql/schema.sql
    ```
 
 4. Habilitar sql:
 
-   1. Habilitar:
+   1. Habilitar: sed -i 's/-sql/sql/g' sites-available/default
 
       ```sh
       cd /etc/freeradius/3.0
@@ -73,6 +74,11 @@
       ```
 
    3. Cambiar "-sql" por "sql" en las secciones "authorize{}" "accounting{}", "post-auth{}" y "session {}" en los archivos **_/etc/freeradius/3.0/sites-available/default_** y **_/etc/freeradius/3.0/sites-available/inner-tunnel_**
+
+      ```sh
+      sed -i 's/-sql/sql/g' sites-available/default
+      sed -i 's/-sql/sql/g' sites-available/inner-tunnel
+      ```
 
 5. Modo testing:
 

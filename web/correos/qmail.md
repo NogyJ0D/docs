@@ -80,6 +80,10 @@
 
   # Listar correos en cola
   /var/qmail/bin/qmail-qread
+
+  # Reiniciar cola si no se están procesando, puede variar
+  /etc/init.d/svscan stop
+  /etc/init.d/svscan start
   ```
 
 - Leer contenido de un correo:
