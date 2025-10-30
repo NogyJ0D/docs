@@ -317,7 +317,8 @@
      find "$MOUNT_BASE" -maxdepth 1 -type d 2>/dev/null | while read -r mountpoint; do
          if mountpoint -q "$mountpoint" 2>/dev/null; then
              log_message "Desmontando $mountpoint"
-             umount "$mountpoint" 2>/dev/null
+             timeout 60 umount -l "$mountpoint" 2>/dev/null || true
+             umount -l "$mountpoint" 2>/dev/null || true
              if [ $? -eq 0 ]; then
                  log_message "Desmontaje exitoso: $mountpoint"
                  # Eliminar directorio vacío
@@ -347,7 +348,8 @@
      ExecStart=/usr/local/bin/dominio/montaje-red.sh %i
      ExecStop=/usr/local/bin/dominio/desmontaje-red.sh %i
      TimeoutStartSec=30
-     TimeoutStopSec=10
+     TimeoutStopSec=90
+     KillMode=mixed
 
      [Install]
      WantedBy=multi-user.target

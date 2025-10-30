@@ -3,6 +3,7 @@
 - [Kiosk](#kiosk)
   - [Creación](#creación)
   - [Extras](#extras)
+    - [Resolución personalizada](#resolución-personalizada)
     - [Si falta audio](#si-falta-audio)
 
 ---
@@ -95,6 +96,24 @@
 5. Reiniciar.
 
 ## Extras
+
+### Resolución personalizada
+
+- Generar resolución:
+
+  ```sh
+  cvt 2560 1440 60 # Ancho Alto Hz
+  # Esto devuelve un Modeline "2560x1440_60.00"...
+  # Copiar todo eso menos "Modeline "
+  ```
+
+- Agregar a `/home/usuario/inicio.sh` al inicio:
+
+  ```sh
+  xrandr --newmode "2560x1440_60.00"...
+  xrandr --addmode HDMI-1 2560x1440_60.00 # Obtener el display con xrandr
+  xrandr -s 2560x1440_60.00
+  ```
 
 ### Si falta audio
 

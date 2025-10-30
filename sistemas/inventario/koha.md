@@ -8,6 +8,7 @@ Sistema para catalogación de libros de una biblioteca.
   - [Instalación en Debian](#instalación-en-debian)
     - [Pasos](#pasos)
   - [Extras](#extras)
+    - [Reindexar zebra](#reindexar-zebra)
     - [Activar email](#activar-email)
     - [Migrar base de datos de instalación vieja a nueva](#migrar-base-de-datos-de-instalación-vieja-a-nueva)
   - [Plugins](#plugins)
@@ -119,6 +120,15 @@ Sistema para catalogación de libros de una biblioteca.
 ## Extras
 
 - Guías: <https://kohageek.blogspot.com/>
+
+### Reindexar zebra
+
+```sh
+# Primero librerías
+koha-shell libreria -c "/usr/share/koha/bin/migration_tools/rebuild_zebra.pl -b -v"
+# Después autoridades
+koha-shell libreria -c "/usr/share/koha/bin/migration_tools/rebuild_zebra.pl -a -v"
+```
 
 ### Activar email
 
