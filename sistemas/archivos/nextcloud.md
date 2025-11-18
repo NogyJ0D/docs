@@ -14,8 +14,11 @@
       - [Compose](#compose)
       - [Pasos instalación docker](#pasos-instalación-docker)
   - [Extras](#extras)
+    - [Carpetas grupales](#carpetas-grupales)
     - [Activar directorios virtuales en el cliente](#activar-directorios-virtuales-en-el-cliente)
     - [Activar LDAP](#activar-ldap)
+    - [Conectarse Como Unidad de Red](#conectarse-como-unidad-de-red)
+      - [En Windows](#en-windows)
 
 ---
 
@@ -498,11 +501,17 @@
 
 #### Nginx
 
-> ⚠️ Guardar ambos en sites-available y mover luego.
+> ⚠️ Guardar en sites-available y mover luego.
 
 - **_nextcloud.conf_**:
 
   ```nginx
+  # :%s/nube.dominio.com/dominio/g
+  upstream nextcloud {
+    server x.x.x.x:3000;
+    keepalive 32;
+  }
+
   server {
     listen 80;
     listen [::]:80;
@@ -511,14 +520,15 @@
     return 301 https://$host$request_uri;
   }
 
-  upstream nextcloud {
-    server x.x.x.x:80;
-    keepalive 32;
+  map $http_upgrade $connection_upgrade_keepalive {
+    default upgrade;
+    ''      '';
   }
 
   server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
     server_name nube.dominio.com;
 
     proxy_send_timeout 330s;
@@ -535,22 +545,15 @@
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_prefer_server_ciphers off;
 
-    # Cabeceras de seguridad
-    more_set_headers 'Referrer-Policy: no-referrer' always;
-    more_set_headers 'X-Content-Type-Options: nosniff' always;
-    more_set_headers 'X-Frame-Options: SAMEORIGIN' always;
-    more_set_headers 'X-Permitted-Cross-Domain-Policies: none' always;
-    more_set_headers 'X-Robots-Tag: noindex, nofollow' always;
-    more_set_headers 'X-XSS-Protection: 1; mode=block' always;
-
     # Tamaño maximo de carga
-    client_max_body_size 16G;
+    client_max_body_size 0;
     client_body_timeout 300s;
     client_body_buffer_size 512k;
     proxy_buffers 64 4k;
     proxy_buffer_size 4k;
     proxy_busy_buffers_size 8k;
 
+    # Cabeceras de seguridad
     add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
     add_header Referrer-Policy "no-referrer" always;
     add_header X-Content-Type-Options "nosniff" always;
@@ -558,6 +561,7 @@
     add_header X-Permitted-Cross-Domain-Policies "none" always;
     add_header X-Robots-Tag "noindex, nofollow" always;
     add_header X-XSS-Protection "1; mode=block" always;
+    more_clear_headers 'Server';
 
     error_log /var/log/nginx/nube.dominio.com_error.log;
     access_log /var/log/nginx/nube.dominio.com.log;
@@ -618,7 +622,7 @@
       proxy_max_temp_file_size 2048m;
     }
 
-    # Ubicación principal
+    # Ubicación principal (debe ir al final siempre)
     location / {
       proxy_pass http://nextcloud;
       proxy_set_header Host $host;
@@ -632,14 +636,15 @@
       proxy_max_temp_file_size 2048m;
     }
 
+    # No usar porque bloquea cosas que importan
     # Bloquear archivos php
-    location ~ \.php$ {
-      return 404;
-    }
+    #location ~ \.php$ {
+    #  return 404;
+    #}
   }
   ```
 
-- **_collabora.conf_**:
+- office.conf:
 
   ```nginx
   upstream office {
@@ -664,11 +669,37 @@
     listen [::]:443 ssl;
     server_name office.dominio.com;
 
+    proxy_send_timeout 330s;
+    proxy_read_timeout 330s;
+    proxy_connect_timeout 60s;
+    proxy_buffering off;
+    proxy_request_buffering off;
+
     ssl_certificate /etc/letsencrypt/live/office.dominio.com/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/office.dominio.com/privkey.pem;
+    ssl_session_cache shared:WEBSSL:10m;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_session_timeout 10m;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
 
-    #client_max_body_size 0;
-    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload";
+    # Tamaño maximo de carga
+    client_max_body_size 0;
+    client_body_timeout 300s;
+    client_body_buffer_size 512k;
+    proxy_buffers 64 4k;
+    proxy_buffer_size 4k;
+    proxy_busy_buffers_size 8k;
+
+    # Cabeceras de seguridad
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+    add_header Referrer-Policy "no-referrer" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Permitted-Cross-Domain-Policies "none" always;
+    add_header X-Robots-Tag "noindex, nofollow" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    more_clear_headers 'Server';
 
     error_log /var/log/nginx/office.dominio.com_error.log;
     access_log /var/log/nginx/office.dominio.com.log;
@@ -743,6 +774,8 @@ services:
     image: nextcloud:latest
     container_name: nextcloud
     restart: unless-stopped
+    labels:
+      - 'com.centurylinklabs.watchtower.enable=true'
     networks:
       - nextcloud
     ports:
@@ -775,12 +808,16 @@ services:
     image: postgres:15
     container_name: nextcloud-db
     restart: unless-stopped
+    labels:
+      - 'com.centurylinklabs.watchtower.enable=true'
     networks:
       - nextcloud
     environment:
       POSTGRES_DB: nextcloud
       POSTGRES_USER: nextcloud
       POSTGRES_PASSWORD: nextcloud
+      TZ: America/Argentina/Buenos_Aires
+      POSTGRES_INITDB_ARGS: '--encoding=UTF8'
     volumes:
       - ./db_data:/var/lib/postgresql/data
 
@@ -789,6 +826,8 @@ services:
     container_name: nextcloud-redis
     command: ['redis-server', '--requirepass', 'redis']
     restart: unless-stopped
+    labels:
+      - 'com.centurylinklabs.watchtower.enable=true'
     networks:
       - nextcloud
     environment:
@@ -802,6 +841,8 @@ services:
     image: collabora/code:latest
     container_name: nextcloud-collabora
     restart: unless-stopped
+    labels:
+      - 'com.centurylinklabs.watchtower.enable=true'
     networks:
       - nextcloud
     environment:
@@ -819,25 +860,44 @@ services:
         --o:ssl.termination=true
         --o:net.frame_ancestors=nextcloud.dominio.com:443
         --o:storage.wopi.host[0]=nextcloud.dominio.com
-        # --o:languagetool.base_url=http://nextcloud-languagetool:8010/v2
-        # --o:languagetool.enabled=true
-        # Estos extra_params reemplazan los valores de /etc/coolwsd/coolwsd.xml
+    #        --o:languagetool.base_url=http://nextcloud-languagetool:8010/v2
+    #        --o:languagetool.enabled=true
+    # Estos extra_params reemplazan los valores de /etc/coolwsd/coolwsd.xml
     ports:
       - 9980:9980
     extra_hosts:
-      - 'office.dominio.com:<IP privada del proxy reverso>'
       - 'nextcloud.dominio.com:<IP privada del proxy reverso>'
+      - 'office.dominio.com:<IP privada del proxy reverso>'
 
-  # Opcional languagetool para correcciones ortográficas, descomentar tambien arriba en collabora
-  # nextcloud-languagetool:
-  #   image: erikvl87/languagetool
-  #   container_name: nextcloud-languagetool
-  #   restart: unless-stopped
-  #   networks:
-  #     - nextcloud
-  #   environment:
-  #     - Java_Xms=512m
-  #     - Java_Xmx=1g
+  #  Pareciera que no anda
+  #  Opcional languagetool para correcciones ortográficas
+  #  nextcloud-languagetool:
+  #    profiles:
+  #      - donotstart
+  #    image: erikvl87/languagetool
+  #    container_name: nextcloud-languagetool
+  #    restart: unless-stopped
+  #    labels:
+  #      - 'com.centurylinklabs.watchtower.enable=true'
+  #    networks:
+  #      - nextcloud
+  #    environment:
+  #      - Java_Xms=512m
+  #      - Java_Xmx=1g
+  #      - JAVAOPTIONS=-DlanguageTool.preloadedLanguages=es-ES
+
+  watchtower:
+    image: containrrr/watchtower
+    profiles:
+      - donotstart
+    container_name: watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_LABEL_ENABLE=true
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=43200
 
 networks:
   nextcloud:
@@ -850,13 +910,16 @@ networks:
 > No habilitar aún los sitios en nginx, mantenerlo local.
 
 1. [Instalar docker engine](https://docs.docker.com/engine/install/debian/#install-using-the-repository)
-2. Crear la carpeta y cargar el **_[docker-compose.yml](#compose)_**
-3. Agregar las url con la ip del proxy a **_/etc/hosts_**.
-4. Iniciar con `docker compose up` y cuando esté lista la DB (aceptando conexiones), cortar con Control+D.
-5. Comentar "profiles" en el contenedor de nextcloud y volver a iniciar con `docker compose up -d && docker compose logs -f`.
+2. Instalar `libnginx-mod-http-headers-more-filter` donde está nginx.
+3. Crear la carpeta y cargar el **_[docker-compose.yml](#compose)_**
+4. Agregar las url con la ip del proxy a **_/etc/hosts_** en la vm del nextcloud (`<IP Privada del proxy> nextcloud.dominio.com`).
+5. Iniciar con `docker compose pull` `docker compose up` y cuando esté lista la DB (aceptando conexiones), cortar con Control+D.
+6. Comentar "profiles" en el contenedor de **nextcloud** y volver a iniciar con `docker compose pull` y `docker compose up -d && docker compose logs -f`.
 
    1. Cuando esté listo (o si empieza a fallar la instalación), conectarse con `docker exec -it -u www-data nextcloud /bin/bash`.
    2. Dentro del contenedor iniciar instalación con:
+
+      - No hace falta cambiar la contraseña del admin
 
       ```sh
       php /var/www/html/occ maintenance:install \
@@ -867,7 +930,7 @@ networks:
 
    3. Salir cuando esté listo.
 
-6. Configuración de nextcloud:
+7. Configuración de nextcloud:
 
    1. Agregar a **_./config/config.php_**:
 
@@ -875,7 +938,8 @@ networks:
       'maintenance_window_start' => 5,
       'maintenance' => false,
       'default_phone_region' => 'AR',
-      'trusted_domains' =>
+      'skeletondirectory' => '',
+      'trusted_domains' => # Ya existe
       array (
         0 => 'nextcloud.dominio.com'
       )
@@ -891,20 +955,20 @@ networks:
       */5 * * * * docker exec -u www-data nextcloud php -f /var/www/html/cron.php
       ```
 
-7. Comentar "profiles" en el contenedor de collabora y volver a iniciar con `docker compose up -d && docker compose logs -f`. Cuando esté listo, habilitar los sitios en nginx y entrar a la página de Nextcloud.
-8. Comprobar que funcione con el usuario admin y entrar a la pestaña de administración para ver los ítems que faltan configurar.
+8. Comentar "profiles" en el contenedor de **collabora**, **languagetool** y **watchtower** y volver a iniciar con `docker compose pull` y `docker compose up -d && docker compose logs -f`. Cuando esté listo, habilitar los sitios en nginx y entrar a la página de Nextcloud.
+9. Comprobar que funcione con el usuario admin y entrar a la pestaña de administración para ver los ítems que faltan configurar.
    - Asegurarse que esté habilitado el cron en la interfaz.
-9. Ejecutar estos comandos de mantenimiento general para quitar advertencias:
+10. Ejecutar estos comandos de mantenimiento general para quitar advertencias:
 
-   ```sh
-   docker exec -u www-data nextcloud php occ maintenance:repair --include-expensive
-   docker exec -u www-data nextcloud php occ db:add-missing-indices
-   docker exec -u www-data nextcloud php occ files:scan --all
-   docker exec -u www-data nextcloud php occ maintenance:mode --on
-   docker exec -u www-data nextcloud php occ maintenance:mode --off
-   ```
+    ```sh
+    docker exec -u www-data nextcloud php occ maintenance:repair --include-expensive
+    docker exec -u www-data nextcloud php occ db:add-missing-indices
+    docker exec -u www-data nextcloud php occ files:scan --all
+    docker exec -u www-data nextcloud php occ maintenance:mode --on
+    docker exec -u www-data nextcloud php occ maintenance:mode --off
+    ```
 
-10. Conectar Collabora:
+11. Conectar Collabora:
     - Instalar la app **"Nextcloud Office"**.
     - En la web ir a **"Administration Settings"** > **"Office"**.
     - Marcar "Use your own server" y poner la url (<https://office.dominio.com>).
@@ -914,14 +978,6 @@ networks:
       - Si no funciona, configurar una cualquiera e intentar abrir un archivo con collabora.
 
 - Comandos
-
-  - Actualizar contenedor???:
-
-    ```sh
-    docker container stop nextcloud
-    docker container rm nextcloud
-    docker compose up -d && docker compose logs -f
-    ```
 
   - Forzar el escaneo de archivos:
 
@@ -933,6 +989,10 @@ networks:
 
 ## Extras
 
+### Carpetas grupales
+
+- Activar la app ""
+
 ### Activar directorios virtuales en el cliente
 
 - En linux los directorios virtuales no vienen activables por defecto.
@@ -941,251 +1001,22 @@ networks:
 ### Activar LDAP
 
 1. Asegurarse de tener instalado el paquete "php-ldap".
-
 2. Activar en la web la app "LDAP user and group backend".
-
 3. Entrar al panel de administración y configurar la app.
 
-<!--
+- Si no mapea los correos de los usuarios:
+  1. Ir a la configuración del ldap en nextcloud
+  2. Ir a pestaña "Avanzado" (arriba a la derecha)
+  3. Abrir "Atributos especiales"
+  4. En el campo "E-mail" escribir "mail" (sin comillas)
 
-#### [Instalar con Apache](https://docs.nextcloud.com/server/latest/admin_manual/installation/example_ubuntu.html)
+### Conectarse Como Unidad de Red
 
-1. Instalar requisitos:
+- Usando webdav
 
-    ```sh
-    apt update && apt upgrade -y
+#### En Windows
 
-    apt install apache2 libapache2-mod-php php-gd php-mysql php-curl php-mbstring php-intl php-gmp php-bcmath php-xml php-imagick php-zip php-bz2 php-apcu php-redis php-ldap libmagickcore-6.q16-6-extra unzip wget sudo -y
-    ```
-
-2. [Instalar MariaDB y crear db](../../database/sql/mysql_mariadb.md#instalar-mariadb-en-debian-12):
-
-     1. Configurar:
-
-         - Tener ***/etc/mysql/my.conf*** como:
-
-            ```conf
-            [server]
-            skip_name_resolve = 1
-            innodb_buffer_pool_size = 1G
-            innodb_buffer_pool_instances = 1
-            innodb_flush_log_at_trx_commit = 2
-            innodb_log_buffer_size = 32M
-            innodb_max_dirty_pages_pct = 90
-            query_cache_type = 1
-            query_cache_limit = 2M
-            query_cache_min_res_unit = 2k
-            query_cache_size = 64M
-            tmp_table_size= 64M
-            max_heap_table_size= 64M
-            slow_query_log = 1
-            slow_query_log_file = /var/log/mysql/slow.log
-            long_query_time = 1
-
-            [client-server]
-            !includedir /etc/mysql/conf.d/
-            !includedir /etc/mysql/mariadb.conf.d/
-
-            [client]
-            default-character-set = utf8mb4
-
-            [mysqld]
-            character_set_server = utf8mb4
-            collation_server = utf8mb4_general_ci
-            transaction_isolation = READ-COMMITTED
-            binlog_format = ROW
-            innodb_large_prefix=on
-            innodb_file_format=barracuda
-            innodb_file_per_table=1
-            read_rnd_buffer_size = 4M
-            sort_buffer_size = 4M
-            ```
-
-         - Tener ***/etc/php/x.x/apache2/conf.d/20-pdo_mysql.ini*** como:
-
-            ```ini
-            extension=pdo_mysql.so
-
-            [mysql]
-            mysql.allow_local_infile=On
-            mysql.allow_persistent=On
-            mysql.cache_size=2000
-            mysql.max_persistent=-1
-            mysql.max_links=-1
-            mysql.default_port=
-            mysql.default_socket=/run/mysqld/mysqld.sock
-            mysql.default_host=
-            mysql.default_user=
-            mysql.default_password=
-            mysql.connect_timeout=60
-            mysql.trace_mode=Off
-            ```
-
-     2. Crear:
-
-        ```sh
-        mysql
-        ```
-
-        ```sql
-        CREATE USER 'nextcloud'@'localhost' IDENTIFIED BY 'password';
-        CREATE DATABASE IF NOT EXISTS nextcloud CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-        GRANT ALL PRIVILEGES ON nextcloud.* TO 'nextcloud'@'localhost';
-        FLUSH PRIVILEGES;
-        QUIT;
-        ```
-
-3. Descargar Nextcloud:
-
-    ```sh
-    wget https://download.nextcloud.com/server/releases/latest.zip && unzip latest.zip
-
-    cp -r nextcloud /var/www
-
-    sudo chown -R www-data:www-data /var/www/nextcloud
-    ```
-
-4. [Configurar Apache](https://docs.nextcloud.com/server/latest/admin_manual/installation/source_installation.html#apache-configuration-label):
-
-    1. Crear espacio:
-
-        ```sh
-        nano /etc/apache2/sites-available/nextcloud.conf
-        ```
-
-        ```apache
-        Alias /nextcloud "/var/www/nextcloud/"
-
-        <Directory /var/www/nextcloud/>
-            Require all granted
-            AllowOverride All
-            Options FollowSymLinks MultiViews
-
-            <IfModule mod_dav.c>
-                Dav off
-            </IfModule>
-            <IfModule mod_headers.c>
-                Header always set Strict-Transport-Security "max-age=15552000; includeSubDomains"
-            </IfModule>
-        </Directory>
-        ```
-
-        ```sh
-        a2ensite nextcloud.conf
-        ```
-
-    2. Habilitar módulos:
-
-        ```sh
-        a2enmod rewrite && \
-        a2enmod headers && \
-        a2enmod env && \
-        a2enmod dir && \
-        a2enmod mime
-        ```
-
-    3. Habilitar ssl:
-
-        ```sh
-        a2enmod ssl && \
-        a2ensite default-ssl
-        ```
-
-    4. Editar en ***/etc/php/x.x/apache2/php.ini***:
-
-        ```ini
-        max_execution_time = 300
-        memory_limit = 2G
-        post_max_size = 128M
-        upload_max_filesize = 128M
-        ```
-
-    5. Habilitar OPCache en ***/etc/php/x.x/apache2/php.ini***:
-
-        ```ini
-        [opcache]
-        opcache.enable=1
-        opcache.memory_consumption=512
-        opcache.interned_strings_buffer=64
-        opcache.max_accelerated_files=50000
-        opcache.max_wasted_percentage=15
-        opcache.validate_timestamps=0
-        opcache.revalidate_freq=0
-        opcache.save_comments=1
-        ```
-
-    6. Editar en ***/etc/php/x.x/apache2/pool.d/www.conf:
-
-        ```conf
-        pm = dynamic
-        pm.max_children = 120
-        pm.start_servers = 12
-        pm.min_spare_servers = 6
-        pm.max_spare_servers = 18
-        ```
-
-    7. Reiniciar servicio:
-
-        ```sh
-        service apache2 restart
-        ```
-
-5. Entrar a Nextcloud y realizar instalación web.
-
-6. [Configurar Pretty URL](https://docs.nextcloud.com/server/latest/admin_manual/installation/source_installation.html#pretty-urls):
-
-    ```sh
-    nano /var/www/nextcloud/config/config.php
-    ```
-
-    ```php
-    'overwrite.cli.url' => 'https://example.org/nextcloud',
-    'htaccess.RewriteBase' => '/nextcloud',
-    ```
-
-    > Una vez que se cambie la ip o el dominio de la web, debe modificarse la linea overwrite.
-
-    ```sh
-    sudo -u www-data php /var/www/nextcloud/occ maintenance:update:htaccess
-    ```
-
-7. [Instalar Redis](../../database/nosql/redis.md#instalar-redis-en-debian-12) para mejorar el rendimiento.
-
-    - Agregar en ***/var/www/nextcloud/config/config.php***:
-
-      ```php
-      'memcache.local' => '\OC\Memcache\APCu',
-      'filelocking.enabled' => true,
-      'memcache.locking' => '\OC\Memcache\Redis',
-      'redis' => array(
-        'host' => '/var/run/redis/redis.sock',
-        'port' => 0,
-        'timeout' => 0.0,
-      ),
-      'loglevel' => 3,
-      ```
-
-    - Ejecutar:
-
-        ```sh
-        echo "unixsocket /var/run/redis/redis.sock" >> /etc/redis/redis.conf
-        echo "unixsocketperm 777" >> /etc/redis/redis.conf
-
-        echo "vm.overcommit_memory = 1" | tee /etc/sysctl.d/nextcloud-aio-memory-overcommit.conf
-        ```
-
-8. [Habilitar cron](https://docs.nextcloud.com/server/latest/admin_manual/configuration_server/background_jobs_configuration.html#cron-jobs):
-
-    ```sh
-    crontab -u www-data -e
-    ```
-
-    ```text
-    */5 * * * * php -f /var/www/nextcloud/cron.php --define apc.enable_cli=1
-    ```
-
-9.  Ir al panel de administración y corregir las advertencias.
-
-    - Corregir el error del teléfono: agregar en ***/var/www/nextcloud/config/config.php*** "'default_phone_region' => 'AR',".
-
--->
+1. Abrir el explorador.
+2. Dar click derecho a "Este equipo" y seleccionar "Agregar una ubicación de red".
+3. Elegir la letra y en carpeta poner: "<https://nube.dom.com/remote.php/dav/files/USUARIO>".
+4. Entrar con las credenciales del usuario.

@@ -1,6 +1,36 @@
 # Finanzas
 
 - [Finanzas](#finanzas)
+  - [Trading](#trading)
+    - [Soportes y Resistencias](#soportes-y-resistencias)
+  - [Instrumentos](#instrumentos)
+    - [CEDEAR](#cedear)
+      - [Ventajas de invertir en CEDEAR](#ventajas-de-invertir-en-cedear)
+      - [Dividendos](#dividendos)
+      - [Split](#split)
+  - [Dólar](#dólar)
+    - [Dólar MEP](#dólar-mep)
+    - [Dólar Contado con Liquidación](#dólar-contado-con-liquidación)
+
+---
+
+## Trading
+
+### Soportes y Resistencias
+
+- Son puntos en los gráficos donde el precio sigue una tendencia, se detiene y rebota hacia el lado contrario.
+  - Los soportes son los puntos donde el precio baja y rebota para subir.
+  - Las resistencias son los puntos donde el precio sube y rebota para bajar.
+- Tipos de soporte y resistencia:
+  - **Fijos o normales**:
+    - **Extremos**: máxmimos y mínimos.
+    - **Internos**: están dentro de los extremos. Si detectamos varias de estas a las que se llega con paridad de vela, y el precio actual sin llegar a los máximos, es posible que en el futuro se vuelva a producir si la vela muestra la misma tendencia.
+  - **Dinámicos**:
+    - Líneas diagonales
+- **Paridad de vela**:
+  - Son velas que abren y cierran a la par, tienen el mismo tamaño. Se niegan entre sí. La más confiables son las que menos cola tienen (más volumen).
+    - Una vela _alcista_ que cierra y comienza una vela bajista al lado del mismo tamaño, genera una _resistencia_.
+    - Una vela _bajista_ que cierra y comienza una vela alcista al lado del mismo tamaño, genera un _soporte_.
 
 ---
 
@@ -39,16 +69,16 @@
 - Son una parte de las ganancias de una empresa que se distribuye entre sus accionistas.
 - Comprar un CEDEAR que representa una acción que paga dividendos te da derecho a recibir ese pago.
 - **Pasos del proceso de cobro**:
-  1.  _Anuncio del dividendo_: la empresa informa cuánto va a distribuir por acción.
-  2.  _Conversión local_: el custodio del CEDEAR recibe el pago del dividendo en dólares.
-  3.  _Acreditación_: el broker local convierte el monto a pesos o lo deja en dólares.
+  1. _Anuncio del dividendo_: la empresa informa cuánto va a distribuir por acción.
+  2. _Conversión local_: el custodio del CEDEAR recibe el pago del dividendo en dólares.
+  3. _Acreditación_: el broker local convierte el monto a pesos o lo deja en dólares.
 - **Impuestos y retenciones**:
   - _Retenciones internacionales_: el país de origen de la acción retiene un 30% de los dividendos.
   - _Impuesto a las ganancias en Argentina_: los dividendos pueden estar alcanzados por impuestos locales.
 - **¿Cómo elegir los mejores CEDEAR para recibir dividendos?**
-  1.  _Rentabilidad del dividendo (Dividend Yield)_: cuánto paga una empresa en relación con el precio de su acción.
-  2.  _Historial de pagos_: las empresas que pagan regularmente son más confiables.
-  3.  _Sector y perspectivas_: las empresas tecnológicas suelen reinvertir utilidades en vez de repartirlas, mientras que sectores como el energético tienen a ofrecer dividendos más generosos.
+  1. _Rentabilidad del dividendo (Dividend Yield)_: cuánto paga una empresa en relación con el precio de su acción.
+  2. _Historial de pagos_: las empresas que pagan regularmente son más confiables.
+  3. _Sector y perspectivas_: las empresas tecnológicas suelen reinvertir utilidades en vez de repartirlas, mientras que sectores como el energético tienen a ofrecer dividendos más generosos.
 
 #### Split
 

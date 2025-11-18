@@ -49,7 +49,10 @@
   2. Elegir el deseado, entrar y darle a **Install**.
   3. Ahora se puede agregar como fuente de datos.
 - Explorar los datos:
-  1. Ir a \_
+  1. Ir a _Explore_.
+  2. Elegir una fuente de datos arriba.
+  3. Elegir un rango de tiempo.
+  4. Seleccionar un **Label Filter** y un **Value**. Esto arma la query
 
 ---
 
