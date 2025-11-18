@@ -7,6 +7,9 @@
 - [Grafana + Prometheus](#grafana--prometheus)
   - [Contenido](#contenido)
   - [Documentación](#documentación)
+    - [Observability](#observability)
+    - [Grafana](#grafana)
+    - [Primeros pasos](#primeros-pasos)
   - [Instalación](#instalación)
     - [Instalar grafana OSS en Debian 12](#instalar-grafana-oss-en-debian-12)
   - [Extras](#extras)
@@ -14,6 +17,39 @@
 ---
 
 ## Documentación
+
+### Observability
+
+- O11Y = Olly = Observability
+- El cuerpo tiene varios sistemas internos
+  - Primero: ver cómo está cuerpo
+  - Si algo está mal, ver qué pasa
+  - Usar máquinas para ver los órganos internos
+  - Recopilar, analizar y visualizar información para ver que pasa
+  - Con eso, se puede solucionar un problema
+- Entender el rendimiento, comportamiento y estado de un sistema mediante análisis de datos de varias fuentes (métricas, registros, trazas)
+  - **Métricas**: datos numéricos, algo pasa
+    - Un sistema de observabilidad lanza alertas si las métricas superan ciertos umbrales
+  - **Registros**: archivos de texto, qué pasa
+  - **Trazas**: rastrear solicitudes, cómo interactúan y rastrear dónde se produce el problema.
+
+### Grafana
+
+- Grafana en sí no almacena datos, de eso se encargan las fuentes de datos (Loki, Tempo y Mimir por ejemplo)
+
+### Primeros pasos
+
+- Agregar una fuente de datos:
+  1. Ir a _Connections_ > _Data Sources_ > **Add data source**.
+  2. Si hay soporte nativo para la fuente, aparece ahí. Si no hay, se requieren plugins.
+  3. Buscar la fuente elegida.
+  4. Entrar y completar los datos (nombre, conexión, autenticación), ir al fondo y agregar.
+- Agregar plugins:
+  1. Ir a _Administration_ > _Plugins and data_ > _Plugins_.
+  2. Elegir el deseado, entrar y darle a **Install**.
+  3. Ahora se puede agregar como fuente de datos.
+- Explorar los datos:
+  1. Ir a \_
 
 ---
 
@@ -23,24 +59,24 @@
 
 1. Instalar grafana-server:
 
-    ```sh
-    apt install -y apt-transport-https software-properties-common wget
-    mkdir -p /etc/apt/keyrings/
-    wget -q -O - https://apt.grafana.com/gpg.key | gpg --dearmor | tee /etc/apt/keyrings/grafana.gpg > /dev/null
-    echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main" | sudo tee -a /etc/apt/sources.list.d/grafana.list
-    apt update
-    
-    apt install grafana
-    
-    systemctl daemon-reload
-    systemctl enable --now grafana-server
-    ```
+   ```sh
+   apt install -y apt-transport-https software-properties-common wget
+   mkdir -p /etc/apt/keyrings/
+   wget -q -O - https://apt.grafana.com/gpg.key | gpg --dearmor | tee /etc/apt/keyrings/grafana.gpg > /dev/null
+   echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main" | sudo tee -a /etc/apt/sources.list.d/grafana.list
+   apt update
+
+   apt install grafana
+
+   systemctl daemon-reload
+   systemctl enable --now grafana-server
+   ```
 
 2. Loguearse en el puerto 3000 como admin:admin.
 
 3. Instalar prometheus:
 
-    - Buscar última versión de [prometheus](https://prometheus.io/download/#prometheus) y [node_exporter](https://prometheus.io/download/#node_exporter)
+   - Buscar última versión de [prometheus](https://prometheus.io/download/#prometheus) y [node_exporter](https://prometheus.io/download/#node_exporter)
 
    1. Descargar node_exporter:
 
