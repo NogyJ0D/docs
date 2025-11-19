@@ -13,6 +13,8 @@
       - [Nginx](#nginx)
       - [Compose](#compose)
       - [Pasos instalación docker](#pasos-instalación-docker)
+  - [Aplicaciones](#aplicaciones)
+    - [Preview Generator](#preview-generator)
   - [Extras](#extras)
     - [Carpetas grupales](#carpetas-grupales)
     - [Activar directorios virtuales en el cliente](#activar-directorios-virtuales-en-el-cliente)
@@ -984,6 +986,33 @@ networks:
     ```sh
     docker exec -it -u www-data nextcloud php -f /var/www/html/occ files:scan -all
     ```
+
+---
+
+## Aplicaciones
+
+### [Preview Generator](https://apps.nextcloud.com/apps/previewgenerator)
+
+- Genera thumbnails de los archivos
+
+1. Instalar la app: _Apps_ > _Multimedia_ > _Preview Generator_
+2. Correr el comando: `docker exec -u www-data -it nextcloud php occ preview:generate-all` (adaptar si no es docker) para generar preview de todos los archivos
+3. Agregar al cron: `*/5 * * * * docker exec -u www-data nextcloud php occ preview:pre-generate` para que vaya generando automáticamente
+4. Agregar al `config.php`:
+
+   ```php
+   'enable_previews' => true,
+   'enabledPreviewProviders' => array (
+       'OC\\Preview\\PNG',
+       'OC\\Preview\\JPEG',
+       'OC\\Preview\\GIF',
+       'OC\\Preview\\HEIC',
+       'OC\\Preview\\BMP',
+       'OC\\Preview\\XBitmap',
+       'OC\\Preview\\Movie',
+       'OC\\Preview\\PDF',
+   ),
+   ```
 
 ---
 
