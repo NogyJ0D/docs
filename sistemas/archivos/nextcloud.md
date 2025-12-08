@@ -16,11 +16,13 @@
   - [Aplicaciones](#aplicaciones)
     - [Preview Generator](#preview-generator)
   - [Extras](#extras)
+    - [Habilitar miniaturas](#habilitar-miniaturas)
     - [Carpetas grupales](#carpetas-grupales)
     - [Activar directorios virtuales en el cliente](#activar-directorios-virtuales-en-el-cliente)
     - [Activar LDAP](#activar-ldap)
     - [Conectarse Como Unidad de Red](#conectarse-como-unidad-de-red)
       - [En Windows](#en-windows)
+    - [Error de escaneo](#error-de-escaneo)
 
 ---
 
@@ -1018,6 +1020,77 @@ networks:
 
 ## Extras
 
+### Habilitar miniaturas
+
+1. Crear un `Dockerfile` para agregar ffmpeg:
+
+   ```dockerfile
+   FROM nextcloud:latest
+
+   RUN set -ex; \
+       \
+       apt-get update; \
+       apt-get install -y --no-install-recommends \
+         ffmpeg \
+         ghostscript \
+         ibmagickcore-7.q16-10-extra \
+       ; \
+       rm -rf /var/lib/apt/lists/*
+   ```
+
+2. Modificar el docker compose:
+
+   ```yml
+   nextcloud:
+     #image: nextcloud:latest
+     build: .
+   ```
+
+3. Agregar en `config/config.php`:
+
+   ```php
+   'enable_previews' => true,
+   'enabledPreviewProviders' => array (
+     0 => 'OC\Preview\Movie',
+     1 => 'OC\Preview\MP4',
+     2 => 'OC\Preview\AVI',
+     3 => 'OC\Preview\PNG',
+     4 => 'OC\Preview\JPEG',
+     5 => 'OC\Preview\GIF',
+     6 => 'OC\Preview\BMP',
+     7 => 'OC\Preview\XBitmap',
+     8 => 'OC\Preview\MP3',
+     9 => 'OC\Preview\TXT',
+     10 => 'OC\Preview\MarkDown',
+     11 => 'OC\Preview\PDF',
+   ),
+   ```
+
+4. Ejecutar:
+
+   ```sh
+   docker compose down
+   docker compose build
+   docker compose up -d && docker compose logs -f
+
+   docker exec -u www-data -it nextcloud php occ maintenance:mimetype:update-js
+   docker exec -u www-data -it nextcloud php occ maintenance:mimetype:update-db
+   ```
+
+5. Instalar la app **PreviewGenerator**:
+
+   ```sh
+   docker exec -u www-data -it nextcloud php occ app:install previewgenerator
+   docker exec -u www-data -it nextcloud php occ app:enable previewgenerator
+   docker exec -u www-data -it nextcloud php occ preview:generate-all # Esperar a que termine
+   ```
+
+6. Agregar al crontab:
+
+   ```cron
+   */10 * * * * docker exec -u www-data -it nextcloud php occ preview:pre-generate
+   ```
+
 ### Carpetas grupales
 
 - Activar la app ""
@@ -1049,3 +1122,10 @@ networks:
 2. Dar click derecho a "Este equipo" y seleccionar "Agregar una ubicación de red".
 3. Elegir la letra y en carpeta poner: "<https://nube.dom.com/remote.php/dav/files/USUARIO>".
 4. Entrar con las credenciales del usuario.
+
+### Error de escaneo
+
+- Si al hacer occ files:scan dice _"entry will not be accessible due to incompatible encoding"_:
+  1. Instalar convmv.
+  2. Ejecutar: `convmv -f utf-8 -t utf-8 -r --notest --nfc <Carpeta de los archivos>`
+  3. Ejecutar: `docker exec -u www-data -it nextcloud php occ files:scan vgiarra`

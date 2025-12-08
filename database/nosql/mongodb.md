@@ -8,6 +8,8 @@
   - [Contenido](#contenido)
   - [Documentación](#documentación)
   - [Instalación](#instalación)
+    - [Instalar MongoDB como Docker](#instalar-mongodb-como-docker)
+    - [Instalar MongoDB 7 en Debian 12](#instalar-mongodb-7-en-debian-12)
     - [Instalar MongoDB 7 en Ubuntu 22.04](#instalar-mongodb-7-en-ubuntu-2204)
   - [Extras](#extras)
     - [Backup y Restore](#backup-y-restore)
@@ -19,6 +21,24 @@
 ---
 
 ## Instalación
+
+### Instalar MongoDB como Docker
+
+```yml
+services:
+  mongodb:
+    image: mongodb/mongodb-community-server:latest
+    container_name: meshcentral_db
+    restart: always
+    volumes:
+      - ./db:/data/db
+    ports:
+      - 127.0.0.1:27017:27017
+    user: '0'
+    environment:
+      MONGODB_INITDB_ROOT_USERNAME: mongodb
+      MONGODB_INITDB_ROOT_PASSWORD: mongodb
+```
 
 ### Instalar MongoDB 7 en Debian 12
 
@@ -61,23 +81,23 @@ systemctl daemon-reload
 
 - Backup:
 
-    ```sh
-    mongodump --db database -o dbdump
+  ```sh
+  mongodump --db database -o dbdump
 
-    # Para transferirlo:
-    tar -cvzf dbdump.tar.gz dbdump
-    scp dbdump.tar.gz <user>@<ip>:/path
-    ```
+  # Para transferirlo:
+  tar -cvzf dbdump.tar.gz dbdump
+  scp dbdump.tar.gz <user>@<ip>:/path
+  ```
 
 - Restore:
 
-    ```sh
-    tar -xvzf dmdump.tar.gz
-    mongorestore --verbose dbdump/
+  ```sh
+  tar -xvzf dmdump.tar.gz
+  mongorestore --verbose dbdump/
 
-    # Opcional:
-    # --drop (borra la db existente)
+  # Opcional:
+  # --drop (borra la db existente)
 
-    # A otra db
-    mongorestore --db database --verbose dbdump/archivo/
-    ```
+  # A otra db
+  mongorestore --db database --verbose dbdump/archivo/
+  ```
