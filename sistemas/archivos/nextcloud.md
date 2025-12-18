@@ -891,7 +891,7 @@ services:
   #      - JAVAOPTIONS=-DlanguageTool.preloadedLanguages=es-ES
 
   watchtower:
-    image: containrrr/watchtower
+    image: ghcr.io/nicholas-fedor/watchtower:latest
     profiles:
       - donotstart
     container_name: watchtower
