@@ -9,6 +9,8 @@
   - [Documentación](#documentación)
   - [Instalación](#instalación)
     - [Instalar ElasticSearch 8 en Debian 12](#instalar-elasticsearch-8-en-debian-12)
+  - [Extras](#extras)
+    - [Si no levanta después de un upgrade](#si-no-levanta-después-de-un-upgrade)
 
 ---
 
@@ -56,5 +58,36 @@
 5. Probar si funciona:
 
    ```sh
-   curl -X GET "localhost:9200"
+   curl -X GET localhost:9200
+
+   curl -X GET localhost:9200/_cat/health
    ```
+
+   - Si el "\_cat/health" devuelve un error como este:
+
+     ```json
+     {
+       "error": {
+         "root_cause": [{ "type": "master_not_discovered_exception", "reason": null }],
+         "type": "master_not_discovered_exception",
+         "reason": null
+       },
+       "status": 503
+     }
+     ```
+
+     1. Agregar `discovery.type: single-node` a `/etc/elasticsearch/elasticsearch.yml` fijándose que no esté la opción `cluster.initial_master_nodes`.
+     2. Volver a probar el health.
+
+## Extras
+
+### Si no levanta después de un upgrade
+
+- Puede ser porque tiene algún plugin (y estos no se actualizan con apt):
+
+  ```sh
+  /usr/share/elasticsearch/bin/elasticsearch-plugin list
+  /usr/share/elasticsearch/bin/elasticsearch-plugin remove <plugin conflictivo>
+  /usr/share/elasticsearch/bin/elasticsearch-plugin install <plugin conflictivo>
+  systemctl restart elasticsearch
+  ```
