@@ -17,7 +17,6 @@
     - [Preview Generator](#preview-generator)
   - [Extras](#extras)
     - [Habilitar miniaturas](#habilitar-miniaturas)
-    - [Carpetas grupales](#carpetas-grupales)
     - [Activar directorios virtuales en el cliente](#activar-directorios-virtuales-en-el-cliente)
     - [Activar LDAP](#activar-ldap)
     - [Conectarse Como Unidad de Red](#conectarse-como-unidad-de-red)
@@ -972,22 +971,26 @@ networks:
     docker exec -u www-data nextcloud php occ maintenance:mode --off
     ```
 
-11. Conectar Collabora:
-    - Instalar la app **"Nextcloud Office"**.
+11. Administrar apps:
+
+    ```sh
+    docker exec -u www-data nextcloud php occ app:disable federation
+    docker exec -u www-data nextcloud php occ app:disable weather_status
+    docker exec -u www-data nextcloud php occ app:disable survey_client
+
+    docker exec -u www-data nextcloud php occ app:enable user_ldap # Dominio
+
+    docker exec -u www-data nextcloud php occ app:install richdocuments # Collabora
+    docker exec -u www-data nextcloud php occ app:install groupfolders
+    ```
+
+12. Conectar Collabora:
     - En la web ir a **"Administration Settings"** > **"Office"**.
     - Marcar "Use your own server" y poner la url (<https://office.dominio.com>).
     - En **"Configuraciones Avanzadas"** > **"Allow list of WOPI requests"** agregar la IP permitida.
       - Probar primero la IP privada del host.
       - Si no funciona, revisar en los registros que IP intentó acceder y poner esa en la lista.
       - Si no funciona, configurar una cualquiera e intentar abrir un archivo con collabora.
-
-- Comandos
-
-  - Forzar el escaneo de archivos:
-
-    ```sh
-    docker exec -it -u www-data nextcloud php -f /var/www/html/occ files:scan -all
-    ```
 
 ---
 
@@ -1091,10 +1094,6 @@ networks:
    */10 * * * * docker exec -u www-data -it nextcloud php occ preview:pre-generate
    ```
 
-### Carpetas grupales
-
-- Activar la app ""
-
 ### Activar directorios virtuales en el cliente
 
 - En linux los directorios virtuales no vienen activables por defecto.
@@ -1102,9 +1101,8 @@ networks:
 
 ### Activar LDAP
 
-1. Asegurarse de tener instalado el paquete "php-ldap".
-2. Activar en la web la app "LDAP user and group backend".
-3. Entrar al panel de administración y configurar la app.
+1. Activar en la web la app "LDAP user and group backend".
+2. Entrar al panel de administración y configurar la app.
 
 - Si no mapea los correos de los usuarios:
   1. Ir a la configuración del ldap en nextcloud
