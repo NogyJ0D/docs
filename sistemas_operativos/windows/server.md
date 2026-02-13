@@ -56,21 +56,21 @@
 
 ### Mapear Carpetas Automáticamente
 
-1. Ejecutar `gpmc.msc` y desplegar el bosque y dominio.
-2. Buscar la UO raíz (empresa), hacer click derecho, seleccionar **"Crear un GPO en este dominio y vincularlo aqui..."** y darle de nombre _"GPO_Mapeo_Unidades"_.
-3. Editar la GPO y navegar por la **Configuración de usuario** > Preferencias > Configuración de Windows > Asignaciones de unidades.
-   1. En la pestaña en blanco a la derecha hacer click derecho > Nuevo > Unidad Asignada
-      - Acción: **Actualizar**
-      - Ubicación: \\NombreDelServidor\Carpeta
-      - Reconectar: **activada**
-      - Letra: asignar
-   2. En la misma ventana ir a **_"Comunes"_**:
-      1. Marcar **Destinatarios de nivel de elemento** y abrir **Destinatarios**
-      2. Nuevo elemento > Grupo de seguridad > En Grupo apretar **"..."** y buscar el grupo, marcar después "Usuario en grupo"
-      3. Aceptar y cerrar todo
-4. Ejecutar en un cmd `gpupdate /force`
-
-- Para otra asignación repetir el paso 3, no hace falta crear otra GPO.
+1. Crearp GPO **_(una vez)_**:
+   1. Ejecutar `gpmc.msc` y desplegar el bosque y dominio.
+   2. Buscar la UO raíz (empresa), hacer click derecho, seleccionar **"Crear un GPO en este dominio y vincularlo aqui..."** y darle de nombre _"GPO_Mapeo_Unidades"_.
+2. Asignar mapeo **_(repetible)_**:
+   1. Editar la GPO y navegar por la **Configuración de usuario** > Preferencias > Configuración de Windows > Asignaciones de unidades.
+      1. En la pestaña en blanco a la derecha hacer click derecho > Nuevo > Unidad Asignada
+         - Acción: **Actualizar**
+         - Ubicación: \\\NombreDelServidor\Carpeta
+         - Reconectar: **activada**
+         - Letra: asignar
+      2. En la misma ventana ir a **_"Comunes"_**:
+         1. Marcar **Destinatarios de nivel de elemento** y abrir **Destinatarios**
+         2. Nuevo elemento > Grupo de seguridad > En Grupo apretar **"..."** y buscar el grupo, marcar después "Usuario en grupo"
+         3. Aceptar y cerrar todo
+3. Ejecutar en un cmd `gpupdate /force`
 
 ### Extras
 
@@ -88,3 +88,36 @@ Si al borrar la UO dice que no se puede porque está protegida:
 
 1. Seleccionar _Ver_ > _Caracteristicas Avanzadas_.
 2. Propiedades de la UO > Objeto > Desmarcar "Proteger objeto...".
+
+## Servidor de Impresión
+
+### Activar Servidor de Impresión (una vez)
+
+1. Abrir el administrador del servidor.
+2. Seleccionar _"Agregar roles yo características"_.
+   1. Seleccionar en el wizard _"Instalación basada en características o en roles"_ y seleccionar el servidor.
+      1. Marcar _"Servicios de impresión y documentos"_ y confirmar.
+   2. Darle siguiente hasta finalizar.
+
+### Agregar Impresora (repetible)
+
+1. Agregarla:
+   1. Abrir el administrador del servidor.
+   2. Ir a _Herramientas_ > _Administración de impresión_ y desplegar _Servidores de impresión_ para encontrar el nuestro e ir a _Impresoras_. Dar click derecho y _Agregar impresora_.
+   3. Agregar por ip, ponerle el driver correspondiente, darle un nombre corto y marcar compartir impresora.
+2. Compartirla por GPO:
+   1. Ejecutar `gpmc.msc` y desplegar el bosque y dominio.
+   2. Crear la GPO según quienes usan la impresora:
+      - Si la usan todos, crearla en la raíz del dominio.
+      - Si la usa el grupo "Ventas", crearla en la carpeta de "Ventas".
+   3. Editarla e ir a: _Configuración de usuario_ > _Preferencias_ > _Configuración del panel de control_ > _Impresoras_.
+   4. Click derecho en el panel, _Nuevo_ > _Impresora compartida_.
+   5. En la ruta de acceso poner "\\\SERVER\nombre asignado a la impresora".
+   6. Ir a _Configuración del equipo_ > _Directivas_ > _Plantillas administrativas_ > _Impresoras_.
+   7. Editar **"Restricciones de apuntar e imprimir"**:
+      1. Habilitarla.
+      2. Marcar: "Los usuarios solo pueden apuntar e imprimir en estos servidores".
+      3. Escribir el nombre del servidor (ej: empresa.local).
+      4. En las dos opciones de abajo ("Al instalar controladores..."), selecciona **"No mostrar advertencia ni indicador de elevación"**.
+   8. Habilitar la política **"Apuntar e imprimir paquetes - Servidores aprobados"** en la misma ruta y añadir el servidor ahí (ej: empresa.local).
+3. Ejecutar en un cmd `gpupdate /force`.
