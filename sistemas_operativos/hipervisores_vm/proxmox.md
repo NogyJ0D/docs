@@ -11,6 +11,8 @@
     - [Crear vm vacía](#crear-vm-vacía)
     - [Modificar tamaño de un disco](#modificar-tamaño-de-un-disco)
   - [Extras](#extras)
+    - [Agregar disco como btrfs para vms](#agregar-disco-como-btrfs-para-vms)
+    - [Crear vm debian template](#crear-vm-debian-template)
     - [Migrar VM de un proxmox a otro](#migrar-vm-de-un-proxmox-a-otro)
     - [Crear VM usando configuración de una existente](#crear-vm-usando-configuración-de-una-existente)
     - [Borrar partición LVM](#borrar-partición-lvm)
@@ -75,15 +77,93 @@ qm rescan
 
 ## Extras
 
+### Agregar disco como btrfs para vms
+
+1. Identificar el disco con `fdisk -l`.
+2. Formatearlo como btrfs: `mkfs.btrfs /dev/sdx -L vm-storage`.
+3. Crear punto de montaje con `mkdir /mnt/vm-storage` y montar `mount /dev/sdx /mnt/vm-storage`.
+4. Copiar el UUID con `blkid /dev/sdx` y agregar a `/etc/fstab`:
+
+   ```text
+   UUID=XXXX-XXXX /mnt/vm-storage btrfs defaults,noatime 0 0
+   ```
+
+5. Agregar como storage en proxmox:
+
+   ```sh
+   pvesm add btrfs vm-storage \
+     --path /mnt/vm-storage
+     --content images,rootdir
+   ```
+
+### Crear vm debian template
+
+- Al instalar la vm base:
+  - Disco: 10-12 GB.
+  - CPU/RAM: mínimo, se ajusta al clonar.
+  - Habilitar QEMU Guest Agent
+  - Tipo de disco: VirtIO SCSI
+  - Recordar instalar como **LVM** para hacer fácil el resize.
+- Comandos para la vm template:
+
+  ```sh
+  # Actualizar
+  apt update && apt upgrade -y
+
+  # QEMU Guest Agent
+  apt install -y qemu-guest-agent
+  systemctl enable --now qemu-guest-agent
+
+  # Herramientas básicas
+  apt install -y curl wget vim htop git net-tools
+
+  # Limpiar antes de convertir
+  apt clean
+  ```
+
+- Comandos antes de convertir la vm a template:
+
+  ```sh
+  # Limpiar machine-id
+  truncate -s 0 /etc/machine-id
+  rm /var/lib/dbus/machine-id
+  ln -s /etc/machine-id /var/lib/dbus/machine-id
+
+  # Limpiar historial y logs
+  history -c
+  truncate -s 0 /var/log/*.log
+
+  # Limpiar llaves ssh
+  rm /etc/ssh/ssh_host_*
+  ```
+
+- Comandos para cada vm una vez clonada:
+
+  ```sh
+  # Regenerar machine-id
+  systemd-machine-id-setup
+
+  # Regenerar llaves ssh (si no se regeneraron solas)
+  dpkg-reconfigure openssh-server
+
+  # Cambiar hostname
+  hostnamectl set-hostname nuevo-nombre
+  vim /etc/hosts # Actualizar ahí también
+  vgrename viejo-nombre--vg nuevo-nombre--vg
+
+  # Reiniciar
+  reboot
+  ```
+
 ### Migrar VM de un proxmox a otro
 
 - [Obtener locación del disco de la vm](#información-de-los-discos-virtuales).
 
 1. Exportar disco a qcow2:
 
-    ```sh
-    qemu-img convert -O qcow2 -p -f raw <ruta disco> <destino>.qcow2
-    ```
+   ```sh
+   qemu-img convert -O qcow2 -p -f raw <ruta disco> <destino>.qcow2
+   ```
 
 2. Pasar qcow2 al otro servidor (con scp o usb).
 
@@ -91,13 +171,12 @@ qm rescan
 
 4. Importar qcow2 a la vm:
 
-    ```sh
-    qm disk import <id> <.qcow2> <storage>
-    # EJ: qm disk import 104 vm-ej-disk-0.qcow2 local-lvm
-    ```
+   ```sh
+   qm disk import <id> <.qcow2> <storage>
+   # EJ: qm disk import 104 vm-ej-disk-0.qcow2 local-lvm
+   ```
 
 5. Ir al panel de la vm y agregar el disco:
-
    1. En Hardware agregar disco.
 
    2. En Options modificar el orden de boot.
