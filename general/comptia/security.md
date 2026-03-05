@@ -19,19 +19,48 @@ SY0-701
 
 - **Controles de Seguridad**
   - Prevenir los eventos, minimizar el impacto y limitar el daño
-  - Categorías:
+  - _Categorías_:
     - Controles técnicos: controles por programas, del sistema operativo, firewall, antivirus
     - Controles gerenciales: seguridad en diseño e implementación, políticas, procedimientos estándar
     - Controles operacionales: implementado por personas (personal de seguridad, reuniones)
     - Controles físicos: vallas, cerraduras, lectores, guardias
-  - Tipos:
-    - Controles preventivos: limitar recursos (reglas de firewall, políticas, identificación, cerraduras)
-    - Controles disuasorios:
-  - Tipos por categoría:
+  - _Tipos_:
+    - Controles preventivos: limitar recursos o accesos
+    - Controles disuasorios: no previene, hace pensar dos veces al atacante
+    - Controles detectivos: identifica intrusiones
+    - Controles correctivos: ocurre luego de detectado el evento y minimiza o neutraliza el ataque
+    - Controles compensatorios: reducen el riesgo cuando la solución no puede aplicarse
+    - Controles directivos: orientar el comportamiento de los usuarios
+  - _Tipos por categoría_:
 
-    | Categoría | Preventivo | Disuasorio |
-    | ----------- | -------------------------------------- | |
-    | Técnico | Firewall | |
-    | Gerencial | Política de incorporación del personal | |
-    | Operacional | Garita | |
-    | Físico | Cerradura | |
+    | Categoría   | Preventivo                             | Disuasorio               | Detectivo                | Correctivo                      | Compensatorio                             | Directivos                              |
+    | ----------- | -------------------------------------- | ------------------------ | ------------------------ | ------------------------------- | ----------------------------------------- | --------------------------------------- |
+    | Técnico     | Firewall                               | Pantalla de credenciales | Logs de sistema          | Restaurar backups               | Bloqueo de firewall                       | Políticas de almacenamiento de archivos |
+    | Gerencial   | Política de incorporación del personal | Descenso de categoría    | Ver intentos de logueo   | Políticas de reporte de eventos | Dividir responsabilidades                 | Políticas de cumplimiento               |
+    | Operacional | Garita                                 | Mesa de recepción        | Patrullas                | Llamar a la policia             | Varios guardias haciendo tareas distintas | Instruir a los usuarios                 |
+    | Físico      | Cerradura                              | Carteles de advertencia  | Detectores de movimiento | Usar un extintor                | Usar un generador                         | Carteles de prohibido el paso           |
+
+  - No es una lista definitiva, se pueden mezclar los tipos o categorías
+
+### 1.2 - Triángulo CIA/AIC
+
+- Fundamentos de la seguridad:
+  - **Confidencialidad**: prevenir que alguien acceda a datos privados
+    - Encriptación: cifrar mensajes para que no todos puedan verlos
+    - Control de acceso: restringir recursos
+    - Autenticación de doble factor: doble confirmación antes de mostrar la información
+  - **Integridad**: asegurarse que llegue la información tal cuál se envió
+    - Hashing: firma que asegura que los datos no se manipularon
+    - Firma digital: encripta el hash e identifica al mensajero
+    - Certificados: vincula firmas con las entidades que las generan
+    - No repudio: asegura que alguien no pueda negar haber enviado información o realizado una acción
+  - **Disponibilidad**: asegurar el funcionamiento de la red y sistemas
+    - Redundancia: los servicios siempre están disponibles
+    - Tolerancia a fallos: los servicios siguen funcionando aunque estén fallando
+    - Parches y actualizaciones: estabilidad
+
+### 1.2 - Non-repudiation
+
+- No se puede negar lo que se hizo
+- Prueba de integridad: la información se mantiene precisa y consistente. Para eso se usa un hash, representa la información como una cadena corta. Esto no asocia la información con una persona.
+- Prueba de origen: prueba que el mensaje no cambió (integridad) y da la fuente del mensaje. Asegura que la firma no es falsa. Firma la información con una clave privada que se verifica con una clave pública.
