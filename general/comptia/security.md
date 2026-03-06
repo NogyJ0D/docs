@@ -10,6 +10,8 @@ SY0-701
     - [1.2 - Authentication, Authorization, and Accounting](#12---authentication-authorization-and-accounting)
     - [1.2 - Gap Analysis](#12---gap-analysis)
     - [1.2 - Zero Trust](#12---zero-trust)
+    - [1.2 - Physical Security](#12---physical-security)
+    - [1.2 - Deception and Disruption](#12---deception-and-disruption)
 
 ## Introducción
 
@@ -100,3 +102,17 @@ SY0-701
 - Hay que autenticarse cada vez que se solicita un recurso o sistema
 - Todo está sujeto a verificaciones de seguridad
 - Implica distintas medidas de seguridad según el acceso
+
+### 1.2 - Physical Security
+
+- Barricadas que previenen el acceso y redirigen el tráfico
+- Salas por las que hay que pasar para ir a otro lado. Si una puerta se abre, las otras se cierran
+- CCTV: usar cámaras para controlar espacios
+- Guardias y tarjetas de identificación y acceso
+- Sensores de movimientos, presión, infrarrojos, de microondas
+
+### 1.2 - Deception and Disruption
+
+- Honeypots: atraer a los atacantes al sistema para analizar qué hacen
+- Honeyfiles: archivos que parecen ser importantes y activan una alarma al verlos
+- Honeytokens: información falsa que puede ser rastreada si se usa
