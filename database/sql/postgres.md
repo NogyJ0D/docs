@@ -70,7 +70,7 @@
 - Método 1, recomendado:
 
   ```sh
-  apt install postgresql-[version]
+  apt install postgresql # O postgresql-[version]
   ```
 
 - Método 2, si no funciona el otro:

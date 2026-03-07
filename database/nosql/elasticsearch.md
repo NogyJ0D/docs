@@ -8,7 +8,7 @@
   - [Contenido](#contenido)
   - [Documentación](#documentación)
   - [Instalación](#instalación)
-    - [Instalar ElasticSearch 8 en Debian 12](#instalar-elasticsearch-8-en-debian-12)
+    - [Instalar ElasticSearch 9 en Debian 13](#instalar-elasticsearch-9-en-debian-13)
   - [Extras](#extras)
     - [Si no levanta después de un upgrade](#si-no-levanta-después-de-un-upgrade)
 
@@ -20,15 +20,15 @@
 
 ## Instalación
 
-### Instalar ElasticSearch 8 en Debian 12
+### [Instalar ElasticSearch 9 en Debian 13](https://www.elastic.co/docs/deploy-manage/deploy/self-managed/install-elasticsearch-with-debian-package)
 
 1. Instalar elasticsearch:
 
    ```sh
-   apt install -y gnupg apt-transport-https openjdk-17-jdk
+   apt install -y gnupg apt-transport-https
 
-   wget -O - https://artifacts.elastic.co/GPG-KEY-elasticsearch | gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg
-   echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | tee /etc/apt/sources.list.d/elastic-8.x.list
+   wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg
+   echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/9.x/apt stable main" | tee /etc/apt/sources.list.d/elastic-9.x.list
    apt update && apt install elasticsearch -y
    ```
 

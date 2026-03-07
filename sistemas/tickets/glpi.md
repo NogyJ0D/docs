@@ -11,7 +11,8 @@
 1. Instalar nginx:
 
    ```sh
-   apt install nginx nginx-extra php8.2-fpm
+   apt install nginx nginx-extra php8.4-fpm
+   rm /etc/nginx/sites-enabled/default
    ```
 
    - Configurar **_/etc/nginx/sites-enabled/glpi.conf_**:
@@ -44,14 +45,14 @@
 2. Instalar módulos de php:
 
    ```sh
-   apt install php-dom php-fileinfo php-xml php-json php-simplexml php-xmlreader php-xmlwriter php-curl php-gd php-intl php-mysqli php-bz2 php-phar php-zip php-exif php-ldap php-opcache
+   apt install php-dom php-fileinfo php-xml php-json php-simplexml php-xmlreader php-xmlwriter php-curl php-gd php-intl php-mysqli php-bz2 php-phar php-zip php-exif php-ldap php-opcache php-mbstring php-bcmath
    ```
 
-   - Configurar session en **_/etc/php/8.2/fpm/php.ini_**:
+   - Configurar session en **_/etc/php/8.4/fpm/php.ini_**:
 
      ```ini
      ; Si solo se accede por HTTPS
-     session.cookie_secure = on
+     ;session.cookie_secure = on
 
      session.cookie_httponly = on
      session.cookie_samesite = Lax
@@ -79,13 +80,12 @@
    ```
 
 4. Instalar GLPI:
-
    - Obtener última release stable de <https://github.com/glpi-project/glpi/releases>
 
    ```sh
    cd /var/www
-   wget https://github.com/glpi-project/glpi/releases/download/10.0.18/glpi-10.0.18.tgz
-   tar xvzf glpi-10.0.18.tgz
+   wget https://github.com/glpi-project/glpi/releases/download/11.0.6/glpi-11.0.6.tgz
+   tar xvzf glpi-11.0.6.tgz
    chown -R www-data:www-data /var/www/glpi
    ```
 

@@ -15,6 +15,7 @@
     - [Mostrar usuarios](#mostrar-usuarios)
     - [Mostrar DB](#mostrar-db)
     - [Crear usuario](#crear-usuario)
+    - [Crear base de datos](#crear-base-de-datos)
     - [Ver filas con otro formato](#ver-filas-con-otro-formato)
     - [Ver permisos de usuario](#ver-permisos-de-usuario)
   - [Extras](#extras)
@@ -32,34 +33,38 @@
 ### [Instalar mysql con APT](https://dev.mysql.com/doc/mysql-apt-repo-quick-guide/en/#apt-repo-fresh-install)
 
 1. Descargar el repositorio:
-
    1. Descargar el [archivo .deb](https://dev.mysql.com/downloads/repo/apt/).
 
    2. Ejecutar:
 
-        ```sh
-        apt install gnupg -y
-        apt install ./nombre_del_archivo.deb
-        apt update
-        ```
-
+      ```sh
+      apt install gnupg -y
+      apt install ./nombre_del_archivo.deb
+      apt update
+      ```
    - Si se está en debian 12 y pide seleccionar un SO compatible para los repositorios, usar Ubuntu Lunar.
 
 2. Descargar mysql-server:
-
    1. Ejecutar:
 
-        ```sh
-        apt install mysql-server -y
-        ```
+      ```sh
+      apt install mysql-server -y
+      ```
 
 ### [Instalar mariadb en Debian 12](https://voidnull.es/instalar-mariadb-en-debian-12/)
 
 ```sh
-apt -y install mariadb-server mariadb-client
+apt -y install mariadb-server
 systemctl enable --now mariadb
-mysql_secure_installation
+mariadb-secure-installation
 ```
+
+- mysql_secure_installation:
+  - Set root password: si
+  - Remove anonymous users: si
+  - Disallow root login remotely: si
+  - Remove test database: si
+  - Reload privilege tables: si
 
 ### [Instalar mariadb en Alpine](https://www.librebyte.net/base-de-datos/como-instalar-mariadb-en-alpine-linux/)
 
@@ -68,7 +73,7 @@ apk add mariadb mariadb-client
 /etc/init.d/mariadb setup
 rc-service mariadb start
 rc-update add mariadb default
-mariadb-secure-installation 
+mariadb-secure-installation
 ```
 
 ---
@@ -90,7 +95,13 @@ SHOW DATABASES;
 ### Crear usuario
 
 ```sql
-CREATE USER 'usuario'@'localhost/%' IDENTIFIED by 'contraseña';
+CREATE USER 'usuario'@'localhost' IDENTIFIED by 'contraseña';
+```
+
+### Crear base de datos
+
+```sql
+CREATE DATABASE myapp_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
 ### Ver filas con otro formato
@@ -110,20 +121,19 @@ SHOW GRANTS FOR usuario;
 ## Extras
 
 ### Habilitar conexión remota
-  
-1. Entrar al que exista:
 
+1. Entrar al que exista:
    - /etc/mysql/my.cnf
    - /etc/my.cnf
    - /etc/my.cnf.d/mariadb-server.cnf
 
 2. Modificar:
 
-    ```conf
-    [mysqld]
-    #skip-networking      # Comentar este
-    bind-address=0.0.0.0  # Descomentar este
-    ```
+   ```conf
+   [mysqld]
+   #skip-networking      # Comentar este
+   bind-address=0.0.0.0  # Descomentar este
+   ```
 
 3. Reiniciar servicio.
 
@@ -133,12 +143,12 @@ SHOW GRANTS FOR usuario;
 
 - Backup
 
-    ```sh
-    mysqldump -u root [database / --all-databases] > archivo.sql
-    ```
+  ```sh
+  mysqldump -u root [database / --all-databases] > archivo.sql
+  ```
 
 - Restore
 
-    ```sh
-    mysql -u root < archivo.sql
-    ```
+  ```sh
+  mysql -u root < archivo.sql
+  ```
