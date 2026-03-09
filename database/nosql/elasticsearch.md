@@ -39,7 +39,10 @@
    node.name: node
    network.host: 127.0.0.1
    http.port: 9200
-   xpack.security.enabled: false # Deshabilitar hasta ser requerido
+   xpack.security.enabled: false # Deshabilitar hasta ser requerido. No responde el health sino
+
+   #cluster.initial_master_nodes: ["nombre"] # Comentarla
+   discovery.type: single-node
    ```
 
 3. Modificar el archivo **_/etc/elasticsearch/jvm.options_**:
@@ -52,7 +55,8 @@
 4. Iniciar servicio:
 
    ```sh
-   systemctl daemon-reload && systemctl enable elasticsearch.service --now
+   systemctl daemon-reload
+   systemctl enable elasticsearch.service --now
    ```
 
 5. Probar si funciona:
@@ -62,22 +66,6 @@
 
    curl -X GET localhost:9200/_cat/health
    ```
-
-   - Si el "\_cat/health" devuelve un error como este:
-
-     ```json
-     {
-       "error": {
-         "root_cause": [{ "type": "master_not_discovered_exception", "reason": null }],
-         "type": "master_not_discovered_exception",
-         "reason": null
-       },
-       "status": 503
-     }
-     ```
-
-     1. Agregar `discovery.type: single-node` a `/etc/elasticsearch/elasticsearch.yml` fijándose que no esté la opción `cluster.initial_master_nodes`.
-     2. Volver a probar el health.
 
 ## Extras
 

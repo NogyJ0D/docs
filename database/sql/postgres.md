@@ -9,7 +9,7 @@
   - [Documentación](#documentación)
   - [Comandos](#comandos)
   - [Instalación](#instalación)
-    - [Instalar Postgresql en Debian 12](#instalar-postgresql-en-debian-12)
+    - [Instalar Postgresql en Debian](#instalar-postgresql-en-debian)
 
 ---
 
@@ -65,7 +65,7 @@
 
 ## Instalación
 
-### Instalar Postgresql en Debian 12
+### Instalar Postgresql en Debian
 
 - Método 1, recomendado:
 

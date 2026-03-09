@@ -9,9 +9,10 @@
     - [Listar discos en los storages](#listar-discos-en-los-storages)
     - [Información de los discos virtuales](#información-de-los-discos-virtuales)
     - [Crear vm vacía](#crear-vm-vacía)
-    - [Modificar tamaño de un disco](#modificar-tamaño-de-un-disco)
   - [Extras](#extras)
     - [Agregar disco como btrfs para vms](#agregar-disco-como-btrfs-para-vms)
+    - [Modificar tamaño de un disco](#modificar-tamaño-de-un-disco)
+    - [Cambiar VMID](#cambiar-vmid)
     - [Crear vm debian template](#crear-vm-debian-template)
     - [Migrar VM de un proxmox a otro](#migrar-vm-de-un-proxmox-a-otro)
     - [Crear VM usando configuración de una existente](#crear-vm-usando-configuración-de-una-existente)
@@ -64,15 +65,6 @@ qemu create <id>
 qemu create <id> --name <nombre>
 ```
 
-### Modificar tamaño de un disco
-
-> Creo que solo funciona con disco virtio, no estoy seguro.
-
-```sh
-lvm lvreduce -L <-30g / +30g> <storage>/<disco>
-qm rescan
-```
-
 ---
 
 ## Extras
@@ -95,6 +87,54 @@ qm rescan
      --path /mnt/vm-storage
      --content images,rootdir
    ```
+
+### Modificar tamaño de un disco
+
+> Creo que solo funciona con disco virtio, no estoy seguro.
+
+```sh
+lvm lvreduce -L <-30g / +30g> <storage>/<disco>
+qm rescan
+```
+
+- Reducir disco lvm:
+
+  > ⚠️ Falta algo y falla, mejor no usar ⚠️
+  1. Bootear en la vm con systemrescue.
+  2. Hacer un checkeo con `2fsck -f /dev/debian-vg/root`.
+  3. Reducir el tamaño dejando 500M reservados (si quiero 11G pongo 10.5G): `resize2fs /dev/debian-vg/root 10500M`.
+  4. Reducir el LV: `lvreduce -L 11G /dev/debian-vg/root`.
+  5. Ajustar el filesystem al LV: `resize2fs /dev/debian-vg/root`.
+  6. Reducir las particiones:
+
+     ```sh
+     pvresize --setphysicalvolumesize 12.5G /dev/sda5
+
+     parted /dev/sda
+
+     resizepart 5 13.5GB # boot ~1GB + LVM ~12GB + margen
+     resizepart 2 13.5GB
+     quit
+     ```
+
+  7. Actualizar el kernel: `partprobe /dev/sda`.
+  8. Apagar con `poweroff` y ajustar en proxmox:
+
+     ```sh
+     qm stop VMID
+     qemu-img resize --shrink /var/lib/vz/images/VMID/vm-VMID-disk-0.qcow2 13.5G
+     ```
+
+  9. Prender y revisar con `lsblk`, `pvs` o `df -h`.
+
+### Cambiar VMID
+
+```sh
+qm stop VMID_VIEJO
+vzdump VMID_VIEJO --storage local --mode stop
+qmrestore /var/lib/pve/local/dump/vzdump-qemu-VMID_VIEJO-*.vma VMID_NUEVO
+qm destroy VMID_VIEJO
+```
 
 ### Crear vm debian template
 
@@ -140,18 +180,20 @@ qm rescan
 - Comandos para cada vm una vez clonada:
 
   ```sh
-  # Regenerar machine-id
   systemd-machine-id-setup
-
-  # Regenerar llaves ssh (si no se regeneraron solas)
   dpkg-reconfigure openssh-server
 
-  # Cambiar hostname
   hostnamectl set-hostname nuevo-nombre
-  vim /etc/hosts # Actualizar ahí también
-  vgrename viejo-nombre--vg nuevo-nombre--vg
+  sed -i "s/viejo-nombre/nuevo-nombre/g" /etc/fstab
 
-  # Reiniciar
+  vgrename viejo-nombre-vg nuevo-nombre-vg
+  sed -i "s/viejo--nombre/nuevo--nombre/g" /etc/fstab
+  sed -i "s/viejo--nombre/nuevo--nombre/g" /boot/grub/grub.cfg
+  sed -i "s/viejo--nombre/nuevo--nombre/g" /etc/initramfs-tools/conf.d/resume
+  update-initramfs -c -k all
+
+  reboot -f
+  update-grub
   reboot
   ```
 

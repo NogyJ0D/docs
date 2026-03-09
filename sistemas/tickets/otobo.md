@@ -8,7 +8,7 @@
   - [Contenido](#contenido)
   - [Documentación](#documentación)
   - [Instalación](#instalación)
-    - [Instalar Otobo en Debian 12](#instalar-otobo-en-debian-12)
+    - [Instalar Otobo 11 en Debian 12](#instalar-otobo-11-en-debian-12)
   - [Extras](#extras)
     - [Cambiar contraseña desde la consola](#cambiar-contraseña-desde-la-consola)
     - [Agregar usuario desde la consola](#agregar-usuario-desde-la-consola)
@@ -23,26 +23,27 @@
 
 ## Instalación
 
-### [Instalar Otobo en Debian 12](https://doc.otobo.org/manual/installation/10.1/en/content/installation.html)
+### [Instalar Otobo 11 en Debian 12](https://doc.otobo.org/manual/installation/11.0/en/content/installation/installation-ubuntu.html)
 
 1. Deshabilitar SELinux.
 
 2. Descargar Otobo:
    - [Buscar la última versión de las latest](https://ftp.otobo.org/pub/otobo/)
-     - Si se va a descargar para migrar OTRS, descargar la latest-10.1
+     - Si se va a descargar para migrar OTRS, [descargar la latest-10.1](https://doc.otobo.org/manual/installation/10.1/en/content/installation.html)
 
    ```sh
    mkdir /opt/otobo-install /opt/otobo
    cd /opt/otobo-install
    wget https://ftp.otobo.org/pub/otobo/otobo-latest-11.0.tar.gz
-   tar xvzf otobo-latest-11.0.tar.gz
-   cp -r otobo-.../* /opt/otobo
+   tar xzf otobo-latest-11.0.tar.gz
+   cp -r otobo-11.x.x/* /opt/otobo
    ```
 
 3. Instalar adicionales:
 
    ```sh
-   apt-get install -y libarchive-zip-perl libtimedate-perl libdatetime-perl libconvert-binhex-perl libcgi-psgi-perl libdbi-perl libdbix-connector-perl libfile-chmod-perl liblist-allutils-perl libmoo-perl libnamespace-autoclean-perl libnet-dns-perl libnet-smtp-ssl-perl libpath-class-perl libsub-exporter-perl libtemplate-perl libtext-trim-perl libtry-tiny-perl libxml-libxml-perl libyaml-libyaml-perl libdbd-mysql-perl libapache2-mod-perl2 libmail-imapclient-perl libauthen-sasl-perl libauthen-ntlm-perl libjson-xs-perl libtext-csv-xs-perl libpath-class-perl libplack-perl libplack-middleware-header-perl libplack-middleware-reverseproxy-perl libencode-hanextra-perl libio-socket-ssl-perl libnet-ldap-perl libcrypt-eksblowfish-perl libxml-libxslt-perl libxml-parser-perl libconst-fast-perl
+   apt-get install -y libarchive-zip-perl libtimedate-perl libdatetime-perl libconvert-binhex-perl libcgi-psgi-perl libdbi-perl libdbix-connector-perl libfile-chmod-perl liblist-allutils-perl libmoo-perl libnamespace-autoclean-perl libnet-dns-perl libnet-smtp-ssl-perl libpath-class-perl libsub-exporter-perl libtemplate-perl libtext-trim-perl libtry-tiny-perl libxml-libxml-perl libyaml-libyaml-perl libdbd-mysql-perl libapache2-mod-perl2 libmail-imapclient-perl libauthen-sasl-perl libauthen-ntlm-perl libjson-xs-perl libtext-csv-xs-perl libpath-class-perl libplack-perl libplack-middleware-header-perl libplack-middleware-reverseproxy-perl libencode-hanextra-perl libio-socket-ssl-perl libnet-ldap-perl libcrypt-eksblowfish-perl libxml-libxslt-perl libxml-parser-perl libconst-fast-perl libdbd-pg-perl
+   apt-get install -y libcapture-tiny-perl libcss-minifier-xs-perl libjavascript-minifier-xs-perl libtext-csv-perl
 
    /opt/otobo/bin/otobo.CheckModules.pl --list
    /opt/otobo/bin/otobo.CheckModules.pl --inst
@@ -52,7 +53,7 @@
 
    ```sh
    useradd -r -U -d /opt/otobo -c 'OTOBO user' otobo -s /bin/bash
-   usermod -G www-data otobo
+   #usermod -G www-data otobo
    ```
 
 5. Activar la configuración por defecto:
@@ -67,7 +68,7 @@
 
    ```sh
    apt install nginx
-   cp /opt/otobo/scripts/nginx-vhost-80.include.conf /etc/nginx/sites-enabled
+   cp /opt/otobo/scripts/nginx-vhost-80.include.conf /etc/nginx/conf.d
    rm /etc/nginx/sites-enabled/default
    systemctl restart nginx
    ```
@@ -112,10 +113,15 @@
 8. Instalar base de datos:
    - A otobo no le gusta usar una base de datos existente con el instalador web, la opcion es crear una db con sql, usarla en la instalación y hacer un restore del dump en esta.
    - Con Postgres:
+
+     ```sh
+     apt install postgresql postgresql-contrib
+     ```
+
      1. Crear usuario:
 
-        ```sh
-        CREATE ROLE otobo WITH ENCRYPTED PASSWORD '[contraseña]' LOGIN;
+        ```sql
+        CREATE ROLE otobo WITH ENCRYPTED PASSWORD 'contraseña' LOGIN;
         CREATE DATABASE otobo WITH OWNER otobo;
         ```
 
@@ -150,30 +156,19 @@
       ```
 
 10. Iniciar servicio otobo: `systemctl enable --now otobo-web.service`.
-    <!-- - Si da error porque falta Gazelle.pm:
+    - Si da error porque falta Gazelle.pm:
 
-        ````sh
-        apt install cpanminus # Instalar cpanm
-        cpanm Gazelle
-        ``` -->
+      ```sh
+      apt install build-essentials -y
+      cpan Gazelle
+      ```
 
 11. Ingresar a <http://ip/otobo/installer.pl>
     - Usar una base de datos existente para OTOBO.
     - Al darle a Siguiente en la base de datos, esperar a que termine. No darle dos veces o habrá que droppear la db.
 
 12. Finales:
-    1. Iniciar el daemon como otobo:
-
-       ```sh
-       su otobo
-       systemctl enable --now otobo-daemon.service
-
-       #/opt/otobo/bin/otobo.Daemon.pl start
-       #cd /opt/otobo/var/cron/
-       #for foo in *.dist; do cp $foo `basename $foo .dist`; done
-       #cd /opt/otobo/
-       #bin/Cron.sh start
-       ```
+    1. Iniciar el daemon como otobo: `systemctl enable --now otobo-daemon.service`
 
 ---
 

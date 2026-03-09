@@ -18,6 +18,7 @@
     - [Desinstalar Edge](#desinstalar-edge)
     - [Habilitar autologon](#habilitar-autologon)
     - [Instalar Microsoft Store](#instalar-microsoft-store)
+    - [Deshabilitar Sticky Keys](#deshabilitar-sticky-keys)
   - [Extras](#extras)
     - [Actualizar windows con powershell](#actualizar-windows-con-powershell)
 
@@ -91,9 +92,9 @@
 
 7. Esperar a que reinicie y completar instalación.
 
-### [Saltarse inicio de sesión de microsoft](https://christitus.com/install-windows-the-arch-linux-way/)
+### Saltarse inicio de sesión de microsoft
 
-> Actually you can still setup a local Windows account using the OOBE in all cases even Windows 11 Home. Just type in <no@thankyou.com> for the email and a random password. The installer will then go to a local account creation screen. This works because the Microsoft account <no@thankyou.com> is banned or something so Microsoft doesn't want it to be used for Windows accounts.
+- Cuando aparezca la vista para conectarse a una red, apretar `Shift + F10` y en la terminal poner `start ms-cxh:localonly`.
 
 ---
 
@@ -152,6 +153,25 @@ setup --uninstall --force-uninstall --system-level
   ```cmd
   wsreset -i
   ```
+
+### Deshabilitar Sticky Keys
+
+1. Abrir powershell y ejecutar:
+
+   ```ps
+   # Deshabilitar Sticky Keys completamente
+   $path = "HKCU:\Control Panel\Accessibility\StickyKeys"
+   Set-ItemProperty -Path $path -Name "Flags" -Value "506"
+
+   # Deshabilitar el atajo de teclado (el que se activa con Shift x5)
+   $path2 = "HKCU:\Control Panel\Accessibility\Keyboard Response"
+   Set-ItemProperty -Path $path2 -Name "Flags" -Value "122"
+
+   $path3 = "HKCU:\Control Panel\Accessibility\ToggleKeys"
+   Set-ItemProperty -Path $path3 -Name "Flags" -Value "58"
+   ```
+
+2. Reiniciar sesión.
 
 ---
 
