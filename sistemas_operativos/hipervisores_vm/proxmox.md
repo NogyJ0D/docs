@@ -184,7 +184,7 @@ qm destroy VMID_VIEJO
   dpkg-reconfigure openssh-server
 
   hostnamectl set-hostname nuevo-nombre
-  sed -i "s/viejo-nombre/nuevo-nombre/g" /etc/fstab
+  sed -i "s/viejo-nombre/nuevo-nombre/g" /etc/hosts
 
   vgrename viejo-nombre-vg nuevo-nombre-vg
   sed -i "s/viejo--nombre/nuevo--nombre/g" /etc/fstab
