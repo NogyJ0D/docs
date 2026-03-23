@@ -253,7 +253,7 @@ done
 1. Instalar msmtp para el correo:
 
    ```sh
-   apt install -y msmtp msmtp-mta mailutils
+   apt install -y msmtp msmtp-mta mailutils zip
    ```
 
 2. Crear archivo `/etc/msmtprc` y agregar:
@@ -280,21 +280,24 @@ done
 
 3. Crear script en `/etc/openvpn/easy-rsa/gen-cliente.sh`:
 
-   ```sh
+   ```bash
    #!/bin/bash
    # =============================================================
    #  gen-cliente.sh — Genera certificado + .ovpn y lo envía por mail
-   #  Uso: ./gen-cliente.sh <nombre_cliente> <email_destinatario>
+   #  Uso: ./gen-cliente.sh <nombre_cliente> <email1> [email2] [email3] ...
    # =============================================================
+
+   set -e
 
    # ── Configuración ─────────────────────────────────────────────
    EASYRSA_DIR="/etc/openvpn/easy-rsa"
    OUTPUT_DIR="/etc/openvpn/clientes"
-   SERVER_IP="TU_IP_PUBLICA"
+   SERVER_IP="HOST"
    SERVER_PORT="1194"
    PROTO="udp"
-   MAIL_FROM="tu@gmail.com"
+   MAIL_FROM="MAIL"
    MAIL_SUBJECT="Tu certificado VPN"
+   ZIP_PASSWORD="CLAVE ZIP"
    # ──────────────────────────────────────────────────────────────
 
    RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
@@ -303,19 +306,24 @@ done
    error() { echo -e "${RED}[✗]${NC} $1"; exit 1; }
 
    # ── Validaciones ──────────────────────────────────────────────
-   [[ $EUID -ne 0 ]]  && error "Ejecutá el script como root."
-   [[ -z "$1" ]]      && error "Uso: $0 <nombre_cliente> <email>"
-   [[ -z "$2" ]]      && error "Uso: $0 <nombre_cliente> <email>"
+   [[ $EUID -ne 0 ]] && error "Ejecutá el script como root."
+   [[ -z "$1" ]]     && error "Uso: $0 <nombre_cliente> <email1> [email2] ..."
+   [[ -z "$2" ]]     && error "Uso: $0 <nombre_cliente> <email1> [email2] ..."
 
    CLIENT="$1"
-   MAIL_TO="$2"
+   shift   # descarta $1, ahora $@ contiene solo los emails
 
    [[ ! "$CLIENT" =~ ^[a-zA-Z0-9_-]+$ ]] && \
        error "Nombre inválido. Usá solo letras, números, _ o -"
 
-   # Validación básica de email
-   [[ ! "$MAIL_TO" =~ ^[^@]+@[^@]+\.[^@]+$ ]] && \
-       error "Email inválido: $MAIL_TO"
+   # Validar y acumular emails
+   MAIL_LIST=()
+   for ADDR in "$@"; do
+       [[ ! "$ADDR" =~ ^[^@]+@[^@]+\.[^@]+$ ]] && error "Email inválido: $ADDR"
+       MAIL_LIST+=("$ADDR")
+   done
+
+   command -v zip >/dev/null 2>&1 || error "zip no está instalado. Ejecutá: apt install -y zip"
 
    cd "$EASYRSA_DIR"
 
@@ -343,10 +351,7 @@ done
    dev tun
    proto ${PROTO}
    remote ${SERVER_IP} ${SERVER_PORT}
-   resolv-retry infinite
    nobind
-   persist-key
-   persist-tun
 
    cipher AES-256-GCM
    auth SHA256
@@ -370,64 +375,91 @@ done
 
    chmod 600 "$OVPN_FILE"
 
-   # ── Enviar por correo ─────────────────────────────────────────
-   info "Enviando .ovpn a ${MAIL_TO} ..."
+   # ── Empaquetar en .zip con contraseña ─────────────────────────
+   ZIP_FILE="${OUTPUT_DIR}/${CLIENT}.zip"
+   info "Empaquetando en ZIP con contraseña..."
 
+   zip -j -P "$ZIP_PASSWORD" "$ZIP_FILE" "$OVPN_FILE"
+   chmod 600 "$ZIP_FILE"
+
+   info "ZIP generado: ${ZIP_FILE}"
+
+   # ── Enviar por correo ─────────────────────────────────────────
    EXPIRY=$(openssl x509 -in "pki/issued/${CLIENT}.crt" -noout -enddate | cut -d= -f2)
 
    MAIL_BODY="Hola ${CLIENT},
 
-   Adjunto encontrás tu certificado VPN (.ovpn).
+   Adjunto encontrás tu certificado VPN empaquetado en un archivo .zip.
 
    Instrucciones:
-     1. Importá el archivo .ovpn en tu cliente OpenVPN
-     2. Al conectarte se te pedirá la passphrase que definiste durante la generación
-     3. El certificado expira el: ${EXPIRY}
+     1. Descomprimí el .zip con la contraseña que te fue comunicada
+     2. Importá el archivo .ovpn en tu cliente OpenVPN
+     3. Al conectarte se te pedirá la passphrase que definiste durante la generación
+     4. El certificado expira el: ${EXPIRY}
 
    Por seguridad, eliminá este correo una vez que hayas importado el archivo.
 
    -- Soporte IT"
 
-   # msmtp con adjunto via base64 (sin dependencias extra)
    BOUNDARY="boundary_$(date +%s)"
-   ENCODED=$(base64 "$OVPN_FILE")
+   ENCODED=$(base64 "$ZIP_FILE")
 
-   {
-     echo "From: ${MAIL_FROM}"
-     echo "To: ${MAIL_TO}"
-     echo "Subject: ${MAIL_SUBJECT} - ${CLIENT}"
-     echo "MIME-Version: 1.0"
-     echo "Content-Type: multipart/mixed; boundary=\"${BOUNDARY}\""
-     echo ""
-     echo "--${BOUNDARY}"
-     echo "Content-Type: text/plain; charset=UTF-8"
-     echo ""
-     echo "$MAIL_BODY"
-     echo ""
-     echo "--${BOUNDARY}"
-     echo "Content-Type: application/octet-stream"
-     echo "Content-Transfer-Encoding: base64"
-     echo "Content-Disposition: attachment; filename=\"${CLIENT}.ovpn\""
-     echo ""
-     echo "$ENCODED"
-     echo "--${BOUNDARY}--"
-   } | msmtp "$MAIL_TO"
+   # Header To: con todos los destinatarios
+   TO_HEADER=$(IFS=", "; echo "${MAIL_LIST[*]}")
 
-   if [[ $? -eq 0 ]]; then
-       info "Correo enviado exitosamente."
-   else
-       warn "No se pudo enviar el correo. El .ovpn igual está en: ${OVPN_FILE}"
-   fi
+   MAIL_OK=()
+   MAIL_FAIL=()
+
+   for ADDR in "${MAIL_LIST[@]}"; do
+       info "Enviando a ${ADDR}..."
+       {
+         echo "From: ${MAIL_FROM}"
+         echo "To: ${TO_HEADER}"
+         echo "Subject: ${MAIL_SUBJECT} - ${CLIENT}"
+         echo "MIME-Version: 1.0"
+         echo "Content-Type: multipart/mixed; boundary=\"${BOUNDARY}\""
+         echo ""
+         echo "--${BOUNDARY}"
+         echo "Content-Type: text/plain; charset=UTF-8"
+         echo ""
+         echo "$MAIL_BODY"
+         echo ""
+         echo "--${BOUNDARY}"
+         echo "Content-Type: application/zip"
+         echo "Content-Transfer-Encoding: base64"
+         echo "Content-Disposition: attachment; filename=\"${CLIENT}.zip\""
+         echo ""
+         echo "$ENCODED"
+         echo "--${BOUNDARY}--"
+       } | msmtp "$ADDR" && MAIL_OK+=("$ADDR") || MAIL_FAIL+=("$ADDR")
+   done
 
    # ── Resumen ───────────────────────────────────────────────────
    echo ""
    echo -e "${GREEN}══════════════════════════════════════════${NC}"
    info "Listo."
    echo -e "  Cliente  : ${YELLOW}${CLIENT}${NC}"
-   echo -e "  Enviado a: ${YELLOW}${MAIL_TO}${NC}"
-   echo -e "  Archivo  : ${YELLOW}${OVPN_FILE}${NC}"
+   echo -e "  ZIP      : ${YELLOW}${ZIP_FILE}${NC}"
    echo -e "  Expira   : ${EXPIRY}"
+
+   if [[ ${#MAIL_OK[@]} -gt 0 ]]; then
+       echo -e "  Enviado a:"
+       for ADDR in "${MAIL_OK[@]}"; do
+           echo -e "    ${GREEN}✓${NC} ${ADDR}"
+       done
+   fi
+
+   if [[ ${#MAIL_FAIL[@]} -gt 0 ]]; then
+       echo -e "  Falló:"
+       for ADDR in "${MAIL_FAIL[@]}"; do
+           echo -e "    ${RED}✗${NC} ${ADDR}"
+       done
+       warn "Los envíos fallidos pueden reenviarse con el ZIP en: ${ZIP_FILE}"
+   fi
+
    echo -e "${GREEN}══════════════════════════════════════════${NC}"
+   echo ""
+   warn "Recordá comunicar la contraseña del ZIP por un canal separado (no por mail)."
    ```
 
    ```sh
