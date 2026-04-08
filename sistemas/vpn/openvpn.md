@@ -28,8 +28,9 @@
    set_var EASYRSA_REQ_OU         "IT"
    set_var EASYRSA_KEY_SIZE       2048
    set_var EASYRSA_ALGO           rsa
-   set_var EASYRSA_CA_EXPIRE      3650
-   set_var EASYRSA_CERT_EXPIRE    825
+   set_var EASYRSA_CA_EXPIRE      # 3650 para 10 años o 36500 para 100 años
+   set_var EASYRSA_CERT_EXPIRE    # 3650 para 10 años o 36500 para 100 años
+   set_var EASYRSA_CRL_DAYS       # 180 por defecto, 3650 para 10 años o 36500 para 100 años
    ```
 
 4. Crear CA y certificado del servidor:
