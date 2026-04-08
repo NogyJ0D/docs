@@ -39,6 +39,9 @@
 
    ./easyrsa gen-req servidor nopass
    ./easyrsa sign-req server servidor
+
+   ./easyrsa gen-crl
+   cp pki/crl.pem /etc/openvpn/server/
    ```
 
 5. Crear Diffie-Hellman y clave TLS:
