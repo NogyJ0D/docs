@@ -17,7 +17,7 @@
    cd /etc/openvpn/easy-rsa
    ```
 
-3. Editar el archivo `/etc/openvpn/easy-rsa` y agregar al final:
+3. Editar el archivo `/etc/openvpn/easy-rsa/vars` y agregar al final:
 
    ```conf
    set_var EASYRSA_REQ_COUNTRY    "AR" # País
@@ -260,18 +260,18 @@ done
 
    ```conf
    defaults
-   auth           on
-   tls            on
-   # tls_starttls   off # Agregar si se usa el puerto 465 sin STARTTLS
-   tls_trust_file /etc/ssl/certs/ca-certificates.crt
-   logfile        /var/log/msmtp.log
+   auth            on
+   tls             on
+   #tls_starttls    off # Agregar si se usa el puerto 465 sin STARTTLS
+   tls_trust_file  /etc/ssl/certs/ca-certificates.crt
+   logfile         /var/log/msmtp.log
 
-   account        default
-   host           smtp.gmail.com # o smtp.office365.com, o el tuyo
-   port           587 # o 465
-   from           tu@gmail.com
-   user           tu@gmail.com
-   password       tu_app_password_aqui
+   account         default
+   host            smtp.gmail.com # o smtp.office365.com, o el tuyo
+   port            587 # o 465
+   from            tu@gmail.com
+   user            tu@gmail.com
+   password        tu_app_password_aqui
    ```
 
    ```sh
