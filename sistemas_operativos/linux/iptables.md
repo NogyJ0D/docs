@@ -53,27 +53,27 @@ Modifica los paquetes.
 
    PATH="/sbin:/usr/sbin:/bin:/usr/bin"
    IPT="/usr/sbin/iptables"
-    
+
    firewall_start() {
      $IPT -P INPUT DROP -m comment --comment "Rechazar entradas"
      $IPT -P FORWARD DROP -m comment --comment "Rechazar redirecciones"
      $IPT -P OUTPUT ACCEPT -m comment --comment "Aceptar todo saliente"
-    
+
      $IPT -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT -m comment --comment "Aceptar relacionados"
-    
+
      $IPT -A INPUT -m conntrack --ctstate INVALID -j DROP -m comment --comment "Rechazar inválidos entrantes"
-    
+
      $IPT -A INPUT -i lo -j ACCEPT -m comment --comment "Aceptar loopback in"
      $IPT -A OUTPUT -o lo -j ACCEPT -m comment --comment "Aceptar loopback out"
-    
+
      # --------------------------------------------------
-    
+
      $IPT -A INPUT -p icmp -j ACCEPT -m comment --comment "Aceptar ICMP (ping)"
      $IPT -A INPUT -p tcp --dport 22 -j ACCEPT -m comment --comment "Aceptar ssh"
-    
+
      $IPT -A INPUT -p tcp --dport 80 -j ACCEPT -m comment --comment "Aceptar web 80"
      $IPT -A INPUT -p tcp --dport 443 -j ACCEPT -m comment --comment "Aceptar web 443"
-    
+
    }
 
    firewall_stop() {
@@ -82,17 +82,17 @@ Modifica los paquetes.
      $IPT -F OUTPUT
      $IPT -F FORWARD
      $IPT -t nat -F
-    
+
      $IPT -X INPUT
      $IPT -X OUTPUT
      $IPT -X FORWARD
      $IPT -t nat -X
-    
+
      $IPT -P INPUT ACCEPT
      $IPT -P FORWARD ACCEPT
      $IPT -P OUTPUT ACCEPT
    }
-    
+
    case "$1" in
      start|restart)
        echo "Iniciando Firewall"
@@ -113,7 +113,7 @@ Modifica los paquetes.
    chmod 750 /sbin/iptables-firewall.sh
    ```
 
-4. Crear servicio **_/etc/systemd/system/iptables-firewall.sh_**:
+4. Crear servicio **_/etc/systemd/system/iptables-firewall.service_**:
 
    ```sh
    [Unit]

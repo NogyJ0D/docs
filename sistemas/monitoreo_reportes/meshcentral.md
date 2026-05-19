@@ -25,10 +25,27 @@
 1. Instalar [nvm](https://github.com/nvm-sh/nvm?tab=readme-ov-file#installing-and-updating) para node:
 
    ```sh
-   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
+   source .bashrc # O .zshrc o lo que sea
+   nvm install node
    ```
 
-2. [Instalar MongoDB 7](../../database/nosql/mongodb.md#instalar-mongodb-como-docker).
+2. Instalar base de datos:
+   - Con Postgresql:
+
+     ```sh
+     apt install postgresql -y
+
+     su postgres -c psql
+     ```
+
+     ```sql
+     CREATE USER meshcentral WITH PASSWORD 'contraseña';
+     CREATE DATABASE meshcentral OWNER meshcentral;
+     exit
+     ```
+
+   - [Con MongoDB 7](../../database/nosql/mongodb.md#instalar-mongodb-como-docker).
 
 3. Dar permisos de puerto a node:
 
@@ -36,27 +53,35 @@
    whereis node
    # node: /root/.nvm/versions/node/v20.11.0/bin/node
 
-   sudo setcap cap_net_bind_service=+ep /root/.nvm/versions/node/v20.11.0/bin/node
+   setcap cap_net_bind_service=+ep /root/.nvm/versions/node/v25.8.2/bin/node
    ```
 
 4. Instalar MeshCentral:
 
    ```sh
-   mkdir meshcentral && cd meshcentral && npm i meshcentral
-   node node_modules/meshcentral
-   # Cuando cargue, cancelar
+   mkdir -p /opt/meshcentral
+   cd /opt/meshcentral
+   npm install meshcentral
+
+   node node_modules/meshcentral # Cuando cargue, cancelar
    ```
 
 5. Configurar MeshCentral:
-
    - Editar en **_meshcentral-data/config.json_** (revisar las que sean 0.0.0.0 o 127.0.0.1 porque yo tengo en la misma vm):
 
      ```json
      {
        "settings": {
          "cert": "soporte.dominio.com",
-         "mongoDb": "mongodb://meshcentral:meshcentral@127.0.0.1:27017/meshcentral?authSource=admin",
-         "mongoDbName": "meshcentral",
+         "CON MONGO__mongoDb": "mongodb://meshcentral:meshcentral@127.0.0.1:27017/meshcentral?authSource=admin",
+         "CON MONGO__mongoDbName": "meshcentral",
+         "CON POSTGRES__postgres": {
+           "host": "127.0.0.1",
+           "port": "5432",
+           "user": "meshcentral",
+           "password": "contraseña",
+           "database": "meshcentral"
+         },
          "port": 8443,
          "portBind": "127.0.0.1",
          "aliasport": 443,
@@ -344,7 +369,6 @@
 Si al entrar al escritorio de una máquina aparece ese cartel:
 
 1. Descargar xhost:
-
    - En arch: pacman -S xorg-xhost
 
 2. Agregar el script en **_/etc/X11/xinit/xinitrc.d/60-xhost.sh_**:

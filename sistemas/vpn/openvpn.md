@@ -102,16 +102,20 @@
    sysctl -p
    ```
 
-10. Crear reglas de iptables:
+10. [Crear reglas de iptables con archivo persistente](../../sistemas_operativos/linux/iptables.md#iptables-como-servicio) con estas reglas:
 
     ```sh
-    # Ver interfaz con "ip l"
-    iptables -t nat -A POSTROUTING -s 10.8.0.0/24 -o eth0 -j MASQUERADE
-    iptables -A FORWARD -i tun0 -o eth0 -j ACCEPT
-    iptables -A FORWARD -i eth0 -o tun0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+    # FILE_SERVER=192.168.x.x # Servidor de archivos
 
-    apt install -y iptables-persistent # No guardar reglas
-    netfilter-persistent save
+    $IPT -t nat -A POSTROUTING -s 10.8.0.0/24 -o eth0 -j MASQUERADE
+    $IPT -A FORWARD -i tun0 -o eth0 -j ACCEPT
+    $IPT -A FORWARD -i eth0 -o tun0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+    # Reglas para hacer un forward desde la 10.8.0.1 al servidor de archivos.
+    # Sirve para que si el usuario afuera está en la misma subred que el servidor de archivos, pueda acceder usando la ip del servidor vpn.
+    # $IPT -t nat -A PREROUTING -i tun0 -p tcp --dport 445 -j DNAT --to-destination $FILE_SERVER:445
+    # $IPT -t nat -A PREROUTING -i tun0 -p tcp --dport 139 -j DNAT --to-destination $FILE_SERVER:139
+    # $IPT -t nat -A POSTROUTING -o eth0 -d $FILE_SERVER -j MASQUERADE
     ```
 
 11. Iniciar servicio:
