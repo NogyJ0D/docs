@@ -81,10 +81,12 @@ Modifica los paquetes.
      $IPT -F INPUT
      $IPT -F OUTPUT
      $IPT -F FORWARD
+     $IPT -t nat -F
     
      $IPT -X INPUT
      $IPT -X OUTPUT
      $IPT -X FORWARD
+     $IPT -t nat -X
     
      $IPT -P INPUT ACCEPT
      $IPT -P FORWARD ACCEPT
