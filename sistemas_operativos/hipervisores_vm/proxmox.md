@@ -1,8 +1,6 @@
 # Proxmox
 
 - [Proxmox](#proxmox)
-  - [Documentación](#documentación)
-  - [Instalación](#instalación)
   - [Comandos](#comandos)
     - [Listar vms](#listar-vms)
     - [Información de la vm](#información-de-la-vm)
@@ -17,16 +15,6 @@
     - [Migrar VM de un proxmox a otro](#migrar-vm-de-un-proxmox-a-otro)
     - [Crear VM usando configuración de una existente](#crear-vm-usando-configuración-de-una-existente)
     - [Borrar partición LVM](#borrar-partición-lvm)
-
----
-
-## Documentación
-
----
-
-## Instalación
-
----
 
 ## Comandos
 
@@ -90,12 +78,35 @@ qemu create <id> --name <nombre>
 
 ### Modificar tamaño de un disco
 
-> Creo que solo funciona con disco virtio, no estoy seguro.
+- Aumentar disco lvm:
+  - Estructura:
+    - /dev/sda
+      - sda1 > /boot
+      - sda2 > partición extendida
+      - sda5 > PV de LVM (es parte de sda2)
+        - vm--debian--vg-root > /
+        - vm--debian--vg-swap_1
 
-```sh
-lvm lvreduce -L <-30g / +30g> <storage>/<disco>
-qm rescan
-```
+    ```sh
+    lsblk
+    apt install parted
+    parted /dev/sda
+    ```
+
+    ```parted
+    resizepart 2 100%
+    resizepart 5 100%
+    quit
+    ```
+
+    ```sh
+    partprobe /dev/sda
+    pvresize /dev/sda5
+    pvs # Verificar
+    lvextend -l +100%FREE /dev/vm-debian-vg/root
+    resize2fs /dev/vm-dockers-vg/root
+    df -h / # Verificar
+    ```
 
 - Reducir disco lvm:
 
@@ -187,9 +198,7 @@ qm destroy VMID_VIEJO
   sed -i "s/viejo-nombre/nuevo-nombre/g" /etc/hosts
 
   vgrename viejo-nombre-vg nuevo-nombre-vg
-  sed -i "s/viejo--nombre/nuevo--nombre/g" /etc/fstab
-  sed -i "s/viejo--nombre/nuevo--nombre/g" /boot/grub/grub.cfg
-  sed -i "s/viejo--nombre/nuevo--nombre/g" /etc/initramfs-tools/conf.d/resume
+  sed -i "s/viejo--nombre/nuevo--nombre/g" /etc/fstab /boot/grub/grub.cfg /etc/initramfs-tools/conf.d/resume
   update-initramfs -c -k all
 
   reboot -f

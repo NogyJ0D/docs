@@ -42,7 +42,7 @@
    xpack.security.enabled: false # Deshabilitar hasta ser requerido. No responde el health sino
 
    #cluster.initial_master_nodes: ["nombre"] # Comentarla
-   discovery.type: single-node
+   discovery.type: single-node # Agregarla
    ```
 
 3. Modificar el archivo **_/etc/elasticsearch/jvm.options_**:
