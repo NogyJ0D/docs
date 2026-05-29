@@ -166,7 +166,7 @@ qm destroy VMID_VIEJO
   systemctl enable --now qemu-guest-agent
 
   # Herramientas básicas
-  apt install -y curl wget vim htop git net-tools
+  apt install -y curl wget vim htop git net-tools rsyslog
 
   # Limpiar antes de convertir
   apt clean
