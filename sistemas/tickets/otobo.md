@@ -14,6 +14,7 @@
     - [Cambiar Contraseña Desde la Consola](#cambiar-contraseña-desde-la-consola)
     - [Agregar usuario desde la consola](#agregar-usuario-desde-la-consola)
     - [Eliminar Ticket Definitivamente](#eliminar-ticket-definitivamente)
+    - [Elasticsearch no Inicia](#elasticsearch-no-inicia)
     - [Migrar/Actualizar Otobo](#migraractualizar-otobo)
     - [Migrar de OTRS a Otobo](#migrar-de-otrs-a-otobo)
 
@@ -192,9 +193,9 @@
    3. Agregarlos en la cola "Soporte".
 
 5. Crear respuesta automática (recordar asignarles el correo):
-   1. Seguimiento por defecto:
+   1. default reply (after new ticket has been created):
       - Asunto: "Recibimos tu solicitud de soporte"
-      - Tipo: "auto responder"
+      - Tipo: "auto reply"
 
       ```text
       Hola <OTOBO_Customer_Data_UserFirstname>,
@@ -203,15 +204,16 @@
 
       A partir de este momento, un técnico revisará tu reporte. Los datos de tu caso son:
       - Número de Ticket: [Ticket#<OTOBO_TICKET_TicketNumber>]
-      - Asunto: <OTOBO_Customer_Subject>
+      - Asunto: <OTOBO_CUSTOMBER_SUBJECT>
 
       Si deseas agregar más detalles o capturas de pantalla, simplemente responde a este correo electrónico manteniendo el asunto intacto para que se adjunte automáticamente a tu historial.
 
       Te mantendremos informado/a de cualquier avance.
       ```
 
-   2. Rechazo por defecto:
+   2. default reject (after follow-up and rejected of a closed ticket):
       - Asunto: "[Rechazado] Tu correo no pudo ser procesado por el sistema de soporte"
+      - Tipo: "auto reject"
 
       ```text
       Hola,
@@ -226,8 +228,9 @@
       Si crees que esto es un error, por favor ponte en contacto con el administrador de sistemas de tu empresa o intenta enviar el correo nuevamente sin archivos adjuntos pesados.
       ```
 
-   3. Rechazo por defecto / Nuevo ticket creado:
+   3. default reject/new ticket created (after closed follow-up with new ticket creation):
       - Asunto: "Solicitud reabierta en un nuevo caso"
+      - Tipo: "auto reply/new ticket"
 
       ```text
       Hola <OTOBO_Customer_Data_UserFirstname>,
@@ -242,8 +245,9 @@
       A la brevedad un agente retomará el caso analizando tus comentarios. ¡Muchas gracias!
       ```
 
-   4. Respuesta por defecto:
+   4. default follow-up (after a ticket follow-up has been added):
       - Asunto: "Actualización del sistema de soporte"
+      - Tipo: "auto follow up"
 
       ```text
       Hola <OTOBO_Customer_Data_UserFirstname>,
@@ -260,21 +264,74 @@
 
 6. Crear plantilla de respuesta:
    1. Administración > Ajustes de Tickets > Plantillas
-      - Tipo: "Responder".
-      - Nombre: "Común".
-      - Contenido:
+      - Respuesta común:
+        - Tipo: "Responder".
+        - Nombre: "Común".
+        - Contenido:
 
-        ```text
-        Nos ponemos en contacto para informarte que hemos revisado tu solicitud respecto al caso "<OTOBO_TICKET_Subject>".
+          ```text
+          Nos ponemos en contacto para informarte que hemos revisado tu solicitud respecto al caso "<OTOBO_CUSTOMER_Subject>".
 
-        [ESCRIBIR AQUÍ LA RESPUESTA O SOLUCIÓN PARA EL CLIENTE]
+          [ESCRIBIR AQUÍ LA RESPUESTA O SOLUCIÓN PARA EL CLIENTE]
 
-        Por favor, realiza las pruebas correspondientes y confírmanos si el inconveniente quedó resuelto o si necesitas asistencia adicional.
-        ```
+          Por favor, realiza las pruebas correspondientes y confírmanos si el inconveniente quedó resuelto o si necesitas asistencia adicional.
+          ```
+
+      - Ticket cerrado con éxito:
+        - Tipo: "Responder"
+        - Nombre: "Cerrar ticket con éxito"
+        - Contenido:
+
+          ```text
+          Nos alegra informarte que hemos procedido a dar por resuelto y cerrado tu caso bajo el asunto "<OTOBO_CUSTOMER_Subject>".
+
+          [ESCRIBIR AQUÍ LA RESPUESTA O SOLUCIÓN PARA EL CLIENTE]
+
+          De acuerdo a las verificaciones realizadas, la solución ha sido aplicada correctamente. A partir de este momento, el estado de este ticket pasa a ser [Cerrado con éxito].
+
+          Si en el futuro presentas un inconveniente similar o requieres una nueva asistencia, por favor inicia una nueva solicitud enviando un correo electrónico a nuestro canal de soporte.
+          ```
+
+      - Ticket cerrado por mal redactado:
+        - Tipo: "Responder"
+        - Nombre: "Cerrado por mal redactado"
+        - Contenido:
+
+          ```text
+          Te escribimos en relación a tu solicitud "<OTOBO_CUSTOMER_Subject>".
+
+          Lamentablemente, no nos ha sido posible procesar o avanzar con el diagnóstico debido a que la información proporcionada en el mensaje es insuficiente, requiere mayor claridad o no hemos recibido respuesta a nuestras solicitudes de aclaración previas.
+
+          Por este motivo, procedemos a cerrar este ticket bajo el estado [Cerrado debido a información insuficiente].
+
+          Si aún necesitas asistencia con este inconveniente, te solicitamos que envíes un nuevo correo electrónico detallando el problema lo más posible (incluyendo capturas de pantalla, mensajes de error específicos o pasos para reproducirlo) para que podamos ayudarte de manera eficiente.
+
+          Quedamos a tu disposición.
+          ```
+
+      - Ticket cerrado sin éxito:
+        - Tipo: "Responder"
+        - Nombre: "Cerrado sin éxito"
+        - Contenido:
+
+          ```text
+          Nos ponemos en contacto contigo respecto al caso "<OTOBO_CUSTOMER_Subject>".
+
+          Tras haber realizado los análisis correspondientes y agotado las instancias de diagnóstico técnico a nuestro alcance, lamentamos informarte que no ha sido posible dar una resolución favorable al inconveniente reportado.
+
+          [ELIMINAR ESTO Y ESCRIBIR AQUÍ EL MOTIVO TÉCNICO].
+
+          Debido a esto, nos vemos en la necesidad de dar por finalizado el seguimiento de este caso bajo el estado [Cerrado sin éxito].
+
+          Lamentamos no poder ayudarte en esta ocasión específica. Si requieres asistencia con cualquier otro asunto diferente, no dudes en abrir un nuevo ticket.
+          ```
 
    2. Administración > Ajustes de Tickets > Plantillas - Colas
       - Cola "Soporte"
-      - Asignar la plantilla "Correo electrónico - Común".
+        - "Responder - Cerrado por mal redactado": activado
+        - "Responder - Cerrado sin éxito": activado
+        - "Responder - Cerrar Ticket con Éxito": activado
+        - "Responder - Común": activado
 
 7. Desactivar notificación de bloqueo/desbloqueo de tickets al agente:
    - Administración > Comunicación y Notificaciones > Notificaciones de Ticket
@@ -295,6 +352,18 @@
         - Schedule: `*/2 * * * *`
     - Hacer deploy
 
+- Configuraciones extras:
+  - Desactivar la verificación de sintaxis de correo:
+    - Es para poder usar "nadie@localhost" por ejemplo para no mandar correos.
+    - Administración > Administración > Configuración de Sistema
+      - CheckEmailAddresses: false
+  - Activar tipos de tickets:
+    - Para poder clasificarlos según el tipo de problema. Se recomienda no superar los 10 tipos.
+    - Administración > Administración > Configuración de Sistema
+      - Ticket::Type: true
+    - Administración > Ajustes de Tickets > Tipos
+      - Crearlos. Ejemplo: Infraestructura, Redes, Microinformática, Impresión, Software, Correos
+
 ### Cambiar Contraseña Desde la Consola
 
 ```sh
@@ -312,6 +381,17 @@ su otobo -c "/opt/otobo/bin/otobo.Console.pl Admin::User::Add --user-name <> --f
 ```sh
 su otobo -c "/opt/otobo/bin/otobo.Console.pl Maint::Ticket::Delete --ticket-number 2015071510123456"
 ```
+
+### Elasticsearch no Inicia
+
+- Revisar `/var/log/elasticsearch/cluster.log`
+  - Si dice que es porque _analysis-icu_ está desactualizado:
+
+    ```sh
+    /usr/share/elasticsearch/bin/elasticsearch-plugin remove analysis-icu
+    /usr/share/elasticsearch/bin/elasticsearch-plugin install --batch analysis-icu
+    systemctl restart elasticsearch
+    ```
 
 ### Migrar/Actualizar Otobo
 

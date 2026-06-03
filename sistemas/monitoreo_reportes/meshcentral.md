@@ -10,6 +10,7 @@
   - [Instalación](#instalación)
     - [Instalar Meshcentral en Ubuntu 22.04](#instalar-meshcentral-en-ubuntu-2204)
   - [Extras](#extras)
+    - [Configurar el Agente](#configurar-el-agente)
     - [KVM child process has unexpectedly exited](#kvm-child-process-has-unexpectedly-exited)
 
 ---
@@ -90,6 +91,12 @@
        "allowFraming": false,
        "webRtcConfig": {
          "iceServers": []
+       },
+       "autoBackup": {
+         "backupIntervalHours": 24,
+         "keepLastDaysBackup": 7,
+         "zipPassword": "<contraseña>",
+         "backupPath": "/opt/meshcentral/backups"
        }
      },
      "domains": {
@@ -97,7 +104,9 @@
          "title": "Soporte Remoto",
          "title2": "Acceso remoto seguro",
          "newAccounts": false,
-         "certUrl": "https://soporte.dominio.com"
+         "certUrl": "https://soporte.dominio.com",
+         "softwareInventory": true,
+         "showModernUIToggle": true
        }
      }
    }
@@ -180,6 +189,15 @@
 ---
 
 ## Extras
+
+### Configurar el Agente
+
+- Se pueden agregar parámetros al archivo `msh` del agente.
+- Lista: <https://github.com/Ylianst/MeshAgent?tab=readme-ov-file#msh-format>.
+- Se pueden agregar también en el archivo config para guardarlos en el instalador: <https://github.com/Ylianst/MeshCentral/blob/15ff7d12a1e4e5d78936b473ea207b7e02b8ff26/meshcentral-config-schema.json#L2504>.
+- Ejemplo:
+  - Un agente en Windows Server 2012 entró en un loop de querer actualizarse y no se podía usar.
+  - Se agregó `disableUpdate=true` y se reinició el servicio. Comenzó a funcionar.
 
 ### [KVM child process has unexpectedly exited](https://github.com/Ylianst/MeshAgent/issues/135#issuecomment-1505193977)
 
