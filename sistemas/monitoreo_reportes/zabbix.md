@@ -8,8 +8,10 @@
   - [Contenido](#contenido)
   - [Documentación](#documentación)
   - [Instalación](#instalación)
-    - [Instalar Zabbix 6.4 en Debian 12](#instalar-zabbix-64-en-debian-12)
+    - [Instalar Zabbix 7.4 en Debian 12](#instalar-zabbix-74-en-debian-12)
+    - [Instalar Zabbix-Proxy en Debian 13](#instalar-zabbix-proxy-en-debian-13)
     - [Instalar Agente 2 en Windows](#instalar-agente-2-en-windows)
+    - [Abrir Puertos en Destino](#abrir-puertos-en-destino)
   - [Extras](#extras)
     - [Agregar Mikrotik como equipo](#agregar-mikrotik-como-equipo)
     - [Tunning](#tunning)
@@ -24,7 +26,7 @@
 
 ## Instalación
 
-### Instalar Zabbix 6.4 en Debian 12
+### Instalar Zabbix 7.4 en Debian 12
 
 1. Instalar db y nginx:
 
@@ -101,14 +103,72 @@
 
 Abrir la web. El usuario por defecto es Admin y la contraseña zabbix.
 
+### Instalar Zabbix-Proxy en Debian 13
+
+1. Instalar repositorio:
+
+   ```sh
+   wget https://repo.zabbix.com/zabbix/7.4/release/debian/pool/main/z/zabbix-release/zabbix-release_latest_7.4+debian13_all.deb
+   dpkg -i zabbix-release_latest_7.4+debian13_all.deb
+   apt update
+   ```
+
+2. Instalar proxy:
+
+   ```sh
+   apt install zabbix-proxy-sqlite3
+   ```
+
+3. Crear PSK:
+
+   ```sh
+   openssl rand -hex 32 > /etc/zabbix/zabbix_proxy.psk
+   chown zabbix:zabbix /etc/zabbix/zabbix_proxy.psk
+   chmod 600 /etc/zabbix/zabbix_proxy.psk
+   ```
+
+4. Configurar `/etc/zabbix/zabbix_proxy.conf`:
+
+   ```conf
+   ProxyMode=0 # Modo activo
+   Server=IP/DOMINIO # IP Pública o dominio donde está el server
+   Hostname=Proxy Empresa # Host del proxy
+   DBName=/var/lib/zabbix/zabbix_proxy.db # Ruta a la db sqlite
+   ProxyConfigFrequency=60 # Enviar datos cada 60 segundos
+
+   TLSConnect=psk
+   TLSAccept=psk
+   TLSPSKIdentity=PSK-Empresa
+   TLSPSKFile=/etc/zabbix/zabbix_proxy.psk
+   ```
+
+5. Crear carpeta de la db:
+
+   ```sh
+   mkdir /var/lib/zabbix
+   chown -R zabbix:zabbix /var/lib/zabbix
+   ```
+
+6. [Abrir puerto en el destino](#abrir-puertos-en-destino).
+7. Agregar el proxy en zabbix:
+   1. Administración > Proxies > Create Proxy
+      - Proxy:
+        - Proxy name: Proxy Empresa
+        - Proxy mode: Active
+      - Encryption:
+        - Connections from proxy: PSK
+        - PSK Identity: PSK-Empresa
+        - PSK: <PSK generado en /etc/zabbix/zabbix_proxy.psk>
+8. Reiniciar servicio: `systemctl restart zabbix-proxy`.
+
 ### Instalar Agente 2 en Windows
 
-1. [Descargar agente](https://www.zabbix.com/download_agents).
+1. [Descargar agente 2](https://www.zabbix.com/download_agents).
 2. Abrir cmd donde está el instalador y ejecutar:
    - Hay que poner la ruta completa del instalador.
    - Para que sea silencioso: agregar `/qn`.
-   - SERVERACTIVE: el dominio del zabbix-server (si está fuera de la red) o la ip (si está dentro).
-   - SERVER: el localhost para que el agente sea activo.
+   - SERVERACTIVE: el dominio del zabbix-server (si está fuera de la red) o la ip (si está dentro). **Si hay un proxy en la oficina**, poner la ip de este.
+   - SERVER: el localhost para que el agente sea activo. **Si hay un proxy en la oficina**, poner la ip de este.
    - STARTAGENTS: 0 para agente activo (envia los datos) y 1 para agente pasivo (el server le pide los datos). Si está fuera de la red, tiene que ser 0.
    - HOSTNAME: todos los equipos tienen que tener nombres distintos. Ej: Empresa-Servidor1, Empresa2-Servidor1
 
@@ -124,6 +184,44 @@ Abrir la web. El usuario por defecto es Admin y la contraseña zabbix.
       - Grupos: el grupo al que pertenece.
       - Interfaces: **vacio**, es un agente activo.
 
+### Abrir Puertos en Destino
+
+- Usando router Mikrotik
+- Usando proxy reverso Nginx con Stream para centralización
+
+1. En mikrotik redirigir los puertos 80, 443 y 10051:
+
+   ```routeros
+   /ip firewall nat add chain=dstnat action=dst-nat to-addresses=<ip nginx> to-ports=10051 protocol=tcp in-interface=ether5 dst-port=10051 comment="zabbix"
+   /ip firewall filter add chain=forward action=accept protocol=tcp dst-address=<ip zabbix> dst-port=80,443,10051 comment="nginx"
+   ```
+
+2. En nginx configurar el stream:
+
+   ```sh
+   apt install libnginx-mod-stream
+   vim /etc/nginx/nginx.conf
+   ```
+
+   ```conf
+   stream {
+     upstream zabbix_backend_tcp {
+       server <ip zabbix>:10051;
+     }
+
+     server {
+       listen 10051;
+       proxy_pass zabbix_backend_tcp;
+       proxy_timeout 60s;
+       proxy_connect_timeout 30s;
+     }
+   }
+   ```
+
+   ```sh
+   nginx -s reload
+   ```
+
 ## Extras
 
 ### Agregar Mikrotik como equipo
@@ -133,8 +231,7 @@ Abrir la web. El usuario por defecto es Admin y la contraseña zabbix.
 
 1. Activar SNMP en el router:
    1. Ir a IP > SNMP > Communities:
-      1. Agregar una nueva con un nombre recordable, con la IP apuntando al server (o proxy) y read access activado.
-      2. Desactivar la community "public".
+      1. Renombrar "public" con un nombre recordable (EmpresaInternalMon, ej), con la IP apuntando al server (o proxy) y read access activado.
       - SNPMv2c se activa por defecto (si no se pone usuario y contraseña), no v1.
    2. Volver a SNMP:
       1. Activar el Enabled y listo.
@@ -142,10 +239,11 @@ Abrir la web. El usuario por defecto es Admin y la contraseña zabbix.
    1. Ir a Zabbix > Data Collection > Hosts
    2. Agregar equipo:
       - Nombre: Mikrotik-Oficina
-      - Template: Mikrotik-SNMP
+      - Template: Mikrotik by SNMP
       - Interfaces:
         - IP address: 192.168.0.1
         - Port: 161
+      - Monitored by: Server/Proxy
       - Macros:
         - Macros heredadas y de equipo > Buscar {$SNMP_COMMUNITY} y setear con el nombre de la community que se puso en el router.
       - Aplicar
