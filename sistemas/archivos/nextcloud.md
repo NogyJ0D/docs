@@ -808,7 +808,7 @@ services:
       - 'office.dominio.com:<IP privada del proxy reverso>'
 
   nextcloud-db:
-    image: postgres:15
+    image: postgres:16
     container_name: nextcloud-db
     restart: unless-stopped
     labels:
@@ -916,8 +916,9 @@ networks:
 2. Instalar `libnginx-mod-http-headers-more-filter` donde está nginx.
 3. Crear la carpeta y cargar el **_[docker-compose.yml](#compose)_**
 4. Agregar las url con la ip del proxy a **_/etc/hosts_** en la vm del nextcloud (`<IP Privada del proxy> nextcloud.dominio.com`).
-5. Iniciar con `docker compose pull` `docker compose up` y cuando esté lista la DB (aceptando conexiones), cortar con Control+D.
-6. Comentar "profiles" en el contenedor de **nextcloud** y volver a iniciar con `docker compose pull` y `docker compose up -d && docker compose logs -f`.
+5. Descargar imagenes con `for each in {"nextcloud:latest","postgres:16","redis:alpine","collabora/code:latest","ghcr.io/nicholas-fedor/watchtower:latest"}; do docker pull $each; done`.
+5. Iniciar con `docker compose up` y cuando esté lista la DB (aceptando conexiones), cortar con Control+D.
+6. Comentar "profiles" en el contenedor de **nextcloud** y volver a iniciar `docker compose up -d && docker compose logs -f`.
 
    1. Cuando esté listo (o si empieza a fallar la instalación), conectarse con `docker exec -it -u www-data nextcloud /bin/bash`.
    2. Dentro del contenedor iniciar instalación con:
@@ -958,7 +959,7 @@ networks:
       */5 * * * * docker exec -u www-data nextcloud php -f /var/www/html/cron.php
       ```
 
-8. Comentar "profiles" en el contenedor de **collabora**, **languagetool** y **watchtower** y volver a iniciar con `docker compose pull` y `docker compose up -d && docker compose logs -f`. Cuando esté listo, habilitar los sitios en nginx y entrar a la página de Nextcloud.
+8. Comentar "profiles" en el contenedor de **collabora**, **languagetool** y **watchtower** y volver a iniciar con `docker compose up -d && docker compose logs -f`. Cuando esté listo, habilitar los sitios en nginx y entrar a la página de Nextcloud.
 9. Comprobar que funcione con el usuario admin y entrar a la pestaña de administración para ver los ítems que faltan configurar.
    - Asegurarse que esté habilitado el cron en la interfaz.
 10. Ejecutar estos comandos de mantenimiento general para quitar advertencias:
