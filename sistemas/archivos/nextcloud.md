@@ -918,9 +918,9 @@ networks:
 4. Agregar las url con la ip del proxy a **_/etc/hosts_** en la vm del nextcloud (`<IP Privada del proxy> nextcloud.dominio.com`).
 5. Descargar imagenes con `for each in {"nextcloud:latest","postgres:16","redis:alpine","collabora/code:latest","ghcr.io/nicholas-fedor/watchtower:latest"}; do docker pull $each; done`.
 5. Iniciar con `docker compose up` y cuando esté lista la DB (aceptando conexiones), cortar con Control+D.
-6. Comentar "profiles" en el contenedor de **nextcloud** y volver a iniciar `docker compose up`.
+6. Comentar "profiles" en el contenedor de **nextcloud** y volver a iniciar `docker compose up -f && docker compose logs -f`.
 
-   1. Cuando esté listo (o si empieza a fallar la instalación), conectarse desde otra terminal con `docker exec -it -u www-data nextcloud /bin/bash`.
+   1. Cuando esté listo (o si empieza a fallar la instalación), conectarse desde la misma terminal con `docker exec -it -u www-data nextcloud /bin/bash`.
    2. Dentro del contenedor iniciar instalación con:
 
       - ⚠️ No hace falta cambiar la contraseña del admin
