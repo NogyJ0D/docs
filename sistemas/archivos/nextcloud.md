@@ -978,10 +978,11 @@ networks:
     docker exec -u www-data nextcloud php occ app:disable federation
     docker exec -u www-data nextcloud php occ app:disable weather_status
     docker exec -u www-data nextcloud php occ app:disable survey_client
+    docker exec -u www-data nextcloud php occ app:disable dashboard
 
-    docker exec -u www-data nextcloud php occ app:enable user_ldap # Dominio
+    docker exec -u www-data nextcloud php occ app:enable user_ldap
 
-    docker exec -u www-data nextcloud php occ app:install richdocuments # Collabora
+    docker exec -u www-data nextcloud php occ app:install richdocuments
     docker exec -u www-data nextcloud php occ app:install groupfolders
     ```
 
