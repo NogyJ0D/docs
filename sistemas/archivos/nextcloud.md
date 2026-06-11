@@ -14,6 +14,7 @@
       - [Compose](#compose)
       - [Pasos instalación docker](#pasos-instalación-docker)
   - [Aplicaciones](#aplicaciones)
+    - [External Storage Support](#external-storage-support)
     - [Preview Generator](#preview-generator)
   - [Extras](#extras)
     - [Habilitar miniaturas](#habilitar-miniaturas)
@@ -40,7 +41,6 @@
    ```
 
 2. Instalar php y extensiones:
-
    1. Instalar php
 
       ```sh
@@ -92,7 +92,6 @@
       ```
 
 3. Instalar MariaDB:
-
    1. Instalar:
 
       ```sh
@@ -108,7 +107,6 @@
       ```
 
    2. Configurar MariaDB:
-
       - Tener **_/etc/mysql/mariadb.conf.d/50-server.cnf_** como:
 
         ```conf
@@ -195,7 +193,6 @@
    ```
 
 5. Configurar nginx:
-
    - Si hay un nginx público aparte, agregar en ese lo siguiente:
 
      ```nginx
@@ -480,13 +477,11 @@
     ```
 
 11. Ir al panel de administración y corregir las advertencias.
-
     - Corregir el error del teléfono: agregar en **_/var/www/nextcloud/config/config.php_** "'default_phone_region' => 'AR',".
 
 ### Instalar Nextcloud con docker
 
 - Componentes
-
   - Nextcloud
   - Postgres
   - Redis
@@ -917,12 +912,10 @@ networks:
 3. Crear la carpeta y cargar el **_[docker-compose.yml](#compose)_**
 4. Agregar las url con la ip del proxy a **_/etc/hosts_** en la vm del nextcloud (`<IP Privada del proxy> nextcloud.dominio.com`).
 5. Descargar imagenes con `for each in {"nextcloud:latest","postgres:16","redis:alpine","collabora/code:latest","ghcr.io/nicholas-fedor/watchtower:latest"}; do docker pull $each; done`.
-5. Iniciar con `docker compose up` y cuando esté lista la DB (aceptando conexiones), cortar con Control+D.
-6. Comentar "profiles" en el contenedor de **nextcloud** y volver a iniciar `docker compose up -f && docker compose logs -f`.
-
+6. Iniciar con `docker compose up` y cuando esté lista la DB (aceptando conexiones), cortar con Control+D.
+7. Comentar "profiles" en el contenedor de **nextcloud** y volver a iniciar `docker compose up -f && docker compose logs -f`.
    1. Cuando esté listo (o si empieza a fallar la instalación), conectarse desde la misma terminal con `docker exec -it -u www-data nextcloud /bin/bash`.
    2. Dentro del contenedor iniciar instalación con:
-
       - ⚠️ No hace falta cambiar la contraseña del admin
 
       ```sh
@@ -934,8 +927,7 @@ networks:
 
    3. Salir cuando esté listo.
 
-7. Configuración de nextcloud:
-
+8. Configuración de nextcloud:
    1. Agregar a **_./config/config.php_**:
 
       ```sh
@@ -959,10 +951,10 @@ networks:
       */5 * * * * docker exec -u www-data nextcloud php -f /var/www/html/cron.php
       ```
 
-8. Comentar "profiles" en el contenedor de **collabora**, **languagetool** y **watchtower** y volver a iniciar con `docker compose up -d && docker compose logs -f`. Cuando esté listo, habilitar los sitios en nginx y entrar a la página de Nextcloud.
-9. Comprobar que funcione con el usuario admin y entrar a la pestaña de administración para ver los ítems que faltan configurar.
-   - Asegurarse que esté habilitado el cron en la interfaz.
-10. Ejecutar estos comandos de mantenimiento general para quitar advertencias:
+9. Comentar "profiles" en el contenedor de **collabora**, **languagetool** y **watchtower** y volver a iniciar con `docker compose up -d && docker compose logs -f`. Cuando esté listo, habilitar los sitios en nginx y entrar a la página de Nextcloud.
+10. Comprobar que funcione con el usuario admin y entrar a la pestaña de administración para ver los ítems que faltan configurar.
+    - Asegurarse que esté habilitado el cron en la interfaz.
+11. Ejecutar estos comandos de mantenimiento general para quitar advertencias:
 
     ```sh
     docker exec -u www-data nextcloud php occ maintenance:repair --include-expensive
@@ -972,7 +964,7 @@ networks:
     docker exec -u www-data nextcloud php occ maintenance:mode --off
     ```
 
-11. Administrar apps:
+12. Administrar apps:
 
     ```sh
     docker exec -u www-data nextcloud php occ app:disable federation
@@ -986,7 +978,7 @@ networks:
     docker exec -u www-data nextcloud php occ app:install groupfolders
     ```
 
-12. Conectar Collabora:
+13. Conectar Collabora:
     - En la web ir a **"Administration Settings"** > **"Office"**.
     - Marcar "Use your own server" y poner la url (<https://office.dominio.com>).
     - En **"Configuraciones Avanzadas"** > **"Allow list of WOPI requests"** agregar la IP permitida.
@@ -997,6 +989,81 @@ networks:
 ---
 
 ## Aplicaciones
+
+### [External Storage Support](https://docs.nextcloud.com/server/33/admin_manual/configuration_files/external_storage_configuration_gui.html)
+
+- Es para ver carpetas compartidas por internet.
+- Ya viene instalado, hay que activarlo.
+- Si se va a usar con una carpeta de windows, hay que crear el usuario "nextcloud" y darle permisos.
+
+1. Activarlo en la pestaña de apps.
+2. En la vm:
+   1. Instalar cifs-utils:
+
+      ```sh
+      apt install cifs-utils
+      mkdir /mnt/windows_server_archivos
+      # Probar si se monta
+      mount -t cifs -o username=nextcloud,password=contraseña,uid=33,gid=33 //192.168.0.2/archivos /mnt/windows_server_archivos # Puede que haya que escapar caracteres especiales de la contraseña con "\"
+      umount /mnt/windows_server_archivos
+      ```
+
+   2. Crear credenciales:
+
+      ```sh
+      vim /root/.smbcredentials
+      ```
+
+      ```text
+      user=nextcloud
+      password=contraseña
+      ```
+
+      ```sh
+      chmod 600 /root/.smbcredentials
+      ```
+
+   3. Agregar en fstab y ejecutar:
+
+      ```fstab
+      //192.168.0.2/archivos /mnt/windows_server_archivos cifs credentials=/root/.smbcredentials,uid=33,gid=33,iocharset=utf8,nofail 0 0
+      ```
+
+      ```sh
+      systemctl daemon-reload
+      mount -a
+      ```
+
+   4. Agregar el volumen al compose:
+
+      ```yml
+      volumes:
+        - ./html:/var/www/html
+        - ./data:/var/www/html/data
+        - ./config:/var/www/html/config
+        - /mnt/windows_server_archivos:/var/www/windows_server_archivos
+      ```
+
+      ```sh
+      # Volver a levantar
+      docker compose up -d && docker compose logs -f
+      ```
+
+   5. Agregar en la web:
+      - Administration > External storage
+        - **"+ Add external storage"**
+          - Folder name: "Carpeta Compartida"
+          - External storage: "Local"
+          - Storage configuration:
+            - Location: "/var/www/windows_server_archivos"
+          - Create
+      - Es recomendable también hacer un grupo para limitar el acceso de los usuarios:
+        - Accounts:
+          - Groups: **"+"**
+            - Group name: "Externo"
+        - En la configuración de la carpeta creada:
+          - Restrict to: "Externo"
+        - Agregar a los usuarios que deben entrar a la carpeta al grupo.
 
 ### [Preview Generator](https://apps.nextcloud.com/apps/previewgenerator)
 
