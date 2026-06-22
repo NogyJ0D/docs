@@ -10,8 +10,8 @@
   - [Instalación](#instalación)
     - [Instalar Nextcloud en Debian 12](#instalar-nextcloud-en-debian-12)
     - [Instalar Nextcloud con docker](#instalar-nextcloud-con-docker)
-      - [Nginx](#nginx)
-      - [Compose](#compose)
+      - [Caddy](#caddy)
+      - [Compose y Env](#compose-y-env)
       - [Pasos instalación docker](#pasos-instalación-docker)
   - [Aplicaciones](#aplicaciones)
     - [External Storage Support](#external-storage-support)
@@ -497,11 +497,61 @@
     - redis/ (999:root)
     - docker-compose.yml (root:root)
 
-#### Nginx
+#### Caddy
 
-> ⚠️ Guardar en sites-available y mover luego.
+```Caddyfile
+nextcloud.dominio.com {
+  redir /.well-known/carddav /remote.php/dav 301
+  redir /.well-known/caldav /remote.php/dav 301
 
-- **_nextcloud.conf_**:
+  @bloqueado path_regexp sensitive ^/(?:build|tests|config|lib|3rdparty|templates|data|\.|autotest|occ|issue|indie|db_|console)(?:$|/)
+  respond @bloqueado 404
+
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    Referrer-Policy "no-referrer"
+    X-Content-Type-Options "nosniff"
+    X-Frame-Options "SAMEORIGIN"
+    X-Permitted-Cross-Domain-Policies "none"
+    X-Robots-Tag "noindex, nofollow"
+    X-XSS-Protection "1; mode=block"
+    -Server
+  }
+
+  reverse_proxy 192.168.0.x:3000 {
+    header_up X-Forwarded-Port {server_port}
+    header_up X-Forwarded-Ssl "on"
+  }
+
+  import config_estandar nextcloud
+}
+
+office.dominio.com {
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    Referrer-Policy "no-referrer"
+    X-Content-Type-Options "nosniff"
+    X-Permitted-Cross-Domain-Policies "none"
+    X-Robots-Tag "noindex, nofollow"
+    X-XSS-Protection "1; mode=block"
+
+    -X-Frame-Options
+    Content-Security-Policy "frame-ancestors 'self' https://nextcloud.dominio.com;" # ⚠️ Cambiar dominio
+
+    -Server
+  }
+
+  reverse_proxy 192.168.0.x:3001 {
+    header_down -X-Frame-Options
+  }
+
+  import config_estandar office
+}
+```
+
+<!-- > ⚠️ Guardar en sites-available y mover luego. -->
+
+<!-- - **_nextcloud.conf_**:
 
   ```nginx
   # :%s/nube.dominio.com/dominio/g
@@ -760,9 +810,28 @@
       proxy_read_timeout 36000s;
     }
   }
-  ```
+  ``` -->
 
-#### Compose
+#### Compose y Env
+
+```env
+# Configuración General y Red
+TIMEZONE=America/Argentina/Buenos_Aires
+REVERSE_PROXY_IP=192.168.0.x # Si está todo local, poner la ip privada
+NEXTCLOUD_DOMAIN=nextcloud.dominio.com
+
+# Base de Datos (PostgreSQL)
+DB_NAME=nextcloud
+DB_USER=nextcloud
+DB_PASSWORD=contraseña_segura
+
+# Redis
+REDIS_PASSWORD=contraseña_segura
+
+# OnlyOffice
+OFFICE_DOMAIN=office.dominio.com
+OFFICE_JWT_SECRET=openssl rand -hex 32
+```
 
 ```yaml
 services:
@@ -779,18 +848,18 @@ services:
     ports:
       - 3000:80
     environment:
-      TZ: America/Argentina/Buenos_Aires
+      TZ: ${TIMEZONE}
       POSTGRES_HOST: nextcloud-db
-      POSTGRES_DB: nextcloud
-      POSTGRES_USER: nextcloud
-      POSTGRES_PASSWORD: nextcloud
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       REDIS_HOST: nextcloud-redis
-      REDIS_HOST_PASSWORD: redis
-      TRUSTED_PROXIES: <IP privada del proxy reverso>
-      TRUSTED_DOMAINS: nextcloud.dominio.com
+      REDIS_HOST_PASSWORD: ${REDIS_PASSWORD}
+      TRUSTED_PROXIES: ${REVERSE_PROXY_IP}
+      TRUSTED_DOMAINS: ${NEXTCLOUD_DOMAIN}
       OVERWRITEPROTOCOL: https
-      OVERWRITECLIURL: https://nextcloud.dominio.com
-      OVERWRITEHOST: nextcloud.dominio.com
+      OVERWRITECLIURL: https://${NEXTCLOUD_DOMAIN}
+      OVERWRITEHOST: ${NEXTCLOUD_DOMAIN}
     volumes:
       - ./html:/var/www/html
       - ./data:/var/www/html/data
@@ -799,11 +868,11 @@ services:
       - nextcloud-db
       - nextcloud-redis
     extra_hosts:
-      - 'nextcloud.dominio.com:<IP privada del proxy reverso>'
-      - 'office.dominio.com:<IP privada del proxy reverso>'
+      - '${NEXTCLOUD_DOMAIN}:${REVERSE_PROXY_IP}'
+      - '${OFFICE_DOMAIN}:${REVERSE_PROXY_IP}'
 
   nextcloud-db:
-    image: postgres:16
+    image: postgres:17
     container_name: nextcloud-db
     restart: unless-stopped
     labels:
@@ -811,10 +880,10 @@ services:
     networks:
       - nextcloud
     environment:
-      POSTGRES_DB: nextcloud
-      POSTGRES_USER: nextcloud
-      POSTGRES_PASSWORD: nextcloud
-      TZ: America/Argentina/Buenos_Aires
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      TZ: ${TIMEZONE}
       POSTGRES_INITDB_ARGS: '--encoding=UTF8'
     volumes:
       - ./db_data:/var/lib/postgresql/data
@@ -822,50 +891,38 @@ services:
   nextcloud-redis:
     image: redis:alpine
     container_name: nextcloud-redis
-    command: ['redis-server', '--requirepass', 'redis']
+    command: ['redis-server', '--requirepass', '${REDIS_PASSWORD}']
     restart: unless-stopped
     labels:
       - 'com.centurylinklabs.watchtower.enable=true'
     networks:
       - nextcloud
     environment:
-      REDIS_PASSWORD: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     volumes:
       - ./redis:/data
 
-  nextcloud-collabora:
+  nextcloud-office:
     profiles:
       - donotstart
-    image: collabora/code:latest
-    container_name: nextcloud-collabora
+    image: ghcr.io/euro-office/documentserver:latest
+    container_name: nextcloud-office
     restart: unless-stopped
     labels:
       - 'com.centurylinklabs.watchtower.enable=true'
     networks:
       - nextcloud
-    environment:
-      - TZ=America/Argentina/Buenos_Aires
-      - username=admin
-      - password=admin
-      - domain=nextcloud\.dominio\.com
-      - aliasgroup1=https://nextcloud.dominio.com:443,https://nextcloud\\.dominio\\.com
-      - dictionaries=en_US es_ES
-      - DONT_GEN_SSL_CERT="True"
-      - cert_domain=office.dominio.com
-      - server_name=office.dominio.com
-      - extra_params=
-        --o:ssl.enable=false
-        --o:ssl.termination=true
-        --o:net.frame_ancestors=nextcloud.dominio.com:443
-        --o:storage.wopi.host[0]=nextcloud.dominio.com
-    #        --o:languagetool.base_url=http://nextcloud-languagetool:8010/v2
-    #        --o:languagetool.enabled=true
-    # Estos extra_params reemplazan los valores de /etc/coolwsd/coolwsd.xml
     ports:
-      - 9980:9980
+      - 9980:80
+    environment:
+      TZ: ${TIMEZONE}
+      JWT_SECRET: ${OFFICE_JWT_SECRET}
+    volumes:
+      - ./office_data:/var/www/onlyoffice/Data
+      - ./office_logs:/var/log/onlyoffice
     extra_hosts:
-      - 'nextcloud.dominio.com:<IP privada del proxy reverso>'
-      - 'office.dominio.com:<IP privada del proxy reverso>'
+      - '${NEXTCLOUD_DOMAIN}:${REVERSE_PROXY_IP}'
+      - '${OFFICE_DOMAIN}:${REVERSE_PROXY_IP}'
 
   #  Pareciera que no anda
   #  Opcional languagetool para correcciones ortográficas
@@ -885,17 +942,17 @@ services:
   #      - JAVAOPTIONS=-DlanguageTool.preloadedLanguages=es-ES
 
   watchtower:
-    image: ghcr.io/nicholas-fedor/watchtower:latest
     profiles:
       - donotstart
+    image: ghcr.io/nicholas-fedor/watchtower:latest
     container_name: watchtower
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - WATCHTOWER_LABEL_ENABLE=true
-      - WATCHTOWER_CLEANUP=true
-      - WATCHTOWER_POLL_INTERVAL=43200
+      WATCHTOWER_LABEL_ENABLE: 'true'
+      WATCHTOWER_CLEANUP: 'true'
+      WATCHTOWER_POLL_INTERVAL: 43200
 
 networks:
   nextcloud:
@@ -907,14 +964,15 @@ networks:
 
 > No habilitar aún los sitios en nginx, mantenerlo local.
 
+<!-- 2. Instalar `libnginx-mod-http-headers-more-filter` donde está nginx. -->
+
 1. [Instalar docker engine](https://docs.docker.com/engine/install/debian/#install-using-the-repository)
-2. Instalar `libnginx-mod-http-headers-more-filter` donde está nginx.
-3. Crear la carpeta y cargar el **_[docker-compose.yml](#compose)_**
-4. Agregar las url con la ip del proxy a **_/etc/hosts_** en la vm del nextcloud (`<IP Privada del proxy> nextcloud.dominio.com`).
-5. Descargar imagenes con `for each in {"nextcloud:latest","postgres:16","redis:alpine","collabora/code:latest","ghcr.io/nicholas-fedor/watchtower:latest"}; do docker pull $each; done`.
-6. Iniciar con `docker compose up` y cuando esté lista la DB (aceptando conexiones), cortar con Control+D.
-7. Comentar "profiles" en el contenedor de **nextcloud** y volver a iniciar `docker compose up -f && docker compose logs -f`.
-   1. Cuando esté listo (o si empieza a fallar la instalación), conectarse desde la misma terminal con `docker exec -it -u www-data nextcloud /bin/bash`.
+2. Crear la carpeta y cargar el **_[docker-compose.yml y .env](#compose-y-env)_**
+3. Agregar las url con la ip del proxy a **_/etc/hosts_** en la vm del nextcloud (`<IP Privada del proxy> nextcloud.dominio.com`).
+4. Descargar imagenes con `for each in {"nextcloud:latest","postgres:17","redis:alpine","collabora/code:latest","ghcr.io/nicholas-fedor/watchtower:latest"}; do docker pull $each; done`.
+5. Iniciar con `docker compose up` y cuando esté lista la DB (aceptando conexiones), cortar con Control+D.
+6. Comentar "profiles" en el contenedor de **nextcloud** y volver a iniciar `docker compose up -f && docker compose logs -f`.
+   1. Cuando esté listo diciendo "apache2 -D FOREGROUND" (o si empieza a fallar la instalación), conectarse desde la misma terminal con `docker exec -it -u www-data nextcloud /bin/bash`.
    2. Dentro del contenedor iniciar instalación con:
       - ⚠️ No hace falta cambiar la contraseña del admin
 
@@ -927,34 +985,40 @@ networks:
 
    3. Salir cuando esté listo.
 
-8. Configuración de nextcloud:
+7. Configuración de nextcloud:
    1. Agregar a **_./config/config.php_**:
 
       ```sh
-      'maintenance_window_start' => 5,
-      'maintenance' => false,
-      'default_phone_region' => 'AR',
-      'skeletondirectory' => '',
       'trusted_domains' => # Ya existe
       array (
         0 => 'nextcloud.dominio.com'
-      )
+      ),
+      'maintenance_window_start' => 5,
+      'maintenance' => false,
+      'default_phone_region' => 'AR',
       ```
 
       - _maintenance_window_start_ es la hora en la que comienza el mantenimiento diario, está en UTC (3 horas menos que AR). Trabaja entre la hora puesta y las 4 siguientes, 5-9 UTC = 2-6 AR.
       - _maintenance_ dice si el servicio está en modo mantenimiento ahora mismo.
 
    2. Cambiar contraseña del admin porque no la toma: `docker exec -it -u www-data nextcloud php occ user:resetpassword admin`
+      - Si se quiere cambiar el usuario admin:
+
+        ```sh
+        docker exec -it -u www-data nextcloud php occ user:delete admin
+        docker exec -it -u www-data nextcloud php occ user:add --display-name "Usuario" --email "usuario@email.com" --group "admin" usuario
+        ```
+
    3. Agregar cron al root (`crontab -u root -e`):
 
       ```cron
       */5 * * * * docker exec -u www-data nextcloud php -f /var/www/html/cron.php
       ```
 
-9. Comentar "profiles" en el contenedor de **collabora**, **languagetool** y **watchtower** y volver a iniciar con `docker compose up -d && docker compose logs -f`. Cuando esté listo, habilitar los sitios en nginx y entrar a la página de Nextcloud.
-10. Comprobar que funcione con el usuario admin y entrar a la pestaña de administración para ver los ítems que faltan configurar.
-    - Asegurarse que esté habilitado el cron en la interfaz.
-11. Ejecutar estos comandos de mantenimiento general para quitar advertencias:
+8. Comentar "profiles" en el contenedor de **nextcloud**, **languagetool** y **watchtower** y volver a iniciar con `docker compose up -d && docker compose logs -f`. Cuando esté listo, habilitar los sitios en nginx y entrar a la página de Nextcloud.
+9. Comprobar que funcione con el usuario admin y entrar a la pestaña de administración para ver los ítems que faltan configurar.
+   - Asegurarse que esté habilitado el cron en la interfaz.
+10. Ejecutar estos comandos de mantenimiento general para quitar advertencias:
 
     ```sh
     docker exec -u www-data nextcloud php occ maintenance:repair --include-expensive
@@ -964,7 +1028,7 @@ networks:
     docker exec -u www-data nextcloud php occ maintenance:mode --off
     ```
 
-12. Administrar apps:
+11. Administrar apps:
 
     ```sh
     docker exec -u www-data nextcloud php occ app:disable federation
@@ -974,17 +1038,13 @@ networks:
 
     docker exec -u www-data nextcloud php occ app:enable user_ldap
 
-    docker exec -u www-data nextcloud php occ app:install richdocuments
     docker exec -u www-data nextcloud php occ app:install groupfolders
     ```
 
-13. Conectar Collabora:
-    - En la web ir a **"Administration Settings"** > **"Office"**.
-    - Marcar "Use your own server" y poner la url (<https://office.dominio.com>).
-    - En **"Configuraciones Avanzadas"** > **"Allow list of WOPI requests"** agregar la IP permitida.
-      - Probar primero la IP privada del host.
-      - Si no funciona, revisar en los registros que IP intentó acceder y poner esa en la lista.
-      - Si no funciona, configurar una cualquiera e intentar abrir un archivo con collabora.
+12. Conectar EuroOffice:
+    - En la web ir a **"Administration Settings"** > **"Nextcloud Office"**.
+    - En "Dirección de Nextcloud Office" poner la url (<https://office.dominio.com>).
+    - En **"Clave secreta"** poner el jwt_secret del .env.
 
 ---
 
