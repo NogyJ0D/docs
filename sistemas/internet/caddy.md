@@ -91,7 +91,11 @@ editor /etc/caddy/Caddyfile # Único archivo que hace falta modificar
   ```Caddyfile
   archivos.dominio.com {
     root * /var/www/html/sitio
-    file_server
+
+    handle {
+      try_files {path} {path}/ /index.html
+      file_server
+    }
 
     import config_estandar archivos
   }
