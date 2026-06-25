@@ -14,6 +14,8 @@ chmod o+r /usr/share/keyrings/caddy-stable-archive-keyring.gpg
 chmod o+r /etc/apt/sources.list.d/caddy-stable.list
 apt update
 apt install caddy
+mkdir /var/log/caddy
+chmod g+s /var/log/caddy
 editor /etc/caddy/Caddyfile # Único archivo que hace falta modificar
 ```
 
@@ -35,7 +37,9 @@ editor /etc/caddy/Caddyfile # Único archivo que hace falta modificar
     encode zstd gzip # Comprimir peticiones
 
     log {
-      output file /var/log/caddy/{args[0]}.log # Archivo de log
+      output file /var/log/caddy/{args[0]}.log { # Archivo de log
+        mode 0660
+      }
     }
 
     header {
