@@ -79,6 +79,7 @@
    ifconfig-pool-persist /var/log/openvpn/ipp.txt
 
    push "route 192.168.1.0 255.255.255.0" # Subred de la oficina
+   push "route 192.168.200.y 255.255.255.255" # IP de respaldo del servidor para NAT por conflicto, ver abajo en iptables
    route 10.8.0.0 255.255.255.0
 
    keepalive 10 120
@@ -98,24 +99,30 @@
 9. Habilitar IP Forwarding:
 
    ```sh
+   sysctl -w net.ipv4.ip_forward=1
    echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
    sysctl -p
    ```
 
 10. [Crear reglas de iptables con archivo persistente](../../sistemas_operativos/linux/iptables.md#iptables-como-servicio) con estas reglas:
+    - Referencia (1): Agregar una ruta de respaldo para conectarse al servidor si en el destino se usa la misma subred.
+    - Referencia (2): Reglas para hacer un forward desde al 10.8.0.1 al servidor de archivos. Sirve para que si el usuario afuera está en la misma subred que el servidor de archivos, pueda acceder usando la ip del servidor openvpn.
 
     ```sh
-    # FILE_SERVER=192.168.x.x # Servidor de archivos
+    # FILE_SERVER=192.168.x.y # Servidor de archivos
+    # (1) FILE_SERVER_NAT=192.168.200.y
 
+    # (1) $IPT -t nat -A PREROUTING -i tun0 -d $FILE_SERVER_NAT -j DNAT --to-destination $FILE_SERVER
     $IPT -t nat -A POSTROUTING -s 10.8.0.0/24 -o eth0 -j MASQUERADE
+
     $IPT -A FORWARD -i tun0 -o eth0 -j ACCEPT
     $IPT -A FORWARD -i eth0 -o tun0 -m state --state RELATED,ESTABLISHED -j ACCEPT
 
-    # Reglas para hacer un forward desde la 10.8.0.1 al servidor de archivos.
-    # Sirve para que si el usuario afuera está en la misma subred que el servidor de archivos, pueda acceder usando la ip del servidor vpn.
-    # $IPT -t nat -A PREROUTING -i tun0 -p tcp --dport 445 -j DNAT --to-destination $FILE_SERVER:445
-    # $IPT -t nat -A PREROUTING -i tun0 -p tcp --dport 139 -j DNAT --to-destination $FILE_SERVER:139
-    # $IPT -t nat -A POSTROUTING -o eth0 -d $FILE_SERVER -j MASQUERADE
+    # (2) $IPT -t nat -A PREROUTING -i tun0 -p tcp --dport 445 -j DNAT --to-destination $FILE_SERVER:445
+    # (2) $IPT -t nat -A PREROUTING -i tun0 -p tcp --dport 139 -j DNAT --to-destination $FILE_SERVER:139
+
+    # (2) $IPT -t nat -A POSTROUTING -p tcp -d $FILE_SERVER --dport 445 -j MASQUERADE
+    # (2) $IPT -t nat -A POSTROUTING -p tcp -d $FILE_SERVER --dport 139 -j MASQUERADE
     ```
 
 11. Iniciar servicio:
@@ -144,6 +151,14 @@
        - IP > Routes > [+]
        - Dst. Address: 10.8.0.0/24
        - Gateway: 192.168.1.50
+
+14. OPCIONAL: Agregar el NAT de respaldo en Mikrotik para el servidor si hay conflicto de subredes:
+
+    ```routeros
+    /ip firewall nat
+    add chain=dstnat dst-address=192.168.200.y action=dst-nat to-address=192.168.x.y
+    add chain=srcnat dst-address=192.168.x.y action=masquerade
+    ```
 
 ## Comandos
 

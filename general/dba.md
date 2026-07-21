@@ -165,7 +165,7 @@ services:
 #### VACUUM
 
 - Es una herramienta para eliminar datos innecesarios, recuperar espacio libre y actualizar las estadísticas del planificador de consultas.
-  - Ejemplos: `VACUUM FULL tabla`, `VACUUM ANALYZE tabla`, ` VACUUM VERBOSE tabla`.
+  - Ejemplos: `VACUUM FULL tabla`, `VACUUM ANALYZE tabla`, `VACUUM VERBOSE tabla`.
 
 ### Comandos
 
@@ -175,7 +175,15 @@ services:
   docker exec -it postgres_lab psql -U lab_user lab_db
   ```
 
+- Ver archivo de configuración:
+
+  ```sh
+  su postgres -c psql
+  show config_file;
+  ```
+
 ### Pruebas
 
 - Aumentar el valor de `shared_buffers`.
+- [Activar WAL Archive](../database/sql/postgres.md#activar-wal-archiving)
 - Iniciar el servidor con `wal_level` = `minimal` y `max_wal_senders` <> `0`.

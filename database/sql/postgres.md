@@ -7,17 +7,46 @@
 - [Postgres](#postgres)
   - [Contenido](#contenido)
   - [Documentación](#documentación)
-  - [Comandos](#comandos)
   - [Instalación](#instalación)
     - [Instalar Postgresql en Debian](#instalar-postgresql-en-debian)
-
----
+  - [Comandos](#comandos)
+  - [Extras](#extras)
+    - [Activar WAL Archiving](#activar-wal-archiving)
 
 ## Documentación
 
 - <https://wiki.debian.org/PostgreSql>
 
----
+## Instalación
+
+### Instalar Postgresql en Debian
+
+- Método 1, recomendado:
+
+  ```sh
+  apt install postgresql # O postgresql-[version]
+  ```
+
+- Método 2, si no funciona el otro:
+
+  ```sh
+  apt -y install postgresql-common
+  /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+  apt update
+  apt install postgresql-[version]
+  ```
+
+- Entrar a la consola:
+
+  ```sh
+  su postgres -c psql
+  ```
+
+- Cambiar contraseña por defecto:
+
+  ```sql
+  ALTER USER postgres WITH PASSWORD 'contraseña';
+  ```
 
 ## Comandos
 
@@ -61,35 +90,58 @@
   SELECT 'GRANT SELECT ON ' || quote_ident(schemaname) || '.' || quote_ident(viewname) || ' TO readonly;' FROM pg_views WHERE schemaname = 'public';
   ```
 
----
-
-## Instalación
-
-### Instalar Postgresql en Debian
-
-- Método 1, recomendado:
-
-  ```sh
-  apt install postgresql # O postgresql-[version]
-  ```
-
-- Método 2, si no funciona el otro:
-
-  ```sh
-  apt -y install postgresql-common
-  /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
-  apt update
-  apt install postgresql-[version]
-  ```
-
-- Entrar a la consola:
-
-  ```sh
-  su postgres -c psql
-  ```
-
-- Cambiar contraseña por defecto:
+- Obtener archivo de configuración:
 
   ```sql
-  ALTER USER postgres WITH PASSWORD 'contraseña';
+  show config_file;
   ```
+
+## Extras
+
+### Activar WAL Archiving
+
+1. Crear carpeta de archivo:
+
+   ```sh
+   mkdir /postgres_archive
+   chown postgres:postgres /postgres_archive
+   chmod 700 /postgres_archive
+   ```
+
+2. Editar el archivo de configuración `postgresql.conf`:
+
+   ```conf
+   wal_level = replica
+
+   archive_mode = on
+   archive_command = 'cp %p /postgres_archive/%f'
+
+   max_wal_senders = 10
+   wal_keep_size = 1GB
+   ```
+
+3. Reiniciar servicio: `systemctl restart postgresql`
+4. Verificar:
+
+   ```sql
+   # Con psql
+   show archive_mode;
+   show archive_command;
+   show wal_level;
+
+   select * from pg_stat_archiver;
+   ```
+
+5. Configurar limpieza:
+
+   ```sh
+   find /postgres_archive/ -mtime +10 -type f # Probar comando. Encuentra todos los archivos con más de 10 días
+
+   find /postgres_archive/ -mtime +10 -type f -delete # Elimina los archivos encontrados
+   ```
+
+   - Agregar al cron:
+
+     ```sh
+     0 0 * * * find /postgres_archive/ -mtime +10 -type f -delete
+     ```
