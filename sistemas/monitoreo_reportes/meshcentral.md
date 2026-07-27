@@ -88,7 +88,7 @@
        "trustedProxy": "<ip del proxy reverso>",
        "selfUpdate": false,
        "allowLoginToken": true,
-       "allowFraming": false,
+       "allowFraming": true,
        "webRtcConfig": {
          "iceServers": []
        },
@@ -139,7 +139,8 @@
    systemctl enable --now meshcentral.service
    ```
 
-7. Agregar a nginx:
+7. Agregar a proxy reverso:
+   - Nginx:
 
    ```nginx
    server {
@@ -150,41 +151,71 @@
      return 301 https://$host$request_uri;
    }
 
-    server {
-      listen 443 ssl;
-      listen [::]:443 ssl;
-      http2 on;
-      server_name soporte.dominio.com;
+     server {
+       listen 443 ssl;
+       listen [::]:443 ssl;
+       http2 on;
+       server_name soporte.dominio.com;
 
-      ssl_certificate /etc/letsencrypt/live/soporte.dominio.com/fullchain.pem;
-      ssl_certificate_key /etc/letsencrypt/live/soporte.dominio.com/privkey.pem;
+       ssl_certificate /etc/letsencrypt/live/soporte.dominio.com/fullchain.pem;
+       ssl_certificate_key /etc/letsencrypt/live/soporte.dominio.com/privkey.pem;
 
-      #ssl_protocols TLSv1.2 TLSv1.3;
-      #ssl_prefer_server_ciphers on;
+       #ssl_protocols TLSv1.2 TLSv1.3;
+       #ssl_prefer_server_ciphers on;
 
-      location / {
-        proxy_pass https://192.168.0.x:4430;
-        proxy_http_version 1.1;
+       location / {
+         proxy_pass https://192.168.0.x:4430;
+         proxy_http_version 1.1;
 
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+         proxy_set_header Host $host;
+         proxy_set_header X-Real-IP $remote_addr;
+         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+         proxy_set_header X-Forwarded-Proto $scheme;
 
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
+         proxy_set_header Upgrade $http_upgrade;
+         proxy_set_header Connection "upgrade";
 
-        proxy_connect_timeout 60s;
-        proxy_read_timeout 3600s;
-        proxy_send_timeout 3600s;
+         proxy_connect_timeout 60s;
+         proxy_read_timeout 3600s;
+         proxy_send_timeout 3600s;
 
-        proxy_ssl_verify off;
+         proxy_ssl_verify off;
 
-        client_max_body_size 256M;
-        proxy_buffering off;
-      }
-    }
+         client_max_body_size 256M;
+         proxy_buffering off;
+       }
+     }
    ```
+
+   - [Caddy](../internet/caddy.md):
+
+     ```sh
+     soporte.dominio.com {
+       handle /agentes* {
+         basic_auth {
+           usuario contraseña
+         }
+
+         root * /var/www/html
+         file_server
+       }
+
+       handle {
+         reverse_proxy https://192.168.0.x:4430 {
+           transport http {
+             tls
+             tls_insecure_skip_verify
+           }
+         }
+       }
+
+       request_body {
+         max_size 256mb
+       }
+
+       import config_estandar soporte SAMEORIGIN
+     }
+     ```
 
 ---
 

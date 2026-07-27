@@ -45,7 +45,7 @@ editor /etc/caddy/Caddyfile # Único archivo que hace falta modificar
     header {
       Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
 
-      X-Frame-Options "DENY"
+      X-Frame-Options "{args[1]}"
       X-Content-Type-Options "nosniff"
 
       -Server
@@ -54,7 +54,7 @@ editor /etc/caddy/Caddyfile # Único archivo que hace falta modificar
   }
 
   # Utilizarlo en algún sitio:
-  import config_estandar oficina
+  import config_estandar oficina DENY # Usar SAMEORIGIN si se requiere
   ```
 
 - Denegar acceso si no hay un dominio válido:
