@@ -76,6 +76,7 @@
      "settings": {
        "cert": "soporte.dominio.com",
        "port": 4430,
+       "aliasPort": 443,
        "redirPort": 0,
        "mongoDb": null,
        "postgres": {
