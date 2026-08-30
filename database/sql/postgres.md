@@ -8,7 +8,8 @@
   - [Contenido](#contenido)
   - [Documentación](#documentación)
   - [Instalación](#instalación)
-    - [Instalar Postgresql en Debian](#instalar-postgresql-en-debian)
+    - [Instalar PostgreSQL con Docker](#instalar-postgresql-con-docker)
+    - [Instalar PostgreSQL en Debian](#instalar-postgresql-en-debian)
   - [Comandos](#comandos)
   - [Extras](#extras)
     - [Activar WAL Archiving](#activar-wal-archiving)
@@ -19,7 +20,25 @@
 
 ## Instalación
 
-### Instalar Postgresql en Debian
+### Instalar PostgreSQL con Docker
+
+```yml
+services:
+  postgres-db:
+    image: postgres:17
+    container_name: postgres-db
+    restart: unless-stopped
+    #ports:
+    #  - "127.0.0.1:5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - ./postgres-db:/var/lib/postgresql/data
+```
+
+### Instalar PostgreSQL en Debian
 
 - Método 1, recomendado:
 
