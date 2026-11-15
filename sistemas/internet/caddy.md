@@ -105,6 +105,25 @@ editor /etc/caddy/Caddyfile # Único archivo que hace falta modificar
   }
   ```
 
+  ```Caddyfile
+  # Crear carpeta /var/www/archivos
+  # chown -R caddy:caddy /var/www/archivos
+  # chmod -R u+rwX,g+rX,o-rwx /var/www/archivos
+  dominio.com {
+    redir /archivos /archivos/ 308
+
+    handle_path /archivos/* {
+      root * /var/www/archivos
+
+      basic_auth {
+        user $2a$...
+      }
+
+      file_server browse
+    }
+  }
+  ```
+
 - Proxy reverso:
   - No hace falta nada más que esto:
 
